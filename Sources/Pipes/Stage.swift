@@ -13,8 +13,13 @@ open class Stage: Identifiable {
     var outputRecord: String?
     var dispatcher: Dispatcher!
 
+    internal var inputStreams: [Stream]
+    internal var outputStreams: [Stream]
+
     public init(_ name: String) {
         self.name = name
+        self.inputStreams = []
+        self.outputStreams = []
     }
 
     public func peekto() -> String {
@@ -37,7 +42,13 @@ open class Stage: Identifiable {
     internal func unblock() {
         lock.signal()
     }
+}
 
+extension Stage {
+    internal func setup(inputStreams: [Stream], outputStreams: [Stream]) {
+        self.inputStreams = inputStreams
+        self.outputStreams = outputStreams
+    }
 }
 
 extension Stage: Equatable, Hashable {

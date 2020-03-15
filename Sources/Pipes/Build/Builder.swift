@@ -6,6 +6,17 @@ open class PipeBuilder {
         case label(String, UInt)
         case end
 
+        var stage: Stage? {
+            switch self {
+            case .stage(let stage, _):
+                return stage
+            case .label:
+                return nil
+            case .end:
+                return nil
+            }
+        }
+
         var label: String? {
             switch self {
             case .stage(_, let label):
@@ -101,7 +112,7 @@ open class PipeBuilder {
                 break
             }
         }
-        return Pipeline(stages: [])
+        return Pipeline(stages: nodes.compactMap { $0.stage }, streams: Array(streams))
     }
 
     private func resolvedStage(node: Node) -> Stage {
