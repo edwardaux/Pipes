@@ -7,7 +7,7 @@ class GeneratorStage: Stage {
 
     init(_ records: [String]) {
         self.records = records
-        super.init()
+        super.init("generator")
     }
 
     override func run() {
@@ -22,7 +22,7 @@ class CheckerStage: Stage {
 
     init(_ expected: [String]) {
         self.expected = expected
-        super.init()
+        super.init("checker")
     }
 
     override func run() {
@@ -38,7 +38,7 @@ class PassthroughStage: Stage {
 
     init(count: Int) {
         self.count = count
-        super.init()
+        super.init("passthrough")
     }
 
     override func run() {

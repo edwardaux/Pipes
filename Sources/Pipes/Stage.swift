@@ -1,11 +1,20 @@
 import Foundation
 
-open class Stage {
-    var dispatcher: Dispatcher!
+open class Stage: Identifiable {
+
+    public let id: String = UUID().uuidString
 
     private let lock = DispatchSemaphore(value: 0)
 
-    public init() {
+    var name: String
+    var inputStage: Stage?
+    var inputRecord: String?
+    var outputStage: Stage?
+    var outputRecord: String?
+    var dispatcher: Dispatcher!
+
+    public init(_ name: String) {
+        self.name = name
     }
 
     public func peekto() -> String {
@@ -29,8 +38,13 @@ open class Stage {
         lock.signal()
     }
 
-    var inputStage: Stage?
-    var inputRecord: String?
-    var outputStage: Stage?
-    var outputRecord: String?
+}
+
+extension Stage: Equatable, Hashable {
+    public static func == (lhs: Stage, rhs: Stage) -> Bool {
+        return lhs.id == rhs.id
+    }
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 }
