@@ -7,12 +7,18 @@
 
 import Foundation
 
+enum StreamLockError: Error {
+    case severed
+    case endOfFile
+}
+
 class StreamLock<R> {
     private enum State {
         case empty
         case full(R)
         case reading
         case peeking
+        case severed
     }
 
     private let condition: NSCondition
@@ -23,7 +29,7 @@ class StreamLock<R> {
         self.state = .empty
     }
 
-    func output(_ record: R) {
+    func output(_ record: R) throws {
         condition.lock()
         defer { condition.unlock() }
 
@@ -35,11 +41,13 @@ class StreamLock<R> {
             case .reading, .peeking:
                 state = .full(record)
                 condition.signal()
+            case .severed:
+                throw StreamLockError.severed
             }
         }
     }
 
-    func readto() -> R {
+    func readto() throws -> R {
         condition.lock()
         defer { condition.unlock() }
 
@@ -57,11 +65,13 @@ class StreamLock<R> {
             case .reading, .peeking:
                 condition.wait()
                 continue loop
+            case .severed:
+                throw StreamLockError.severed
             }
         }
     }
 
-    func peekto() -> R {
+    func peekto() throws -> R {
         condition.lock()
         defer { condition.unlock() }
 
@@ -77,11 +87,21 @@ class StreamLock<R> {
             case .reading, .peeking:
                 condition.wait()
                 continue loop
+            case .severed:
+                throw StreamLockError.severed
             }
         }
     }
 
+    func sever() {
+        condition.lock()
+        defer { condition.unlock() }
+
+        state = .severed
+        condition.signal()
+    }
+
     deinit {
-//        condition.signal()
+        sever()
     }
 }
