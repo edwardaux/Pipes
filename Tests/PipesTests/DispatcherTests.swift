@@ -12,6 +12,26 @@ final class DispatcherTests: XCTestCase {
         Thread.sleep(forTimeInterval: 1)
     }
 
+    func testStreamLock() {
+        let streamLock = StreamLock<String>()
+        var sequence = [String]()
+
+        DispatchQueue.global().async {
+            streamLock.output("a")
+            streamLock.output("b")
+            streamLock.output("c")
+        }
+        
+        Thread.sleep(forTimeInterval: 0.05)
+        sequence.append(streamLock.readto())
+        Thread.sleep(forTimeInterval: 0.1)
+        sequence.append(streamLock.readto())
+        Thread.sleep(forTimeInterval: 0.1)
+        sequence.append(streamLock.readto())
+
+        XCTAssertEqual(sequence, ["a", "b", "c"])
+    }
+
     static var allTests = [
         ("testExample", testExample),
     ]
