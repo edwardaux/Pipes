@@ -7,10 +7,10 @@
 
 import Foundation
 
-class StreamLock<Message> {
+class StreamLock<R> {
     private enum State {
         case empty
-        case full(Message)
+        case full(R)
         case reading
         case peeking
     }
@@ -23,7 +23,7 @@ class StreamLock<Message> {
         self.state = .empty
     }
 
-    func output(_ message: Message) {
+    func output(_ record: R) {
         condition.lock()
         defer { condition.unlock() }
 
@@ -33,13 +33,13 @@ class StreamLock<Message> {
                 condition.wait()
                 continue loop
             case .reading, .peeking:
-                state = .full(message)
+                state = .full(record)
                 condition.signal()
             }
         }
     }
 
-    func readto() -> Message {
+    func readto() -> R {
         condition.lock()
         defer { condition.unlock() }
 
@@ -50,10 +50,10 @@ class StreamLock<Message> {
                 condition.signal()
                 condition.wait()
                 continue loop
-            case let .full(message):
+            case let .full(record):
                 state = .empty
                 condition.signal()
-                return message
+                return record
             case .reading, .peeking:
                 condition.wait()
                 continue loop
@@ -61,7 +61,7 @@ class StreamLock<Message> {
         }
     }
 
-    func peekto() -> Message {
+    func peekto() -> R {
         condition.lock()
         defer { condition.unlock() }
 
@@ -72,8 +72,8 @@ class StreamLock<Message> {
                 condition.signal()
                 condition.wait()
                 continue loop
-            case let .full(message):
-                return message
+            case let .full(record):
+                return record
             case .reading, .peeking:
                 condition.wait()
                 continue loop
