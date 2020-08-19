@@ -12,7 +12,7 @@ final class DispatcherTests: XCTestCase {
         Thread.sleep(forTimeInterval: 1)
     }
 
-    func testStreamLock() {
+    func testStreamLockReadto() {
         let streamLock = StreamLock<String>()
         var sequence = [String]()
 
@@ -20,16 +20,73 @@ final class DispatcherTests: XCTestCase {
             streamLock.output("a")
             streamLock.output("b")
             streamLock.output("c")
+            streamLock.output("d")
+            streamLock.output("e")
+            streamLock.output("f")
         }
-        
+
+        sequence.append(streamLock.readto())
+        sequence.append(streamLock.readto())
+        sequence.append(streamLock.readto())
+        sequence.append(streamLock.readto())
+        sequence.append(streamLock.readto())
+        sequence.append(streamLock.readto())
+
+        XCTAssertEqual(sequence, ["a", "b", "c", "d", "e", "f"])
+    }
+
+    func testStreamLockReadtoSleep() {
+        let streamLock = StreamLock<String>()
+        var sequence = [String]()
+
+        DispatchQueue.global().async {
+            streamLock.output("a")
+            streamLock.output("b")
+            streamLock.output("c")
+            streamLock.output("d")
+            streamLock.output("e")
+            streamLock.output("f")
+        }
+
         Thread.sleep(forTimeInterval: 0.05)
         sequence.append(streamLock.readto())
         Thread.sleep(forTimeInterval: 0.1)
         sequence.append(streamLock.readto())
+        sequence.append(streamLock.readto())
+        Thread.sleep(forTimeInterval: 0.05)
+        sequence.append(streamLock.readto())
+        sequence.append(streamLock.readto())
         Thread.sleep(forTimeInterval: 0.1)
         sequence.append(streamLock.readto())
 
-        XCTAssertEqual(sequence, ["a", "b", "c"])
+        XCTAssertEqual(sequence, ["a", "b", "c", "d", "e", "f"])
+    }
+
+    func testStreamLockPeekto() {
+        let streamLock = StreamLock<String>()
+        var sequence = [String]()
+
+        DispatchQueue.global().async {
+            streamLock.output("a")
+            streamLock.output("b")
+            streamLock.output("c")
+            streamLock.output("d")
+            streamLock.output("e")
+            streamLock.output("f")
+        }
+
+        sequence.append(streamLock.readto())
+        sequence.append(streamLock.peekto())
+        sequence.append(streamLock.readto())
+        sequence.append(streamLock.readto())
+        sequence.append(streamLock.peekto())
+        sequence.append(streamLock.peekto())
+        sequence.append(streamLock.peekto())
+        sequence.append(streamLock.readto())
+        sequence.append(streamLock.readto())
+        sequence.append(streamLock.readto())
+
+        XCTAssertEqual(sequence, ["a", "b", "b", "c", "d", "d", "d", "d", "e", "f"])
     }
 
     static var allTests = [
