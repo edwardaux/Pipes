@@ -10,25 +10,9 @@ class GeneratorStage: Stage {
         super.init("generator")
     }
 
-    override func run() {
-        records.forEach {
-            output($0)
-        }
-    }
-}
-
-class CheckerStage: Stage {
-    private let expected: [String]
-
-    init(_ expected: [String]) {
-        self.expected = expected
-        super.init("checker")
-    }
-
-    override func run() {
-        for e in expected {
-            let actual = readto()
-            XCTAssertEqual(actual, e)
+    override func run() throws {
+        try records.forEach {
+            try output($0)
         }
     }
 }
@@ -41,11 +25,33 @@ class PassthroughStage: Stage {
         super.init("passthrough")
     }
 
-    override func run() {
+    override func run() throws {
         for _ in 0..<count {
-            let record1 = peekto()
-            output(record1)
-            _ = readto()
+            let record = try peekto()
+            try output(record)
+            _ = try readto()
         }
     }
 }
+
+class CheckerStage: Stage {
+    private let expected: [String]
+
+    init(_ expected: [String]) {
+        self.expected = expected
+        super.init("checker")
+    }
+
+    override func run() throws {
+        var actual: [String] = []
+        do {
+            while true {
+                let record = try readto()
+                actual.append(record)
+            }
+        } catch {
+            XCTAssertEqual(actual, expected)
+        }
+    }
+}
+

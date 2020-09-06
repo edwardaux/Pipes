@@ -9,9 +9,14 @@ open class Pipeline {
         self.streams = streams
 
         for stage in stages {
-            let inputStreams = streams.filter { $0.consumer?.stage == stage }.sorted { ($0.consumer?.streamNo ?? 9999999) < ($1.consumer?.streamNo ?? 9999999)}
-            let outputStreams = streams.filter { $0.producer?.stage == stage }.sorted { ($0.producer?.streamNo ?? 9999999) < ($1.producer?.streamNo ?? 9999999) }
+            let inputStreams = streams.filter { $0.consumer == stage }
+            let outputStreams = streams.filter { $0.producer == stage }
             stage.setup(inputStreams: inputStreams, outputStreams: outputStreams)
         }
+    }
+
+    func run() {
+        let dispatcher = Dispatcher(pipeline: self)
+        dispatcher.run()
     }
 }
