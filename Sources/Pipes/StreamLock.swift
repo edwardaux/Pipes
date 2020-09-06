@@ -38,7 +38,11 @@ class StreamLock<R> {
             case .empty, .full:
                 condition.wait()
                 continue loop
-            case .reading, .peeking:
+            case .peeking:
+                state = .full(record)
+                condition.signal()
+                condition.wait()
+            case .reading:
                 state = .full(record)
                 condition.signal()
             case .severed:

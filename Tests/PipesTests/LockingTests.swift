@@ -79,6 +79,23 @@ final class LockingTests: XCTestCase {
         XCTAssertEqual(sequence, ["a", "b", "b", "c", "d", "d", "d", "d", "e", "f"])
     }
 
+    func testPeektoDoesntUnblockProducer() {
+        let streamLock = StreamLock<String>()
+        var sequence = [String]()
+
+        DispatchQueue.global().async {
+            try! streamLock.output("b")
+            sequence.append("d")
+        }
+
+        sequence.append("a")
+        sequence.append(try! streamLock.peekto())
+        sequence.append("c")
+
+        Thread.sleep(forTimeInterval: 0.1)
+        XCTAssertEqual(sequence, ["a", "b", "c"])
+    }
+
     func testStreamLockSever() {
         let streamLock = StreamLock<String>()
         var sequence = [String?]()

@@ -3,6 +3,8 @@ import Foundation
 private let NOT_CONNECTED: UInt = 9999999
 
 class Stream {
+    private static let debug = true
+
     private let lock = StreamLock<String>()
 
     let producer: Stage?
@@ -32,29 +34,29 @@ class Stream {
     }
 
     func output(_ record: String) throws {
-        debug(producer, producerStreamNo, "About to output: \(record)")
+        if Self.debug { debug(producer, producerStreamNo, "About to output: \(record)") }
         try lock.output(record)
-        debug(producer, producerStreamNo, "Succesfully output: \(record)")
+        if Self.debug { debug(producer, producerStreamNo, "Succesfully output: \(record)") }
     }
 
     func readto() throws -> String {
-        debug(consumer, consumerStreamNo, "About to readto")
+        if Self.debug { debug(consumer, consumerStreamNo, "About to readto") }
         let record = try lock.readto()
-        debug(consumer, consumerStreamNo, "Successfully readto: \(record)")
+        if Self.debug { debug(consumer, consumerStreamNo, "Successfully readto: \(record)") }
         return record
     }
 
     func peekto() throws -> String {
-        debug(consumer, consumerStreamNo, "About to peekto")
+        if Self.debug { debug(consumer, consumerStreamNo, "About to peekto") }
         let record = try lock.peekto()
-        debug(consumer, consumerStreamNo, "Successfully peekto: \(record)")
+        if Self.debug { debug(consumer, consumerStreamNo, "Successfully peekto: \(record)") }
         return record
     }
 
     func sever() {
-        debug(producer, producerStreamNo, "About to sever: \(consumer?.name ?? "Not connected")(\(consumerStreamNo))")
+        if Self.debug { debug(producer, producerStreamNo, "About to sever: \(consumer?.name ?? "Not connected")(\(consumerStreamNo))") }
         lock.sever()
-        debug(producer, producerStreamNo, "Successfully severed: \(consumer?.name ?? "Not connected")(\(consumerStreamNo))")
+        if Self.debug { debug(producer, producerStreamNo, "Successfully severed: \(consumer?.name ?? "Not connected")(\(consumerStreamNo))") }
     }
 
     private func debug(_ stage: Stage?, _ streamNo: UInt, _ message: String) {

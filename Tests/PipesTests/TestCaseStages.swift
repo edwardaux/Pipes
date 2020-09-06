@@ -26,7 +26,7 @@ class PassthroughStage: Stage {
     }
 
     override func run() throws {
-        for _ in 0..<count {
+        while true {
             let record = try peekto()
             try output(record)
             _ = try readto()
