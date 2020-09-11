@@ -13,37 +13,36 @@ enum StreamLockError: Error {
 }
 
 class StreamLock<R> {
-    private enum State {
-        case empty
-        case full(R)
-        case reading
-        case peeking
-        case severed
+    private struct PendingRecord {
+        let consumerStreamNo: UInt
+        let record: R
     }
 
     private let condition: NSCondition
-    private var state: State
+    private var pendingRecords: [PendingRecord]
 
     init() {
         self.condition = NSCondition()
-        self.state = .empty
+        self.pendingRecords = []
     }
 
-    func output(_ record: R) throws {
+    func output(_ record: R, stream: Stream) throws {
         condition.lock()
         defer { condition.unlock() }
 
         loop: do {
-            switch state {
+            switch stream.state {
             case .empty, .full:
                 condition.wait()
                 continue loop
             case .peeking:
-                state = .full(record)
+                stream.state = .full
+                pendingRecords.append(PendingRecord(consumerStreamNo: stream.consumerStreamNo, record: record))
                 condition.signal()
                 condition.wait()
             case .reading:
-                state = .full(record)
+                stream.state = .full
+                pendingRecords.append(PendingRecord(consumerStreamNo: stream.consumerStreamNo, record: record))
                 condition.signal()
             case .severed:
                 throw StreamLockError.severed
@@ -51,21 +50,26 @@ class StreamLock<R> {
         }
     }
 
-    func readto() throws -> R {
+    func readto(stream: Stream) throws -> R {
         condition.lock()
         defer { condition.unlock() }
 
         loop: do {
-            switch state {
+            switch stream.state {
             case .empty:
-                state = .reading
+                stream.state = .reading
                 condition.signal()
                 condition.wait()
                 continue loop
-            case let .full(record):
-                state = .empty
-                condition.signal()
-                return record
+            case .full:
+                if let index = pendingRecords.firstIndex(where: { $0.consumerStreamNo == stream.consumerStreamNo }) {
+                    let pendingRecord = pendingRecords.remove(at: index)
+                    stream.state = .empty
+                    condition.signal()
+                    return pendingRecord.record
+                }
+                condition.wait()
+                continue loop
             case .reading, .peeking:
                 condition.wait()
                 continue loop
@@ -75,19 +79,23 @@ class StreamLock<R> {
         }
     }
 
-    func peekto() throws -> R {
+    func peekto(stream: Stream) throws -> R {
         condition.lock()
         defer { condition.unlock() }
 
         loop: do {
-            switch state {
+            switch stream.state {
             case .empty:
-                state = .peeking
+                stream.state = .peeking
                 condition.signal()
                 condition.wait()
                 continue loop
-            case let .full(record):
-                return record
+            case .full:
+                if let pendingRecord = pendingRecords.first(where: { $0.consumerStreamNo == stream.consumerStreamNo }) {
+                    return pendingRecord.record
+                }
+                condition.wait()
+                continue loop
             case .reading, .peeking:
                 condition.wait()
                 continue loop
@@ -97,15 +105,12 @@ class StreamLock<R> {
         }
     }
 
-    func sever() {
+    func sever(stream: Stream) {
         condition.lock()
         defer { condition.unlock() }
 
-        state = .severed
+        stream.state = .severed
+        pendingRecords = []
         condition.signal()
-    }
-
-    deinit {
-        sever()
     }
 }

@@ -11,6 +11,7 @@ open class Stage: Identifiable {
 //    var outputRecord: String?
     private var dispatcher: Dispatcher!
 
+    internal let lock = StreamLock<String>()
     internal var inputStreams: [Stream]
     internal var outputStreams: [Stream]
 
@@ -41,8 +42,8 @@ open class Stage: Identifiable {
             print("Stage \(name) has finished: \(error)")
         }
 
-        inputStreams.forEach { $0.sever() }
-        outputStreams.forEach { $0.sever() }
+        inputStreams.forEach { try? $0.sever() }
+        outputStreams.forEach { try? $0.sever() }
     }
 
     open func run() throws {
