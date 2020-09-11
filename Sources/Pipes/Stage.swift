@@ -5,10 +5,6 @@ open class Stage: Identifiable {
     public let id: String = UUID().uuidString
 
     internal var name: String
-//    var inputStage: Stage?
-//    var inputRecord: String?
-//    var outputStage: Stage?
-//    var outputRecord: String?
     private var dispatcher: Dispatcher!
 
     internal let lock = StreamLock<String>()
@@ -22,15 +18,15 @@ open class Stage: Identifiable {
     }
 
     public func output(_ record: String, streamNo: UInt = 0) throws {
-        try dispatcher.output(record, stage: self, streamNo: streamNo)
+        try outputStreams[Int(streamNo)].output(record)
     }
 
     public func readto(streamNo: UInt = 0) throws -> String {
-        return try dispatcher.readto(stage: self, streamNo: streamNo)
+        return try inputStreams[Int(streamNo)].readto()
     }
 
     public func peekto(streamNo: UInt = 0) throws -> String {
-        return try dispatcher.peekto(stage: self, streamNo: streamNo)
+        return try inputStreams[Int(streamNo)].peekto()
     }
 
     func dispatch(dispatcher: Dispatcher) {
@@ -47,6 +43,7 @@ open class Stage: Identifiable {
     }
 
     open func run() throws {
+        preconditionFailure("Stage \(self) needs to implement run()")
     }
 }
 
