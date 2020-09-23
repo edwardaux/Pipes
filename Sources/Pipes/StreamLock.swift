@@ -42,6 +42,8 @@ class StreamLock<R> {
                 debug(stream.producer, "Returned from wait")
                 continue loop
             case .full, .readyToOutput:
+                debug(stream.consumer, "Signalling...")
+                condition.signal()
                 debug(stream.producer, "Waiting...")
                 condition.wait()
                 debug(stream.producer, "Returned from wait")
@@ -93,6 +95,8 @@ class StreamLock<R> {
                 debug(stream.consumer, "Peekto complete: \(record)")
                 return record
             case .reading, .peeking:
+                debug(stream.consumer, "Signalling...")
+                condition.signal()
                 debug(stream.consumer, "Waiting...")
                 condition.wait()
                 debug(stream.consumer, "Returned from wait")
@@ -134,6 +138,8 @@ class StreamLock<R> {
                 debug(stream.consumer, "Readto complete: \(record)")
                 return record
             case .reading, .peeking:
+                debug(stream.consumer, "Signalling...")
+                condition.signal()
                 debug(stream.consumer, "Waiting...")
                 condition.wait()
                 debug(stream.consumer, "Returned from wait")
