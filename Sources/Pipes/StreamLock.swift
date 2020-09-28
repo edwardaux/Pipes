@@ -1,12 +1,5 @@
 import Foundation
 
-private let debugStreams = true
-
-enum StreamLockError: Error {
-    case severed
-    case endOfFile
-}
-
 class StreamLock<R> {
     private let condition: NSCondition
     private var lastPeekedStreamIndex: Int?
@@ -38,7 +31,7 @@ class StreamLock<R> {
                 stream.state = .full(record: record)
                 condition.signal()
             case .severed:
-                throw StreamLockError.severed
+                throw PipeError.endOfFile
             }
         }
     }
@@ -65,7 +58,7 @@ class StreamLock<R> {
                 condition.wait()
                 continue loop
             case .severed:
-                throw StreamLockError.severed
+                throw PipeError.endOfFile
             }
         }
     }
@@ -94,7 +87,7 @@ class StreamLock<R> {
                 condition.wait()
                 continue loop
             case .severed:
-                throw StreamLockError.severed
+                throw PipeError.endOfFile
             }
         }
     }

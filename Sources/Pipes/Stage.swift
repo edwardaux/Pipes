@@ -31,6 +31,7 @@ extension Stage {
         do {
             try run()
         } catch let error {
+            // TODO error handling
             print("Stage \(self) has finished: \(error)")
         }
 
@@ -43,36 +44,36 @@ extension Stage {
 //
 extension Stage {
     public func output(_ record: String, streamNo: UInt = 0) throws {
-        // TODO is this the right error
-        // TODO check stream No
+        guard streamNo < outputStreams.count else { throw PipeError.streamDoesNotExist(streamNo: streamNo) }
+
         let stream = outputStreams[Int(streamNo)]
-        guard let consumer = stream.consumer else { throw StreamLockError.endOfFile }
+        guard let consumer = stream.consumer else { throw PipeError.endOfFile }
 
         try consumer.stage.lock.output(record, stream: stream)
     }
 
     public func readto(streamNo: UInt = 0) throws -> String {
-        // TODO is this the right error
-        // TODO check stream No
         if streamNo == Stream.ANY {
             let record = try lock.readtoAny(streams: inputStreams)
             return record
         } else {
+            guard streamNo < inputStreams.count else { throw PipeError.streamDoesNotExist(streamNo: streamNo) }
+
             let stream = inputStreams[Int(streamNo)]
-            guard stream.isProducerConnected else { throw StreamLockError.endOfFile }
+            guard stream.isProducerConnected else { throw PipeError.endOfFile }
 
             return try lock.readto(stream: stream)
         }
     }
 
     public func peekto(streamNo: UInt = 0) throws -> String {
-        // TODO is this the right error
-        // TODO check stream No
         if streamNo == Stream.ANY {
             return try lock.peektoAny(streams: inputStreams)
         } else {
+            guard streamNo < inputStreams.count else { throw PipeError.streamDoesNotExist(streamNo: streamNo) }
+
             let stream = inputStreams[Int(streamNo)]
-            guard stream.isProducerConnected else { throw StreamLockError.endOfFile }
+            guard stream.isProducerConnected else { throw PipeError.endOfFile }
 
             return try lock.peekto(stream: stream)
         }
