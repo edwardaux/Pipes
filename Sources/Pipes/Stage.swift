@@ -46,31 +46,35 @@ extension Stage {
         // TODO is this the right error
         // TODO check stream No
         let stream = outputStreams[Int(streamNo)]
-        guard let consumer = stream.consumer, stream.consumerStreamNo != NOT_CONNECTED else { throw StreamLockError.endOfFile }
+        guard let consumer = stream.consumer else { throw StreamLockError.endOfFile }
 
-        try consumer.lock.output(record, stream: stream)
+        try consumer.stage.lock.output(record, stream: stream)
     }
 
     public func readto(streamNo: UInt = 0) throws -> String {
+        // TODO is this the right error
+        // TODO check stream No
         if streamNo == Stream.ANY {
             let record = try lock.readtoAny(streams: inputStreams)
             return record
         } else {
-            let producer = inputStreams[Int(streamNo)]
-            guard producer.producerStreamNo != NOT_CONNECTED else { throw StreamLockError.endOfFile }
+            let stream = inputStreams[Int(streamNo)]
+            guard stream.isProducerConnected else { throw StreamLockError.endOfFile }
 
-            return try lock.readto(stream: producer)
+            return try lock.readto(stream: stream)
         }
     }
 
     public func peekto(streamNo: UInt = 0) throws -> String {
+        // TODO is this the right error
+        // TODO check stream No
         if streamNo == Stream.ANY {
             return try lock.peektoAny(streams: inputStreams)
         } else {
-            let producer = inputStreams[Int(streamNo)]
-            guard producer.producerStreamNo != NOT_CONNECTED else { throw StreamLockError.endOfFile }
+            let stream = inputStreams[Int(streamNo)]
+            guard stream.isProducerConnected else { throw StreamLockError.endOfFile }
 
-            return try lock.peekto(stream: producer)
+            return try lock.peekto(stream: stream)
         }
     }
 

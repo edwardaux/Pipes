@@ -1,8 +1,5 @@
 import Foundation
 
-// TODO hide this and create getters
-let NOT_CONNECTED: UInt = 9999999
-
 enum StreamState: Equatable {
     case empty
     case readyToOutput
@@ -13,36 +10,39 @@ enum StreamState: Equatable {
 }
 
 class Stream {
+    struct Endpoint: Equatable {
+        public let stage: Stage
+        public let streamNo: UInt
+    }
+
     public static let ANY = UInt.max
 
     var state: StreamState
+    let producer: Endpoint?
+    let consumer: Endpoint?
 
-    let producer: Stage?
-    let producerStreamNo: UInt
-    let consumer: Stage?
-    let consumerStreamNo: UInt
-
+    var isProducerConnected: Bool {
+        return producer != nil
+    }
+    var isConsumerConnected: Bool {
+        return consumer != nil
+    }
+    
     init(producer: Stage, producerStreamNo: UInt, consumer: Stage, consumerStreamNo: UInt) {
         self.state = .empty
-        self.producer = producer
-        self.producerStreamNo = producerStreamNo
-        self.consumer = consumer
-        self.consumerStreamNo = consumerStreamNo
+        self.producer = Endpoint(stage: producer, streamNo: producerStreamNo)
+        self.consumer = Endpoint(stage: consumer, streamNo: consumerStreamNo)
     }
 
     init(consumer: Stage, consumerStreamNo: UInt) {
         self.state = .empty
         self.producer = nil
-        self.producerStreamNo = NOT_CONNECTED
-        self.consumer = consumer
-        self.consumerStreamNo = consumerStreamNo
+        self.consumer = Endpoint(stage: consumer, streamNo: consumerStreamNo)
     }
 
     init(producer: Stage, producerStreamNo: UInt) {
         self.state = .empty
-        self.producer = producer
-        self.producerStreamNo = producerStreamNo
+        self.producer = Endpoint(stage: producer, streamNo: producerStreamNo)
         self.consumer = nil
-        self.consumerStreamNo = NOT_CONNECTED
     }
 }
