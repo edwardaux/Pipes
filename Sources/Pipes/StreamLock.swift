@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by Craig Edwards on 16/8/20.
-//
-
 import Foundation
 
 private let debugStreams = true

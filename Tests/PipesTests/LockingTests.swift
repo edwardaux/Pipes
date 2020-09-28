@@ -13,8 +13,8 @@ final class LockingTests: XCTestCase {
                 self.setup(inputStreams: [stream], outputStreams: [])
             }
         }
-        let stage1 = TestInputStage("Stage 1")
-        let stage2 = TestOutputStage("Stage 2", debugIndent: "         ")
+        let stage1 = TestInputStage()
+        let stage2 = TestOutputStage()
         let stream  = Pipes.Stream(producer: stage1, producerStreamNo: 0, consumer: stage2, consumerStreamNo: 0)
         stage1.setTestStream(stream: stream)
         stage2.setTestStream(stream: stream)
@@ -175,9 +175,9 @@ final class LockingTests: XCTestCase {
                 self.setup(inputStreams: streams, outputStreams: [])
             }
         }
-        let stage1a = TestInputStage("Stage 1a")
-        let stage1b = TestInputStage("Stage 1b", debugIndent: "    ")
-        let stage2 = TestOutputStage("Stage 2", debugIndent: "         ")
+        let stage1a = TestInputStage()
+        let stage1b = TestInputStage()
+        let stage2 = TestOutputStage()
         let stream1 = Pipes.Stream(producer: stage1a, producerStreamNo: 0, consumer: stage2, consumerStreamNo: 0)
         let stream2 = Pipes.Stream(producer: stage1b, producerStreamNo: 0, consumer: stage2, consumerStreamNo: 1)
         stage1a.setTestStream(stream: stream1)
@@ -216,9 +216,9 @@ final class LockingTests: XCTestCase {
                 self.setup(inputStreams: streams, outputStreams: [])
             }
         }
-        let stage1a = TestInputStage("Stage 1a")
-        let stage1b = TestInputStage("Stage 1b", debugIndent: "    ")
-        let stage2 = TestOutputStage("Stage 2", debugIndent: "         ")
+        let stage1a = TestInputStage()
+        let stage1b = TestInputStage()
+        let stage2 = TestOutputStage()
         let stream1 = Pipes.Stream(producer: stage1a, producerStreamNo: 0, consumer: stage2, consumerStreamNo: 0)
         let stream2 = Pipes.Stream(producer: stage1b, producerStreamNo: 0, consumer: stage2, consumerStreamNo: 1)
         stage1a.setTestStream(stream: stream1)

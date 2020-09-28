@@ -3,23 +3,45 @@ import Foundation
 open class Stage: Identifiable {
     public let id: String = UUID().uuidString
 
-    internal var name: String
-    private var dispatcher: Dispatcher!
-
     internal let lock: StreamLock<String>
     internal var inputStreams: [Stream]
     internal var outputStreams: [Stream]
 
-    internal var debugIndent: String
-
-    public init(_ name: String, debugIndent: String = "") {
-        self.name = name
+    public init() {
         self.inputStreams = []
         self.outputStreams = []
         self.lock = StreamLock<String>()
-        self.debugIndent = debugIndent
     }
 
+    open func run() throws {
+        preconditionFailure("Stage \(self) needs to implement run()")
+    }
+}
+
+//
+// MARK: - Setup and dispatch
+//
+extension Stage {
+    internal func setup(inputStreams: [Stream], outputStreams: [Stream]) {
+        self.inputStreams = inputStreams
+        self.outputStreams = outputStreams
+    }
+
+    internal func dispatch() {
+        do {
+            try run()
+        } catch let error {
+            print("Stage \(self) has finished: \(error)")
+        }
+
+        try? sever()
+    }
+}
+
+//
+// MARK: - Inherited APIs
+//
+extension Stage {
     public func output(_ record: String, streamNo: UInt = 0) throws {
         // TODO is this the right error
         // TODO check stream No
@@ -52,7 +74,7 @@ open class Stage: Identifiable {
         }
     }
 
-    func sever() throws {
+    public func sever() throws {
         // TODO think about this more
         inputStreams.enumerated().forEach {
             lock.sever(stream: $1)
@@ -62,33 +84,12 @@ open class Stage: Identifiable {
         }
     }
 
-    func dispatch(dispatcher: Dispatcher) {
-        self.dispatcher = dispatcher
-
-        do {
-            try run()
-        } catch let error {
-            print("Stage \(name) has finished: \(error)")
-        }
-
-        try? sever()
+    public var maxInputStreamNo: Int {
+        return inputStreams.count - 1
     }
 
-    open func run() throws {
-        preconditionFailure("Stage \(self) needs to implement run()")
-    }
-
-    deinit {
-        // TODO clean up streams
-//        consumer?.lock.sever(stream: self)
-    }
-
-}
-
-extension Stage {
-    internal func setup(inputStreams: [Stream], outputStreams: [Stream]) {
-        self.inputStreams = inputStreams
-        self.outputStreams = outputStreams
+    public var maxOutputStreamNo: Int {
+        return outputStreams.count - 1
     }
 }
 

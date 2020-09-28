@@ -13,8 +13,8 @@ final class PerformanceTests: XCTestCase {
                 self.setup(inputStreams: [stream], outputStreams: [])
             }
         }
-        let stage1 = TestInputStage("Stage 1")
-        let stage2 = TestOutputStage("Stage 2")
+        let stage1 = TestInputStage()
+        let stage2 = TestOutputStage()
         let stream  = Pipes.Stream(producer: stage1, producerStreamNo: 0, consumer: stage2, consumerStreamNo: 0)
         stage1.setTestStream(stream: stream)
         stage2.setTestStream(stream: stream)

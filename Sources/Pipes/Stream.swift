@@ -30,19 +30,19 @@ class Stream {
         self.consumerStreamNo = consumerStreamNo
     }
 
-    init(producer: Stage?, consumer: Stage, consumerStreamNo: UInt) {
+    init(consumer: Stage, consumerStreamNo: UInt) {
         self.state = .empty
-        self.producer = producer
+        self.producer = nil
         self.producerStreamNo = NOT_CONNECTED
         self.consumer = consumer
         self.consumerStreamNo = consumerStreamNo
     }
 
-    init(producer: Stage, producerStreamNo: UInt, consumer: Stage?) {
+    init(producer: Stage, producerStreamNo: UInt) {
         self.state = .empty
         self.producer = producer
         self.producerStreamNo = producerStreamNo
-        self.consumer = consumer
+        self.consumer = nil
         self.consumerStreamNo = NOT_CONNECTED
     }
 }

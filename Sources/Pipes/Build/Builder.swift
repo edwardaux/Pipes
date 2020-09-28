@@ -2,8 +2,8 @@
 //
 //open class PipeBuilder {
 //    enum Node {
-//        case stage(Stage, String?)
-//        case label(String, UInt)
+//        case stage(Stage, label: String?)
+//        case label(String, streamNo: UInt)
 //        case end
 //
 //        var stage: Stage? {
@@ -57,7 +57,7 @@
 //    }
 //
 //    public func add(stage: Stage, label: String? = nil) -> PipeBuilder {
-//        nodes.append(.stage(stage, label))
+//        nodes.append(.stage(stage, label: label))
 //        if let label = label {
 //            labelRefCount[label] = 0
 //        }
@@ -68,7 +68,7 @@
 //        guard let prevRef = labelRefCount[label] else { fatalError("Referencing \(label) before definition") }
 //        let streamNo = prevRef + 1
 //        labelRefCount[label] = streamNo
-//        nodes.append(.label(label, streamNo))
+//        nodes.append(.label(label, streamNo: streamNo))
 //        return self
 //    }
 //
@@ -88,12 +88,12 @@
 //                if !previousNode.isEnd {
 //                    let previousStage = resolvedStage(node: previousNode)
 //                    let previousStreamNo = previousNode.streamNo
-////                    connect(producer: Stream.EndPoint(stage: previousStage, streamNo: previousStreamNo), consumer: Stream.EndPoint(stage: currentStage, streamNo: 0))
+//                    connect(producer: Stream.EndPoint(stage: previousStage, streamNo: previousStreamNo), consumer: Stream.EndPoint(stage: currentStage, streamNo: 0))
 //                }
 //                if !nextNode.isEnd {
 //                    let nextStage = resolvedStage(node: nextNode)
 //                    let nextStreamNo = nextNode.streamNo
-////                    connect(producer: Stream.EndPoint(stage: currentStage, streamNo: 0), consumer: Stream.EndPoint(stage: nextStage, streamNo: nextStreamNo))
+//                    connect(producer: Stream.EndPoint(stage: currentStage, streamNo: 0), consumer: Stream.EndPoint(stage: nextStage, streamNo: nextStreamNo))
 //                }
 //            case .label(_, let referencedStreamNo):
 //                let referencedStage = resolvedStage(node: currentNode)
@@ -101,19 +101,18 @@
 //                if !previousNode.isEnd {
 //                    let previousStage = resolvedStage(node: previousNode)
 //                    let previousStreamNo = previousNode.streamNo
-////                    connect(producer: Stream.EndPoint(stage: previousStage, streamNo: previousStreamNo), consumer: Stream.EndPoint(stage: referencedStage, streamNo: referencedStreamNo))
+//                    connect(producer: Stream.EndPoint(stage: previousStage, streamNo: previousStreamNo), consumer: Stream.EndPoint(stage: referencedStage, streamNo: referencedStreamNo))
 //                }
 //                if !nextNode.isEnd {
 //                    let nextStage = resolvedStage(node: nextNode)
 //                    let nextStreamNo = nextNode.streamNo
-////                    connect(producer: Stream.EndPoint(stage: referencedStage, streamNo: referencedStreamNo), consumer: Stream.EndPoint(stage: nextStage, streamNo: nextStreamNo))
+//                    connect(producer: Stream.EndPoint(stage: referencedStage, streamNo: referencedStreamNo), consumer: Stream.EndPoint(stage: nextStage, streamNo: nextStreamNo))
 //                }
 //            case .end:
 //                break
 //            }
 //        }
-//        return Pipeline(stages: [], streams: [])
-////        return Pipeline(stages: nodes.compactMap { $0.stage }, streams: Array(streams))
+//        return Pipeline(stages: nodes.compactMap { $0.stage }, streams: Array(streams))
 //    }
 //
 //    private func resolvedStage(node: Node) -> Stage {
@@ -132,7 +131,7 @@
 //        }
 //    }
 //
-////    private func connect(producer: Stream.EndPoint?, consumer: Stream.EndPoint?) {
-////        streams.insert(Stream(producer: producer, consumer: consumer))
-////    }
+//    private func connect(producer: Stream.EndPoint?, consumer: Stream.EndPoint?) {
+//        streams.insert(Stream(producer: producer, consumer: consumer))
+//    }
 //}
