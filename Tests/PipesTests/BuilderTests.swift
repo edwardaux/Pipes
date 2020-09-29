@@ -28,7 +28,7 @@ final class BuilderTests: XCTestCase {
             .add(label: "fo")
             .add(DummyStage("spec 1-* 17"))
             .add(label: "o")
-        let stages = pipe.build()
+        let stages = try pipe.build()
 
         XCTAssertEqual(stages.count, 7)
         let s0 = stages[0] as! DummyStage
@@ -124,7 +124,7 @@ final class BuilderTests: XCTestCase {
             .add(label: "b")
             .add(DummyStage("literal All other stuff"))
             .add(DummyStage("> OTHER STUFF A"))
-        let stages = pipe.build()
+        let stages = try pipe.build()
 
         XCTAssertEqual(stages.count, 9)
         let s0 = stages[0] as! DummyStage
@@ -239,7 +239,7 @@ final class BuilderTests: XCTestCase {
             .end()
             .add(label: "Lup")
             .add(DummyStage("> unreferenced masters a"))
-        let stages = pipe.build()
+        let stages = try pipe.build()
 
         XCTAssertEqual(stages.count, 6)
         let s0 = stages[0] as! DummyStage
