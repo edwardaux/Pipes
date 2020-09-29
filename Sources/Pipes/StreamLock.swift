@@ -31,7 +31,7 @@ class StreamLock<R> {
                 stream.state = .full(record: record)
                 condition.signal()
             case .severed:
-                throw PipeError.endOfFile
+                throw PipeReturnCode.endOfFile
             }
         }
     }
@@ -58,7 +58,7 @@ class StreamLock<R> {
                 condition.wait()
                 continue loop
             case .severed:
-                throw PipeError.endOfFile
+                throw PipeReturnCode.endOfFile
             }
         }
     }
@@ -87,7 +87,7 @@ class StreamLock<R> {
                 condition.wait()
                 continue loop
             case .severed:
-                throw PipeError.endOfFile
+                throw PipeReturnCode.endOfFile
             }
         }
     }

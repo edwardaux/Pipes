@@ -38,18 +38,20 @@ internal enum Node {
 }
 
 extension Pipe {
-    public func add(_ stage: Stage, label: String? = nil) -> Pipe {
+    public func add(_ stage: Stage, label: String? = nil) throws -> Pipe {
         builderNodes.append(.stage(stage, label: label))
         if let label = label {
+            if builderLabelRefCount[label] != nil {
+                throw PipeError.labelAlreadyDeclared(label: label)
+            }
             builderLabelRefCount[label] = 0
         }
         return self
     }
 
-    public func add(label: String) -> Pipe {
+    public func add(label: String) throws -> Pipe {
         guard let prevRef = builderLabelRefCount[label] else {
-            // TODO error handling
-            fatalError("Referencing \(label) before definition")
+            throw PipeError.labelNotDeclared(label: label)
         }
 
         let streamNo = prevRef + 1

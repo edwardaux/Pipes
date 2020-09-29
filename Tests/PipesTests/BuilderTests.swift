@@ -12,12 +12,12 @@ final class BuilderTests: XCTestCase {
         var debugDescription: String { return name }
     }
 
-    func testReturnToOriginal() {
+    func testReturnToOriginal() throws {
         //
         //  literal abc | fo: fanout  | xlate upper | chop 15 | o: overlay | console
         //              ? fo:         |      spec 1-* 17      | o:
         //
-        let pipe = Pipe()
+        let pipe = try Pipe()
             .add(DummyStage("literal abc"))
             .add(DummyStage("fanout"), label: "fo")
             .add(DummyStage("xlate upper"))
@@ -104,13 +104,13 @@ final class BuilderTests: XCTestCase {
         XCTAssertEqual(s6.outputStreams[0].consumer, Stream.Endpoint(stage: s4, streamNo: 1))
     }
 
-    func testCascade() {
+    func testCascade() throws {
         //
         //   lfd A | a: locate 10.5 /EXEC /     | literal All my EXECs   | > MY EXECS A
         // ? a:    | b: locate 10.7 /SCRIPT /   | literal All my SCRIPTs | > MY SCRIPTS A
         // ? b:    |    literal All other stuff | > OTHER STUFF A
         //
-        let pipe = Pipe()
+        let pipe = try Pipe()
             .add(DummyStage("lfd A"))
             .add(DummyStage("locate 10.5 /EXEC /"), label: "a")
             .add(DummyStage("literal All my EXECs"))
@@ -222,13 +222,13 @@ final class BuilderTests: XCTestCase {
         XCTAssertEqual(s8.outputStreams[0].consumer, nil)
     }
 
-    func testTertiary() {
+    func testTertiary() throws {
         //
         //   < detail records    | Lup: lookup 1.10 details | > matched details a
         // ? < reference records | Lup:                     | > unmatched details a
         // ? Lup:                | > unreferenced masters a
         //
-        let pipe = Pipe()
+        let pipe = try Pipe()
             .add(DummyStage("< detail records"))
             .add(DummyStage("lookup 1.10 details"), label: "Lup")
             .add(DummyStage("> matched details a"))
@@ -304,5 +304,21 @@ final class BuilderTests: XCTestCase {
         XCTAssertEqual(s5.outputStreams.count, 1)
         XCTAssertEqual(s5.outputStreams[0].producer, Stream.Endpoint(stage: s5, streamNo: 0))
         XCTAssertEqual(s5.outputStreams[0].consumer, nil)
+    }
+
+    func testLabelNotDeclared() throws {
+        do {
+            _ = try Pipe().add(DummyStage("blah")).add(label: "a")
+        } catch let error as PipeError {
+            XCTAssertEqual(error, PipeError.labelNotDeclared(label: "a"))
+        }
+    }
+
+    func testLabelAlreadyDeclared() throws {
+        do {
+            _ = try Pipe().add(DummyStage("blah"), label: "a").add(DummyStage("blah"), label: "a")
+        } catch let error as PipeError {
+            XCTAssertEqual(error, PipeError.labelAlreadyDeclared(label: "a"))
+        }
     }
 }
