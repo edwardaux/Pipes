@@ -96,6 +96,10 @@ class StreamLock<R> {
         condition.lock()
         defer { condition.unlock() }
 
+        if let index = lastPeekedStreamIndex {
+            return try lockedPeekto(stream: streams[index])
+        }
+
         loop: do {
             for (index, stream) in streams.enumerated() {
                 if case .readyToOutput = stream.state {
