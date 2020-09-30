@@ -233,6 +233,7 @@ final class LockingTests: XCTestCase {
             try! stage1b.output("bc")
         }
         DispatchQueue.global().async {
+            // pause to let stream 1 write first
             Thread.sleep(forTimeInterval: 0.05)
             try! stage1a.output("aa")
             try! stage1a.output("ab")
@@ -244,11 +245,15 @@ final class LockingTests: XCTestCase {
         sequence.append(try! stage2.peekto(streamNo: Pipes.Stream.ANY))
         // wait for stream 0 to get a record
         Thread.sleep(forTimeInterval: 0.10)
+        // make sure we still peek the right record
+        sequence.append(try! stage2.peekto(streamNo: Pipes.Stream.ANY))
         // need to make sure we get the last peeked record
         sequence.append(try! stage2.readto(streamNo: Pipes.Stream.ANY))
         // at this point, both input streams should have record available,
         // but we should choose stream 0 and read the first two recods
         sequence.append(try! stage2.readto(streamNo: Pipes.Stream.ANY))
+        // just make sure that both stream 0 and 1 have both written a record
+        Thread.sleep(forTimeInterval: 0.05)
         sequence.append(try! stage2.readto(streamNo: Pipes.Stream.ANY))
         // now stream 0 should have nothing available because it is sleeping
         sequence.append(try! stage2.readto(streamNo: Pipes.Stream.ANY))
@@ -257,7 +262,7 @@ final class LockingTests: XCTestCase {
         sequence.append(try! stage2.readto(streamNo: Pipes.Stream.ANY))
         sequence.append(try! stage2.readto(streamNo: Pipes.Stream.ANY))
 
-        XCTAssertEqual(sequence, ["ba", "ba", "aa", "ab", "bb", "ac", "bc"])
+        XCTAssertEqual(sequence, ["ba", "ba", "ba", "aa", "ab", "bb", "ac", "bc"])
     }
 
 }
