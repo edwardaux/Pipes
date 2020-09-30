@@ -1,6 +1,6 @@
 import Foundation
 
-enum StreamState: Equatable {
+enum InternalLockState: Equatable {
     case empty
     case readyToOutput
     case full(record: String)
@@ -17,7 +17,7 @@ class Stream {
 
     public static let ANY = UInt.max
 
-    var state: StreamState
+    var lockState: InternalLockState
     let producer: Endpoint?
     let consumer: Endpoint?
 
@@ -29,19 +29,19 @@ class Stream {
     }
     
     init(producer: Stage, producerStreamNo: UInt, consumer: Stage, consumerStreamNo: UInt) {
-        self.state = .empty
+        self.lockState = .empty
         self.producer = Endpoint(stage: producer, streamNo: producerStreamNo)
         self.consumer = Endpoint(stage: consumer, streamNo: consumerStreamNo)
     }
 
     init(consumer: Stage, consumerStreamNo: UInt) {
-        self.state = .empty
+        self.lockState = .empty
         self.producer = nil
         self.consumer = Endpoint(stage: consumer, streamNo: consumerStreamNo)
     }
 
     init(producer: Stage, producerStreamNo: UInt) {
-        self.state = .empty
+        self.lockState = .empty
         self.producer = Endpoint(stage: producer, streamNo: producerStreamNo)
         self.consumer = nil
     }

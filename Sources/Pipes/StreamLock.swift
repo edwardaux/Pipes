@@ -13,9 +13,9 @@ class StreamLock<R> {
         defer { condition.unlock() }
 
         loop: do {
-            switch stream.state {
+            switch stream.lockState {
             case .empty:
-                stream.state = .readyToOutput
+                stream.lockState = .readyToOutput
                 condition.signal()
                 condition.wait()
                 continue loop
@@ -24,11 +24,11 @@ class StreamLock<R> {
                 condition.wait()
                 continue loop
             case .peeking:
-                stream.state = .full(record: record)
+                stream.lockState = .full(record: record)
                 condition.signal()
                 condition.wait()
             case .reading:
-                stream.state = .full(record: record)
+                stream.lockState = .full(record: record)
                 condition.signal()
             case .severed:
                 throw PipeReturnCode.endOfFile
@@ -45,9 +45,9 @@ class StreamLock<R> {
 
     private func lockedPeekto(stream: Stream) throws -> String {
         loop: do {
-            switch stream.state {
+            switch stream.lockState {
             case .empty, .readyToOutput:
-                stream.state = .peeking
+                stream.lockState = .peeking
                 condition.signal()
                 condition.wait()
                 continue loop
@@ -72,14 +72,14 @@ class StreamLock<R> {
 
     private func lockedReadto(stream: Stream) throws -> String {
         loop: do {
-            switch stream.state {
+            switch stream.lockState {
             case .empty, .readyToOutput:
-                stream.state = .reading
+                stream.lockState = .reading
                 condition.signal()
                 condition.wait()
                 continue loop
             case .full(let record):
-                stream.state = .empty
+                stream.lockState = .empty
                 condition.signal()
                 return record
             case .reading, .peeking:
@@ -102,12 +102,12 @@ class StreamLock<R> {
 
         loop: do {
             for (index, stream) in streams.enumerated() {
-                if case .readyToOutput = stream.state {
-                    stream.state = .peeking
+                if case .readyToOutput = stream.lockState {
+                    stream.lockState = .peeking
                     condition.signal()
                     break
                 }
-                if case .full = stream.state {
+                if case .full = stream.lockState {
                     lastPeekedStreamIndex = index
                     return try lockedPeekto(stream: stream)
                 }
@@ -128,7 +128,7 @@ class StreamLock<R> {
 
         loop: do {
             for stream in streams {
-                switch stream.state {
+                switch stream.lockState {
                 case .readyToOutput, .full:
                     return try lockedReadto(stream: stream)
                 default:
@@ -144,7 +144,7 @@ class StreamLock<R> {
         condition.lock()
         defer { condition.unlock() }
 
-        stream.state = .severed
+        stream.lockState = .severed
         condition.signal()
     }
 }
