@@ -19,16 +19,18 @@ open class Stage: Identifiable {
 }
 
 //
-// MARK: - Setup and dispatch
+// MARK: - Dispatch
 //
 extension Stage {
-    internal func setup(inputStreams: [Stream], outputStreams: [Stream]) {
-        self.inputStreams = inputStreams
-        self.outputStreams = outputStreams
-    }
-
     internal func dispatch() throws {
-        defer { try? sever() }
+        defer {
+            for streamNo in 0..<maxInputStreamNo {
+                try? severInput(streamNo: UInt(streamNo))
+            }
+            for streamNo in 0..<maxOutputStreamNo {
+                try? severOutput(streamNo: UInt(streamNo))
+            }
+        }
 
         do {
             try run()
@@ -78,14 +80,18 @@ extension Stage {
         }
     }
 
-    public func sever() throws {
-        // TODO think about this more
-        inputStreams.enumerated().forEach {
-            lock.sever(stream: $1)
-        }
-        outputStreams.enumerated().forEach {
-            lock.sever(stream: $1)
-        }
+    public func severInput(streamNo: UInt = 0) throws {
+        guard streamNo < inputStreams.count else { throw PipeReturnCode.streamDoesNotExist(streamNo: streamNo) }
+
+        let stream = inputStreams[Int(streamNo)]
+        lock.sever(stream: stream)
+    }
+
+    public func severOutput(streamNo: UInt = 0) throws {
+        guard streamNo < outputStreams.count else { throw PipeReturnCode.streamDoesNotExist(streamNo: streamNo) }
+
+        let stream = outputStreams[Int(streamNo)]
+        lock.sever(stream: stream)
     }
 
     public var maxInputStreamNo: Int {

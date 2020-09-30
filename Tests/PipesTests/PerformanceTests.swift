@@ -3,21 +3,11 @@ import XCTest
 
 final class PerformanceTests: XCTestCase {
     func testReadto() {
-        class TestInputStage: Stage {
-            func setTestStream(stream: Pipes.Stream) {
-                self.setup(inputStreams: [], outputStreams: [stream])
-            }
-        }
-        class TestOutputStage: Stage {
-            func setTestStream(stream: Pipes.Stream) {
-                self.setup(inputStreams: [stream], outputStreams: [])
-            }
-        }
-        let stage1 = TestInputStage()
-        let stage2 = TestOutputStage()
+        let stage1 = Stage()
+        let stage2 = Stage()
         let stream  = Pipes.Stream(producer: stage1, producerStreamNo: 0, consumer: stage2, consumerStreamNo: 0)
-        stage1.setTestStream(stream: stream)
-        stage2.setTestStream(stream: stream)
+        stage1.outputStreams = [stream]
+        stage2.inputStreams = [stream]
 
         let count = 10_000
         measure {

@@ -3,21 +3,11 @@ import XCTest
 
 final class LockingTests: XCTestCase {
     private func makeTestStages() -> (Stage, Stage) {
-        class TestInputStage: Stage {
-            func setTestStream(stream: Pipes.Stream) {
-                self.setup(inputStreams: [], outputStreams: [stream])
-            }
-        }
-        class TestOutputStage: Stage {
-            func setTestStream(stream: Pipes.Stream) {
-                self.setup(inputStreams: [stream], outputStreams: [])
-            }
-        }
-        let stage1 = TestInputStage()
-        let stage2 = TestOutputStage()
+        let stage1 = Stage()
+        let stage2 = Stage()
         let stream  = Pipes.Stream(producer: stage1, producerStreamNo: 0, consumer: stage2, consumerStreamNo: 0)
-        stage1.setTestStream(stream: stream)
-        stage2.setTestStream(stream: stream)
+        stage1.outputStreams = [stream]
+        stage2.inputStreams = [stream]
         return (stage1, stage2)
     }
 
@@ -127,7 +117,7 @@ final class LockingTests: XCTestCase {
 
         sequence.append(try! stage2.readto())
         sequence.append(try! stage2.readto())
-        try! stage1.sever()
+        try! stage1.severOutput()
         sequence.append(try? stage2.peekto())
         sequence.append(try? stage2.readto())
 
@@ -165,24 +155,14 @@ final class LockingTests: XCTestCase {
     }
 
     func testReadtoAnyMultipleStreams() {
-        class TestInputStage: Stage {
-            func setTestStream(stream: Pipes.Stream) {
-                self.setup(inputStreams: [], outputStreams: [stream])
-            }
-        }
-        class TestOutputStage: Stage {
-            func setTestStreams(streams: [Pipes.Stream]) {
-                self.setup(inputStreams: streams, outputStreams: [])
-            }
-        }
-        let stage1a = TestInputStage()
-        let stage1b = TestInputStage()
-        let stage2 = TestOutputStage()
+        let stage1a = Stage()
+        let stage1b = Stage()
+        let stage2 = Stage()
         let stream1 = Pipes.Stream(producer: stage1a, producerStreamNo: 0, consumer: stage2, consumerStreamNo: 0)
         let stream2 = Pipes.Stream(producer: stage1b, producerStreamNo: 0, consumer: stage2, consumerStreamNo: 1)
-        stage1a.setTestStream(stream: stream1)
-        stage1b.setTestStream(stream: stream2)
-        stage2.setTestStreams(streams: [stream1, stream2])
+        stage1a.outputStreams = [stream1]
+        stage1b.outputStreams = [stream2]
+        stage2.inputStreams = [stream1, stream2]
 
         var sequence = [String]()
 
@@ -206,24 +186,14 @@ final class LockingTests: XCTestCase {
     }
 
     func testPeektoAnyMultipleStreams() {
-        class TestInputStage: Stage {
-            func setTestStream(stream: Pipes.Stream) {
-                self.setup(inputStreams: [], outputStreams: [stream])
-            }
-        }
-        class TestOutputStage: Stage {
-            func setTestStreams(streams: [Pipes.Stream]) {
-                self.setup(inputStreams: streams, outputStreams: [])
-            }
-        }
-        let stage1a = TestInputStage()
-        let stage1b = TestInputStage()
-        let stage2 = TestOutputStage()
+        let stage1a = Stage()
+        let stage1b = Stage()
+        let stage2 = Stage()
         let stream1 = Pipes.Stream(producer: stage1a, producerStreamNo: 0, consumer: stage2, consumerStreamNo: 0)
         let stream2 = Pipes.Stream(producer: stage1b, producerStreamNo: 0, consumer: stage2, consumerStreamNo: 1)
-        stage1a.setTestStream(stream: stream1)
-        stage1b.setTestStream(stream: stream2)
-        stage2.setTestStreams(streams: [stream1, stream2])
+        stage1a.outputStreams = [stream1]
+        stage1b.outputStreams = [stream2]
+        stage2.inputStreams = [stream1, stream2]
 
         var sequence = [String]()
 
