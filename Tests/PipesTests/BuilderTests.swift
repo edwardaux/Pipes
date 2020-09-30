@@ -321,4 +321,119 @@ final class BuilderTests: XCTestCase {
             XCTAssertEqual(error, PipeError.labelAlreadyDeclared(label: "a"))
         }
     }
+
+    func testReturnToOriginalStageNum() throws {
+        //
+        //  literal abc | fo: fanout  | xlate upper | chop 15 | o: overlay | console
+        //              ? fo:         |      spec 1-* 17      | o:
+        //
+        let pipe = try Pipe()
+            .add(DummyStage("literal abc"))
+            .add(DummyStage("fanout"), label: "fo")
+            .add(DummyStage("xlate upper"))
+            .add(DummyStage("chop 15"))
+            .add(DummyStage("overlay"), label: "o")
+            .add(DummyStage("console"))
+            .end()
+            .add(label: "fo")
+            .add(DummyStage("spec 1-* 17"))
+            .add(label: "o")
+        let stages = try pipe.build()
+
+        XCTAssertEqual(stages.count, 7)
+        let s0 = stages[0] as! DummyStage
+        let s1 = stages[1] as! DummyStage
+        let s2 = stages[2] as! DummyStage
+        let s3 = stages[3] as! DummyStage
+        let s4 = stages[4] as! DummyStage
+        let s5 = stages[5] as! DummyStage
+        let s6 = stages[6] as! DummyStage
+
+        XCTAssertEqual(s0.stageNumber, 1)
+        XCTAssertEqual(s1.stageNumber, 2)
+        XCTAssertEqual(s2.stageNumber, 3)
+        XCTAssertEqual(s3.stageNumber, 4)
+        XCTAssertEqual(s4.stageNumber, 5)
+        XCTAssertEqual(s5.stageNumber, 6)
+        XCTAssertEqual(s6.stageNumber, 2)
+    }
+
+    func testCascadeStageNum() throws {
+        //
+        //   lfd A | a: locate 10.5 /EXEC /     | literal All my EXECs   | > MY EXECS A
+        // ? a:    | b: locate 10.7 /SCRIPT /   | literal All my SCRIPTs | > MY SCRIPTS A
+        // ? b:    |    literal All other stuff | > OTHER STUFF A
+        //
+        let pipe = try Pipe()
+            .add(DummyStage("lfd A"))
+            .add(DummyStage("locate 10.5 /EXEC /"), label: "a")
+            .add(DummyStage("literal All my EXECs"))
+            .add(DummyStage("> MY EXECS A"))
+            .end()
+            .add(label: "a")
+            .add(DummyStage("locate 10.7 /SCRIPT /"), label: "b")
+            .add(DummyStage("literal All my SCRIPTs"))
+            .add(DummyStage("> MY SCRIPTS A"))
+            .end()
+            .add(label: "b")
+            .add(DummyStage("literal All other stuff"))
+            .add(DummyStage("> OTHER STUFF A"))
+        let stages = try pipe.build()
+
+        XCTAssertEqual(stages.count, 9)
+        let s0 = stages[0] as! DummyStage
+        let s1 = stages[1] as! DummyStage
+        let s2 = stages[2] as! DummyStage
+        let s3 = stages[3] as! DummyStage
+        let s4 = stages[4] as! DummyStage
+        let s5 = stages[5] as! DummyStage
+        let s6 = stages[6] as! DummyStage
+        let s7 = stages[7] as! DummyStage
+        let s8 = stages[8] as! DummyStage
+
+        XCTAssertEqual(s0.stageNumber, 1)
+        XCTAssertEqual(s1.stageNumber, 2)
+        XCTAssertEqual(s2.stageNumber, 3)
+        XCTAssertEqual(s3.stageNumber, 4)
+        XCTAssertEqual(s4.stageNumber, 2)
+        XCTAssertEqual(s5.stageNumber, 3)
+        XCTAssertEqual(s6.stageNumber, 4)
+        XCTAssertEqual(s7.stageNumber, 2)
+        XCTAssertEqual(s8.stageNumber, 3)
+    }
+
+    func testTertiaryStageNum() throws {
+        //
+        //   < detail records    | Lup: lookup 1.10 details | > matched details a
+        // ? < reference records | Lup:                     | > unmatched details a
+        // ? Lup:                | > unreferenced masters a
+        //
+        let pipe = try Pipe()
+            .add(DummyStage("< detail records"))
+            .add(DummyStage("lookup 1.10 details"), label: "Lup")
+            .add(DummyStage("> matched details a"))
+            .end()
+            .add(DummyStage("< reference records"))
+            .add(label: "Lup")
+            .add(DummyStage("> unmatched details a"))
+            .end()
+            .add(label: "Lup")
+            .add(DummyStage("> unreferenced masters a"))
+        let stages = try pipe.build()
+
+        XCTAssertEqual(stages.count, 6)
+        let s0 = stages[0] as! DummyStage
+        let s1 = stages[1] as! DummyStage
+        let s2 = stages[2] as! DummyStage
+        let s3 = stages[3] as! DummyStage
+        let s4 = stages[4] as! DummyStage
+        let s5 = stages[5] as! DummyStage
+
+        XCTAssertEqual(s0.stageNumber, 1)
+        XCTAssertEqual(s1.stageNumber, 2)
+        XCTAssertEqual(s2.stageNumber, 3)
+        XCTAssertEqual(s3.stageNumber, 1)
+        XCTAssertEqual(s4.stageNumber, 3)
+        XCTAssertEqual(s5.stageNumber, 2)
+    }
 }

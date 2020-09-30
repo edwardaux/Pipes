@@ -7,6 +7,10 @@ open class Stage: Identifiable {
     internal var inputStreams: [Stream]
     internal var outputStreams: [Stream]
 
+    /// Returns the position of this stage in the pipeline of its primary stream. First
+    /// stage returns 1.
+    public internal(set) var stageNumber: UInt = 1
+
     public init() {
         self.inputStreams = []
         self.outputStreams = []
@@ -44,6 +48,14 @@ extension Stage {
 // MARK: - Inherited APIs
 //
 extension Stage {
+    public var maxInputStreamNo: Int {
+        return inputStreams.count - 1
+    }
+
+    public var maxOutputStreamNo: Int {
+        return outputStreams.count - 1
+    }
+
     public func output(_ record: String, streamNo: UInt = 0) throws {
         guard streamNo < outputStreams.count else { throw PipeReturnCode.streamDoesNotExist(streamNo: streamNo) }
 
@@ -92,14 +104,6 @@ extension Stage {
 
         let stream = outputStreams[Int(streamNo)]
         lock.sever(stream: stream)
-    }
-
-    public var maxInputStreamNo: Int {
-        return inputStreams.count - 1
-    }
-
-    public var maxOutputStreamNo: Int {
-        return outputStreams.count - 1
     }
 }
 

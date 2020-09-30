@@ -29,9 +29,12 @@ class PipeBuilder {
     }
 
     internal func build() throws -> [Stage] {
+        var stageNumber = UInt(0)
         var stages: [Stage] = []
         for (index, currentNode) in builderNodes.enumerated() {
             let previousNode = index == 0 ? .end : builderNodes[index - 1]
+
+            stageNumber += 1
 
             if let currentStage = try resolveStage(node: currentNode) {
                 // We must be either a stage or a label reference
@@ -50,11 +53,18 @@ class PipeBuilder {
                 }
                 currentStage.outputStreams.append(Pipes.Stream(producer: currentStage, producerStreamNo: currentStageOutputStreamNo))
 
+                // We only assign a stage number if the node is the original
+                // stage reference (and not if it is a label reference)
+                if currentNode.stage != nil {
+                    currentStage.stageNumber = stageNumber
+                }
+
                 if case .stage = currentNode {
                     stages.append(currentStage)
                 }
             } else {
-                // We must be an end, so nothing to do
+                // We must be an end, so nothing to do other than restart the stage number
+                stageNumber = 0
             }
         }
         return stages
