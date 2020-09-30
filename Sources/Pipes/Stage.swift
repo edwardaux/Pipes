@@ -1,5 +1,10 @@
 import Foundation
 
+public enum StreamSide {
+    case input
+    case output
+}
+
 open class Stage: Identifiable {
     public let id: String = UUID().uuidString
 
@@ -29,10 +34,10 @@ extension Stage {
     internal func dispatch() throws {
         defer {
             for streamNo in 0..<maxInputStreamNo {
-                try? severInput(streamNo: UInt(streamNo))
+                try? sever(.input, streamNo: UInt(streamNo))
             }
             for streamNo in 0..<maxOutputStreamNo {
-                try? severOutput(streamNo: UInt(streamNo))
+                try? sever(.output, streamNo: UInt(streamNo))
             }
         }
 
@@ -92,18 +97,19 @@ extension Stage {
         }
     }
 
-    public func severInput(streamNo: UInt = 0) throws {
-        guard streamNo < inputStreams.count else { throw PipeReturnCode.streamDoesNotExist(streamNo: streamNo) }
+    public func sever(_ side: StreamSide, streamNo: UInt = 0) throws {
+        switch side {
+        case .input:
+            guard streamNo < inputStreams.count else { throw PipeReturnCode.streamDoesNotExist(streamNo: streamNo) }
 
-        let stream = inputStreams[Int(streamNo)]
-        lock.sever(stream: stream)
-    }
+            let stream = inputStreams[Int(streamNo)]
+            lock.sever(stream: stream)
+        case .output:
+            guard streamNo < outputStreams.count else { throw PipeReturnCode.streamDoesNotExist(streamNo: streamNo) }
 
-    public func severOutput(streamNo: UInt = 0) throws {
-        guard streamNo < outputStreams.count else { throw PipeReturnCode.streamDoesNotExist(streamNo: streamNo) }
-
-        let stream = outputStreams[Int(streamNo)]
-        lock.sever(stream: stream)
+            let stream = outputStreams[Int(streamNo)]
+            lock.sever(stream: stream)
+        }
     }
 }
 

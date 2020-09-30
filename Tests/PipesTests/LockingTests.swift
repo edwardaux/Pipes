@@ -117,7 +117,7 @@ final class LockingTests: XCTestCase {
 
         sequence.append(try! stage2.readto())
         sequence.append(try! stage2.readto())
-        try! stage1.severOutput()
+        try! stage1.sever(.output)
         sequence.append(try? stage2.peekto())
         sequence.append(try? stage2.readto())
 
