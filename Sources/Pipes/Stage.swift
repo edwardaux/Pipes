@@ -27,15 +27,14 @@ extension Stage {
         self.outputStreams = outputStreams
     }
 
-    internal func dispatch() {
+    internal func dispatch() throws {
+        defer { try? sever() }
+
         do {
             try run()
-        } catch let error {
-            // TODO error handling
-            print("Stage \(self) has finished: \(error)")
+        } catch _ as PipeReturnCode {
+            // These types of errors don't constitute an error
         }
-
-        try? sever()
     }
 }
 

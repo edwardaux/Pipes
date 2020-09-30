@@ -2,6 +2,18 @@ import Foundation
 import XCTest
 import Pipes
 
+class RunnableStage: Stage {
+    private let block: () throws -> Void
+
+    init(_ block: @escaping () throws -> Void) {
+        self.block = block
+    }
+
+    override func run() throws {
+        try block()
+    }
+}
+
 class GeneratorStage: Stage {
     private let records: [String]
 

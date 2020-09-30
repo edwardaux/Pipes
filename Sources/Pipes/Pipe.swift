@@ -25,14 +25,26 @@ public class Pipe {
     public func run() throws {
         let stages = try build()
 
+        let errorLock = NSLock()
+        var errors: [Error] = []
         let group = DispatchGroup()
         stages.forEach { stage in
             group.enter()
             DispatchQueue.global().async {
-                stage.dispatch()
+                do {
+                    try stage.dispatch()
+                } catch let error {
+                    errorLock.lock()
+                    errors.append(error)
+                    errorLock.unlock()
+                }
                 group.leave()
             }
         }
         group.wait()
+
+        if let error = errors.compactMap({ $0 as? PipeError }).sorted(by: { $0.code < $1.code }).first {
+            throw error
+        }
     }
 }
