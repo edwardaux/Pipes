@@ -7,7 +7,7 @@ public enum StreamState {
     case notDefined
 }
 
-public enum StreamSide {
+public enum StreamDirection {
     case input
     case output
 }
@@ -104,8 +104,8 @@ extension Stage {
         }
     }
 
-    public func sever(_ side: StreamSide, streamNo: UInt = 0) throws {
-        switch side {
+    public func sever(_ direction: StreamDirection, streamNo: UInt = 0) throws {
+        switch direction {
         case .input:
             guard streamNo < inputStreams.count else { throw PipeReturnCode.streamDoesNotExist(streamNo: streamNo) }
 
@@ -119,8 +119,8 @@ extension Stage {
         }
     }
 
-    public func streamState(_ side: StreamSide, streamNo: UInt = 0) -> StreamState {
-        switch side {
+    public func streamState(_ direction: StreamDirection, streamNo: UInt = 0) -> StreamState {
+        switch direction {
         case .input:
             guard streamNo < inputStreams.count else { return .notDefined }
 
