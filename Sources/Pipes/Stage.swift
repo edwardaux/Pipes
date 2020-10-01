@@ -1,5 +1,12 @@
 import Foundation
 
+public enum StreamState {
+    case connectedWaiting
+    case connectedNotWaiting
+    case notConnected
+    case notDefined
+}
+
 public enum StreamSide {
     case input
     case output
@@ -109,6 +116,39 @@ extension Stage {
 
             let stream = outputStreams[Int(streamNo)]
             lock.sever(stream: stream)
+        }
+    }
+
+    public func streamState(_ side: StreamSide, streamNo: UInt = 0) -> StreamState {
+        switch side {
+        case .input:
+            guard streamNo < inputStreams.count else { return .notDefined }
+
+            let stream = inputStreams[Int(streamNo)]
+            if !stream.isProducerConnected { return .notConnected }
+
+            switch stream.lockState {
+            case .empty: return .connectedNotWaiting
+            case .readyToOutput: return .connectedWaiting
+            case .full: return .connectedWaiting
+            case .reading: return .connectedWaiting
+            case .peeking: return .connectedWaiting
+            case .severed: return .notConnected
+            }
+        case .output:
+            guard streamNo < outputStreams.count else { return .notDefined }
+
+            let stream = outputStreams[Int(streamNo)]
+            if !stream.isConsumerConnected { return .notConnected }
+
+            switch stream.lockState {
+            case .empty: return .connectedNotWaiting
+            case .readyToOutput: return .connectedWaiting
+            case .full: return .connectedWaiting
+            case .reading: return .connectedWaiting
+            case .peeking: return .connectedWaiting
+            case .severed: return .notConnected
+            }
         }
     }
 }
