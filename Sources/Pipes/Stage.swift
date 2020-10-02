@@ -1,12 +1,5 @@
 import Foundation
 
-public enum StreamState {
-    case connectedWaiting
-    case connectedNotWaiting
-    case notConnected
-    case notDefined
-}
-
 public enum StreamDirection {
     case input
     case output
@@ -40,10 +33,10 @@ open class Stage: Identifiable {
 extension Stage {
     internal func dispatch() throws {
         defer {
-            for streamNo in 0..<maxInputStreamNo {
+            for (streamNo, stream) in inputStreams.enumerated() {
                 try? sever(.input, streamNo: UInt(streamNo))
             }
-            for streamNo in 0..<maxOutputStreamNo {
+            for (streamNo, stream) in outputStreams.enumerated() {
                 try? sever(.output, streamNo: UInt(streamNo))
             }
         }
@@ -115,7 +108,7 @@ extension Stage {
             guard streamNo < outputStreams.count else { throw PipeReturnCode.streamDoesNotExist(streamNo: streamNo) }
 
             let stream = outputStreams[Int(streamNo)]
-            lock.sever(stream: stream)
+            stream.consumer?.stage.lock.sever(stream: stream)
         }
     }
 
