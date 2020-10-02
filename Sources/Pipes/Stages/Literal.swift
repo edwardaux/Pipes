@@ -1,6 +1,6 @@
 import Foundation
 
-public class Literal: Stage {
+public final class Literal: Stage {
     private let record: String
 
     init(_ record: String) {
@@ -12,9 +12,30 @@ public class Literal: Stage {
 
         while true {
             let record = try peekto()
-            print(record)
             try output(record)
             _ = try readto()
         }
     }
 }
+
+extension Literal: RegisteredStage {
+    public static var allowedStageNames: [String] {
+        [ "literal" ]
+    }
+
+    public static func createStage(args: Args) -> Stage {
+        return Literal("")
+    }
+
+    public static var helpSummary: String? {
+        "literal writes its argument string into the pipeline and then passes records on the input to the output stream"
+    }
+
+    public static var helpSyntax: String? {
+        """
+        ►►────LITERAL──┬────────┬────►◄
+                       └─string─┘
+        """
+    }
+}
+

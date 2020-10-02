@@ -1,7 +1,9 @@
 import Foundation
 
 public class Pipe {
-    private let builder = PipeBuilder()
+    private static var registeredStages: [RegisteredStage.Type] = []
+
+    private let builder = Builder()
 
     public func add(_ stage: Stage, label: String? = nil) throws -> Pipe {
         try builder.add(stage, label: label)
@@ -16,10 +18,6 @@ public class Pipe {
     public func end() -> Pipe {
         builder.end()
         return self
-    }
-
-    internal func build() throws -> [Stage] {
-        return try builder.build()
     }
 
     public func run() throws {
@@ -43,8 +41,53 @@ public class Pipe {
         }
         group.wait()
 
-        if let error = errors.compactMap({ $0 as? PipeError }).sorted(by: { $0.code < $1.code }).first {
-            throw error
+        if errors.count > 0 {
+            if let error = errors.compactMap({ $0 as? PipeError }).sorted(by: { $0.code < $1.code }).first {
+                throw error
+            } else {
+                throw errors.first!
+            }
         }
+    }
+}
+
+extension Pipe {
+    convenience init(_ pipeSpec: String) throws {
+        Pipe.registerBuiltInStages()
+
+        self.init()
+
+        let parser = Parser(pipeSpec: pipeSpec)
+        try parser.parse(into: self)
+    }
+
+    internal func build() throws -> [Stage] {
+        return try builder.build()
+    }
+}
+
+extension Pipe {
+    static func register(_ stageType: RegisteredStage.Type) {
+        if !registeredStages.contains(where: { $0 == stageType }) {
+            registeredStages.append(stageType)
+        }
+    }
+
+    static func deregister(_ stageType: RegisteredStage.Type) {
+        registeredStages.removeAll(where: { $0 == stageType })
+    }
+
+    static func registeredStageType(for stageName: String) throws -> RegisteredStage.Type {
+        for stageType in registeredStages {
+            if stageType.allowedStageNames.contains(where: { $0.lowercased() == stageName.lowercased() }) {
+                return stageType
+            }
+        }
+        throw PipeError.stageNotFound(stageName: stageName)
+    }
+
+    static func registerBuiltInStages() {
+        register(Console.self)
+        register(Literal.self)
     }
 }

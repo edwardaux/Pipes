@@ -1,6 +1,6 @@
 import Foundation
 
-class PipeBuilder {
+class Builder {
     private var builderNodes: [Node] = []
     private var builderLabelRefCount: [String: UInt] = [:]
 
