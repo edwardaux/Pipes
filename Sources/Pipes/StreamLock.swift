@@ -144,7 +144,21 @@ class StreamLock<R> {
         condition.lock()
         defer { condition.unlock() }
 
-        stream.lockState = .severed
-        condition.signal()
+        loop: do {
+            switch stream.lockState {
+            case .full:
+                // If we're in full state, it means that the producer has made the
+                // record available and its stage has ended (and this severing its
+                // streams) before the consumer has had a chance to grab the record.
+                // So we give the consumer a chance to read the record before we
+                // totally sever the producer's streams.
+                condition.signal()
+                condition.wait()
+                continue loop
+            default:
+                stream.lockState = .severed
+                condition.signal()
+            }
+        }
     }
 }
