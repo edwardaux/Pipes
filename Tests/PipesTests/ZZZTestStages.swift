@@ -55,7 +55,7 @@ class ZZZTestCheckerStage: Stage, RegisteredStage {
     }
 
     static var allowedStageNames: [String] { ["zzzcheck" ] }
-    static func createStage(args: Args) -> Stage { return ZZZTestCheckerStage(try! args.scanWord().split(separator: "/").map { String($0) }) }
+    static func createStage(args: Args) -> Stage { return ZZZTestCheckerStage(try! args.scanRemaining().split(separator: "/").map { String($0) }) }
     static var helpSummary: String? { "Takes a slash-separated list of 'n' values and checks that the pipe produces 'n' records" }
     static var helpSyntax: String? { "──ZZZCHECK──/a/b/c/──" }
 }

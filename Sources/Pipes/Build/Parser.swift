@@ -12,7 +12,7 @@ class Parser {
         let argsList = stageSpecs.map { Args($0) }
         let stages: [Stage] = try argsList.map { (args: Args) in
             let stageType = try Pipe.registeredStageType(for: args.stageName)
-            let stage = stageType.createStage(args: args)
+            let stage = try stageType.createStage(args: args)
             return stage
         }
         try stages.forEach {

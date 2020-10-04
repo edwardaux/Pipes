@@ -18,4 +18,8 @@ public class Args {
     public func scanWord() throws -> String {
         return words[1]
     }
+
+    public func scanRemaining() throws -> String {
+        return words.dropFirst().joined(separator: " ")
+    }
 }

@@ -14,6 +14,12 @@ final class StageTests: XCTestCase {
         }
     }
 
+    func testHelp() throws {
+        let syntax = Help.helpSyntax!
+        let summary = Help.helpSummary!
+        try Pipe("help help | zzzcheck /\(syntax)/\(summary)/").run()
+    }
+
     func testZZZ() throws {
         try Pipe("zzzgen // | zzzcheck //").run()
         try Pipe("zzzgen /a/b/c/ | zzzcheck /a/b/c/").run()
