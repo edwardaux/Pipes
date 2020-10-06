@@ -43,8 +43,15 @@ extension Console: RegisteredStage {
         [ "cons", "console", "term", "terminal" ]
     }
 
-    public static func createStage(args: Args) -> Stage {
-        return Console()
+    public static func createStage(args: Args) throws -> Stage {
+        let eof: EOF = try args.onOptionalKeyword(
+            [
+                "EOF": { EOF.delimited(try args.scanWord()) },
+                "NOEOF": { EOF.none }
+            ],
+            defaultValue: EOF.none
+        )
+        return Console(eof: eof)
     }
 
     public static var helpSummary: String? {

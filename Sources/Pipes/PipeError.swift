@@ -16,6 +16,9 @@ public enum PipeError: Error {
     case stageNotFound(stageName: String)
     case labelNotDeclared(label: String)
     case labelAlreadyDeclared(label: String)
+    case operandNotValid(keyword: String)
+    case requiredKeywordsMissing(keywords: [String])
+    case requiredOperandMissing
 
     private var detail: Detail {
         switch self {
@@ -27,6 +30,12 @@ public enum PipeError: Error {
             return Detail(code: -46, title: "Label \(label) not declared", explanation: "No specification for a stage is found the first time the label is used. The first usage of a label defines the stage to run, and any operands it may have. Subsequent references are to the label by itself.", response: "Ensure that the label is spelt correctly. If this is the case, inspect the pipeline specification to see if a stage separator is erroneously put between the label and the verb for the stage.")
         case .labelAlreadyDeclared(let label):
             return Detail(code: -47, title: "Label \(label) already declared", explanation: "A reference is made to a label that is already defined. The label reference should be followed by a stage separator or an end character to indicate reference rather than definition.", response: "Ensure that the label is spelt correctly. If this is the case, add a stage separator after the label to indi- cate that this is a reference to a stream other than the primary one. Note that all references to a label refer to the invocation of the stage that is defined with the first usage of the label.")
+        case .operandNotValid(let keyword):
+            return Detail(code: -111, title: "Operand \(keyword) is not valid", explanation: "A keyword operand is expected, but the word does not match any keyword that is valid in the context.", response: "")
+        case .requiredKeywordsMissing(let keywords):
+            return Detail(code: -113, title: "Required keyword missing. Allowed: \(keywords.joined(separator: "/"))", explanation: "A stage is missing a required keyword.", response: "")
+        case .requiredOperandMissing:
+            return Detail(code: -113, title: "Required operand missing", explanation: "A stage has found some, but not all, required operands.", response: "")
         }
     }
 
