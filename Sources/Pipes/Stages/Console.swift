@@ -1,12 +1,39 @@
 import Foundation
 
 public final class Console: Stage {
+    public enum EOF {
+        // Stop capturing input if the user enters a particular string
+        case delimited(String)
+        // Keep reading until output stream is disconnected
+        case none
+    }
+
+    private let eof: EOF
+
+    init(eof: EOF = .none) {
+        self.eof = eof
+    }
+
     override public func run() throws {
-        while true {
-            let record = try peekto()
-            print(record)
-            try output(record)
-            _ = try readto()
+        if stageNumber == 1 {
+            var record = readLine(strippingNewline: true)
+            while record != nil {
+                if case let .delimited(eofString) = eof, record == eofString {
+                    break
+                } else {
+                    try output(record!)
+                }
+                record = readLine(strippingNewline: true)
+            }
+        } else {
+            while true {
+                let record = try peekto()
+                print(record)
+                if streamState(.output).isConnected {
+                    try output(record)
+                }
+                _ = try readto()
+            }
         }
     }
 }
@@ -21,7 +48,7 @@ extension Console: RegisteredStage {
     }
 
     public static var helpSummary: String? {
-        "When console is first in a pipeline it reads lines from the terminal and writes them into the pipeline. When console is not first in a pipeline it copies lines from the pipeline to the terminal."
+        "When console is first in a pipeline it reads lines from the terminal and writes them into the pipeline (Ctrl-D terminates input). When console is not first in a pipeline it copies lines from the pipeline to the terminal."
     }
 
     public static var helpSyntax: String? {
