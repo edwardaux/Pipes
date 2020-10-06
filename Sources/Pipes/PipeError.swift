@@ -12,12 +12,15 @@ public enum PipeReturnCode: Error {
 
 // A PipeError would normally mean termination of the stage.
 public enum PipeError: Error {
+    case nullStageFound
     case stageNotFound(stageName: String)
     case labelNotDeclared(label: String)
     case labelAlreadyDeclared(label: String)
 
     private var detail: Detail {
         switch self {
+        case .nullStageFound:
+            return Detail(code: -17, title: "Null stage found", explanation: "There is a stage separator at the end of a pipeline specification; a stage separator is adjacent to an end character; or there are two stage separators with only blank characters between them.", response: "Ensure that the pipeline specification is complete")
         case .stageNotFound(let stageName):
             return Detail(code: -27, title: "Stage \(stageName) not found", explanation: "The named stage is not a built-in or registered stage.", response: "Verify the spelling of the name of the stage to run, or ensure that your custom stage has been registered prior to running the pipeline.")
         case .labelNotDeclared(let label):

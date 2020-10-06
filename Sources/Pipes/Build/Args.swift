@@ -1,25 +1,26 @@
 import Foundation
 
 public class Args {
-    private let words: [String]
+    private let tokenizer: StringTokenizer
+    let stageName: String
 
-    init(_ stageSpec: String) {
-        words = stageSpec.split(separator: " ").map { String($0) }
-    }
-
-    var stageName: String {
-        return words[0]
+    init(_ stageSpec: String) throws {
+        tokenizer = StringTokenizer(stageSpec)
+        guard let stageName = tokenizer.scanWord() else {
+            throw PipeError.nullStageFound
+        }
+        self.stageName = stageName
     }
 
     public func peekWord() throws -> String {
-        return words[1]
+        return tokenizer.peekWord() ?? ""
     }
 
     public func scanWord() throws -> String {
-        return words[1]
+        return tokenizer.scanWord() ?? ""
     }
 
     public func scanRemaining() throws -> String {
-        return words.dropFirst().joined(separator: " ")
+        return tokenizer.remainder
     }
 }
