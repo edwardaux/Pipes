@@ -4,12 +4,10 @@ public class Args {
     let tokenizer: StringTokenizer
     let stageName: String
 
-    init(_ stageSpec: String) throws {
+    init(_ stageSpec: String) {
         tokenizer = StringTokenizer(stageSpec)
-        guard let stageName = tokenizer.scanWord() else {
-            throw PipeError.nullStageFound
-        }
-        self.stageName = stageName
+        // TODO remove stagename
+        self.stageName = tokenizer.scanWord() ?? ""
     }
 
     public func peekWord() throws -> String? {
@@ -19,6 +17,10 @@ public class Args {
     public func scanWord() throws -> String {
         guard let word = tokenizer.scanWord() else { throw PipeError.requiredOperandMissing }
         return word
+    }
+
+    public func scanDelimitedString() throws -> String {
+        return ""
     }
 
     func onMandatoryKeyword<T>(_ keywords: [String: () throws -> T]) throws -> T {

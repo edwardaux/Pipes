@@ -67,165 +67,168 @@ final class StringTokenizerTests: XCTestCase {
         XCTAssertEqual(nil, st.scanChar());
     }
 
-//        // delim string
-//        args = new PipeArgs("");
-//        XCTAssertEqual("", args.nextDelimString(false));
-//        XCTAssertEqual("", args.nextDelimString(false));
-//        XCTAssertEqual("", args.remainder);
-//
-//        args = new PipeArgs("/hello/");
-//        XCTAssertEqual("hello", args.nextDelimString(false));
-//        XCTAssertEqual("", args.nextDelimString(false));
-//        XCTAssertEqual("", args.remainder);
-//
-//        args = new PipeArgs("  /hello/");
-//        XCTAssertEqual("hello", args.nextDelimString(false));
-//        XCTAssertEqual("", args.nextDelimString(false));
-//        XCTAssertEqual("", args.remainder);
-//
-//        args = new PipeArgs("  /hello/ ");
-//        XCTAssertEqual("hello", args.nextDelimString(false));
-//        XCTAssertEqual("", args.nextDelimString(false));
-//        XCTAssertEqual(" ", args.remainder);
-//
-//        args = new PipeArgs("  ,hello,  ");
-//        XCTAssertEqual("hello", args.nextDelimString(false));
-//        XCTAssertEqual("", args.nextDelimString(false));
-//        XCTAssertEqual("  ", args.remainder);
-//
-//        args = new PipeArgs("  ,hello, /there,/ /how/ /are/ /you/  ");
-//        XCTAssertEqual("hello", args.nextDelimString(false));
-//        XCTAssertEqual("there,", args.nextDelimString(false));
-//        XCTAssertEqual("how", args.nextDelimString(false));
-//        XCTAssertEqual(" /are/ /you/  ", args.remainder);
-//
-//        args = new PipeArgs("/hello");
-//        try {
-//            args.nextDelimString(true);
-//        }
-//        catch(PipeException e) {
-//            XCTAssertEqual(-60, e.getMessageNo());
-//        }
-//
-//        args = new PipeArgs("b00111000");
-//        XCTAssertEqual("8", args.nextDelimString(false));
-//
-//        args = new PipeArgs("b11000010");
-//        XCTAssertEqual("\u00C2", args.nextDelimString(false));
-//
-//        args = new PipeArgs("  b00111000  ");
-//        XCTAssertEqual("8", args.nextDelimString(false));
-//        XCTAssertEqual("  ", args.remainder);
-//
-//        args = new PipeArgs("  b00111000 b00111000 /a/  ");
-//        XCTAssertEqual("8", args.nextDelimString(false));
-//        XCTAssertEqual("8", args.nextDelimString(false));
-//        XCTAssertEqual("a", args.nextDelimString(false));
-//        XCTAssertEqual("  ", args.remainder);
-//
-//        args = new PipeArgs("b001110000011100100111010");
-//        XCTAssertEqual("89:", args.nextDelimString(false));
-//
-//        args = new PipeArgs("b");
-//        try {
-//            args.nextDelimString(false);
-//        }
-//        catch(PipeException e) {
-//            XCTAssertEqual(-337, e.getMessageNo());
-//        }
-//
-//        args = new PipeArgs(" b ");
-//        try {
-//            args.nextDelimString(false);
-//        }
-//        catch(PipeException e) {
-//            XCTAssertEqual(-337, e.getMessageNo());
-//        }
-//
-//        args = new PipeArgs("b1111");
-//        try {
-//            args.nextDelimString(false);
-//        }
-//        catch(PipeException e) {
-//            XCTAssertEqual(-336, e.getMessageNo());
-//        }
-//
-//        args = new PipeArgs("bxxxxxxxx");
-//        try {
-//            args.nextDelimString(false);
-//        }
-//        catch(PipeException e) {
-//            XCTAssertEqual(-338, e.getMessageNo());
-//        }
-//
-//        args = new PipeArgs("x20");
-//        XCTAssertEqual(" ", args.nextDelimString(false));
-//
-//        args = new PipeArgs("x4D");
-//        XCTAssertEqual("M", args.nextDelimString(false));
-//
-//        args = new PipeArgs("x4D204D204D");
-//        XCTAssertEqual("M M M", args.nextDelimString(false));
-//
-//        args = new PipeArgs("x");
-//        try {
-//            args.nextDelimString(false);
-//        }
-//        catch(PipeException e) {
-//            XCTAssertEqual(-64, e.getMessageNo());
-//        }
-//
-//        args = new PipeArgs(" x ");
-//        try {
-//            args.nextDelimString(false);
-//        }
-//        catch(PipeException e) {
-//            XCTAssertEqual(-64, e.getMessageNo());
-//        }
-//
-//        args = new PipeArgs("xA");
-//        try {
-//            args.nextDelimString(false);
-//        }
-//        catch(PipeException e) {
-//            XCTAssertEqual(-335, e.getMessageNo());
-//        }
-//
-//        args = new PipeArgs("xxxxxxxxx");
-//        try {
-//            args.nextDelimString(false);
-//        }
-//        catch(PipeException e) {
-//            XCTAssertEqual(-65, e.getMessageNo());
-//        }
-//
-//        args = new PipeArgs("hello there, /how/ are you  ");
+    func testDelimitedString() throws {
+        var args: Args
+
+        args = Args("");
+        XCTAssertEqual("", try args.scanDelimitedString());
+        XCTAssertEqual("", try args.scanDelimitedString());
+        XCTAssertEqual("", try args.scanRemaining());
+
+        args = Args("/hello/");
+        XCTAssertEqual("hello", try args.scanDelimitedString());
+        XCTAssertEqual("", try args.scanDelimitedString());
+        XCTAssertEqual("", try args.scanRemaining());
+
+        args = Args("  /hello/");
+        XCTAssertEqual("hello", try args.scanDelimitedString());
+        XCTAssertEqual("", try args.scanDelimitedString());
+        XCTAssertEqual("", try args.scanRemaining());
+
+        args = Args("  /hello/ ");
+        XCTAssertEqual("hello", try args.scanDelimitedString());
+        XCTAssertEqual("", try args.scanDelimitedString());
+        XCTAssertEqual(" ", try args.scanRemaining());
+
+        args = Args("  ,hello,  ");
+        XCTAssertEqual("hello", try args.scanDelimitedString());
+        XCTAssertEqual("", try args.scanDelimitedString());
+        XCTAssertEqual("  ", try args.scanRemaining());
+
+        args = Args("  ,hello, /there,/ /how/ /are/ /you/  ");
+        XCTAssertEqual("hello", try args.scanDelimitedString());
+        XCTAssertEqual("there,", try args.scanDelimitedString());
+        XCTAssertEqual("how", try args.scanDelimitedString());
+        XCTAssertEqual(" /are/ /you/  ", try args.scanRemaining());
+
+        args = Args("/hello");
+        do {
+            _ = try args.scanDelimitedString()
+        }
+        catch let e as PipeError {
+            XCTAssertEqual(-60, e.code);
+        }
+
+        args = Args("b00111000");
+        XCTAssertEqual("8", try args.scanDelimitedString());
+
+        args = Args("b11000010");
+        XCTAssertEqual("\u{00C2}", try args.scanDelimitedString());
+
+        args = Args("  b00111000  ");
+        XCTAssertEqual("8", try args.scanDelimitedString());
+        XCTAssertEqual("  ", try args.scanRemaining());
+
+        args = Args("  b00111000 b00111000 /a/  ");
+        XCTAssertEqual("8", try args.scanDelimitedString());
+        XCTAssertEqual("8", try args.scanDelimitedString());
+        XCTAssertEqual("a", try args.scanDelimitedString());
+        XCTAssertEqual("  ", try args.scanRemaining());
+
+        args = Args("b001110000011100100111010");
+        XCTAssertEqual("89:", try args.scanDelimitedString());
+
+        args = Args("b");
+        do {
+            try _ = args.scanDelimitedString();
+        }
+        catch let e as PipeError {
+            XCTAssertEqual(-337, e.code);
+        }
+
+        args = Args(" b ");
+        do {
+            try _ = args.scanDelimitedString();
+        }
+        catch let e as PipeError {
+            XCTAssertEqual(-337, e.code);
+        }
+
+        args = Args("b1111");
+        do {
+            try _ = args.scanDelimitedString();
+        }
+        catch let e as PipeError {
+            XCTAssertEqual(-336, e.code);
+        }
+
+        args = Args("bxxxxxxxx");
+        do {
+            try _ = args.scanDelimitedString();
+        }
+        catch let e as PipeError {
+            XCTAssertEqual(-338, e.code);
+        }
+
+        args = Args("x20");
+        XCTAssertEqual(" ", try args.scanDelimitedString());
+
+        args = Args("x4D");
+        XCTAssertEqual("M", try args.scanDelimitedString());
+
+        args = Args("x4D204D204D");
+        XCTAssertEqual("M M M", try args.scanDelimitedString());
+
+        args = Args("x");
+        do {
+            try _ = args.scanDelimitedString();
+        }
+        catch let e as PipeError {
+            XCTAssertEqual(-64, e.code);
+        }
+
+        args = Args(" x ");
+        do {
+            try _ = args.scanDelimitedString();
+        }
+        catch let e as PipeError {
+            XCTAssertEqual(-64, e.code);
+        }
+
+        args = Args("xA");
+        do {
+            try _ = args.scanDelimitedString();
+        }
+        catch let e as PipeError {
+            XCTAssertEqual(-335, e.code);
+        }
+
+        args = Args("xxxxxxxxx");
+        do {
+            try _ = args.scanDelimitedString();
+        }
+        catch let e as PipeError {
+            XCTAssertEqual(-65, e.code);
+        }
+
+    }
+//        args = Args("hello there, /how/ are you  ");
 //        XCTAssertEqual("hello", args.nextWord());
 //        XCTAssertEqual("there,", args.nextWord());
 //        XCTAssertEqual("/how/", args.nextWord());
 //        args.undo();
 //        XCTAssertEqual("/how/", args.nextWord());
 //        args.undo();
-//        XCTAssertEqual("how", args.nextDelimString(false));
+//        XCTAssertEqual("how", try args.scanDelimitedString());
 //
-//        args = new PipeArgs("hello there");
+//        args = Args("hello there");
 //        XCTAssertEqual("", args.nextExpression());
 //        XCTAssertEqual("hello", args.nextWord());
 //        XCTAssertEqual("there", args.nextWord());
-//        args = new PipeArgs("hello (hi there) there");
+//        args = Args("hello (hi there) there");
 //        XCTAssertEqual("", args.nextExpression());
 //        XCTAssertEqual("hello", args.nextWord());
 //        XCTAssertEqual("(hi", args.nextWord());
 //        XCTAssertEqual("there)", args.nextWord());
 //        XCTAssertEqual("there", args.nextWord());
-//        args = new PipeArgs("(hi there) there");
+//        args = Args("(hi there) there");
 //        XCTAssertEqual("hi there", args.nextExpression());
 //        XCTAssertEqual("there", args.nextWord());
 //        try {
-//            args = new PipeArgs("(hi");
+//            args = Args("(hi");
 //            args.nextExpression();
 //        }
-//        catch(PipeException e) {
-//            XCTAssertEqual(-200, e.getMessageNo());
+//        catch let e as PipeError {
+//            XCTAssertEqual(-200, e.code);
 //        }
 }
