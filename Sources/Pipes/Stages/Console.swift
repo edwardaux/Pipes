@@ -46,7 +46,7 @@ extension Console: RegisteredStage {
     public static func createStage(args: Args) throws -> Stage {
         let eof: EOF = try args.onOptionalKeyword(
             [
-                "EOF": { EOF.delimited(try args.scanWord()) },
+                "EOF": { EOF.delimited(try args.scanDelimitedString()) },
                 "NOEOF": { EOF.none }
             ],
             defaultValue: EOF.none
