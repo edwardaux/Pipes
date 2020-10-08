@@ -52,7 +52,7 @@ public class Pipe {
 }
 
 extension Pipe {
-    convenience init(_ pipeSpec: String) throws {
+    public convenience init(_ pipeSpec: String) throws {
         Pipe.registerBuiltInStages()
 
         self.init()

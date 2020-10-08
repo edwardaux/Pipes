@@ -12,6 +12,7 @@ let package = Package(
     ],
     targets: [
         .target(name: "Pipes", dependencies: []),
+        .target(name: "CLI", dependencies: [ "Pipes" ]),
         .testTarget(name: "PipesTests", dependencies: [ "Pipes" ]),
     ]
 )
