@@ -12,7 +12,7 @@ class StringTokenizer {
 
     /// A single mark that can be set to mark the current location, and
     /// return to it a later state (useful for undoing multiple reads)
-    private let markIndex: String.Index?
+    private var markIndex: String.Index?
 
     var remainder: String {
         _ = skipChars(" ")
@@ -61,7 +61,7 @@ class StringTokenizer {
         undoIndex = currentIndex
 
         guard let startIndex = findNext(start, consume: true) else { return nil }
-        guard let endIndex = findNext(end) else { return nil }
+        guard let endIndex = findNext(end, startingIndex: startIndex) else { return nil }
 
         currentIndex = input.index(after: endIndex)
 
@@ -70,6 +70,17 @@ class StringTokenizer {
 
     func undo() {
         currentIndex = undoIndex
+    }
+
+    func mark() {
+        markIndex = currentIndex
+    }
+
+    func resetMark() {
+        if let markIndex = markIndex {
+            currentIndex = markIndex
+        }
+        markIndex = nil
     }
 
     private func skipChars(_ char: Character) -> String.Index? {
@@ -81,8 +92,8 @@ class StringTokenizer {
         return currentIndex == input.endIndex ? nil : currentIndex
     }
 
-    private func findNext(_ char: Character, consume: Bool = false) -> String.Index? {
-        var index = currentIndex
+    private func findNext(_ char: Character, consume: Bool = false, startingIndex: String.Index? = nil) -> String.Index? {
+        var index = startingIndex ?? currentIndex
 
         while index != input.endIndex, input[index] != char {
             index = input.index(after: index)
