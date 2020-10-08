@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1120"
+   LastUpgradeVersion = "1160"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "Pipes"
-               BuildableName = "Pipes"
-               BlueprintName = "Pipes"
+               BlueprintIdentifier = "CLI"
+               BuildableName = "CLI"
+               BlueprintName = "CLI"
                ReferencedContainer = "container:">
             </BuildableReference>
          </BuildActionEntry>
@@ -31,20 +31,6 @@
                BlueprintIdentifier = "PipesTests"
                BuildableName = "PipesTests"
                BlueprintName = "PipesTests"
-               ReferencedContainer = "container:">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "CLI"
-               BuildableName = "CLI"
-               BlueprintName = "CLI"
                ReferencedContainer = "container:">
             </BuildableReference>
          </BuildActionEntry>
@@ -78,6 +64,22 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "CLI"
+            BuildableName = "CLI"
+            BlueprintName = "CLI"
+            ReferencedContainer = "container:">
+         </BuildableReference>
+      </BuildableProductRunnable>
+      <CommandLineArguments>
+         <CommandLineArgument
+            argument = "foo bar"
+            isEnabled = "YES">
+         </CommandLineArgument>
+      </CommandLineArguments>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -85,15 +87,16 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <MacroExpansion>
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "Pipes"
-            BuildableName = "Pipes"
-            BlueprintName = "Pipes"
+            BlueprintIdentifier = "CLI"
+            BuildableName = "CLI"
+            BlueprintName = "CLI"
             ReferencedContainer = "container:">
          </BuildableReference>
-      </MacroExpansion>
+      </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

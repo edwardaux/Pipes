@@ -4,8 +4,8 @@ A description of this package.
 
 ## Prioritization
 
-[ ] Console.java
-[ ] Literal.java
+[X] Console.java
+[X] Literal.java
 [ ] Diskr.java
 [ ] Diskw.java
 [ ] Count.java
