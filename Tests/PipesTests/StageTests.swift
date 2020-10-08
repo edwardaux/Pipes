@@ -25,6 +25,15 @@ final class StageTests: XCTestCase {
         try Pipe("help help | zzzcheck /\(syntax)/\(summary)/").run()
     }
 
+    func testLiteral() throws {
+        try Pipe("literal a| zzzcheck /a/").run()
+        try Pipe("literal a | zzzcheck /a /").run()
+        try Pipe("literal aa | zzzcheck /aa /").run()
+        try Pipe("literal | zzzcheck //").run()
+        try Pipe("literal| zzzcheck //").run()
+        try Pipe("literal b| literal a| zzzcheck /a/b/").run()
+    }
+
     func testZZZ() throws {
         try Pipe("zzzgen // | zzzcheck //").run()
         try Pipe("zzzgen /a/b/c/ | zzzcheck /a/b/c/").run()

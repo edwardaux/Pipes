@@ -23,8 +23,8 @@ extension Literal: RegisteredStage {
         [ "literal" ]
     }
 
-    public static func createStage(args: Args) -> Stage {
-        return Literal("")
+    public static func createStage(args: Args) throws -> Stage {
+        return Literal(try args.scanRemaining())
     }
 
     public static var helpSummary: String? {
