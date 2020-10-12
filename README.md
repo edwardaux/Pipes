@@ -6,7 +6,7 @@ A description of this package.
 
 [X] Console.java
 [X] Literal.java
-[ ] Diskr.java
+[X] Diskr.java
 [ ] Diskw.java
 [ ] Count.java
 [ ] Hole.java

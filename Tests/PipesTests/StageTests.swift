@@ -1,6 +1,15 @@
 import XCTest
 @testable import Pipes
 
+func withTempFileContaining(_ contents: String, block: (String) throws -> Void) throws {
+    let tmpFile = NSTemporaryDirectory() + "/" + UUID().uuidString
+
+    defer { try? FileManager.default.removeItem(atPath: tmpFile) }
+    FileManager.default.createFile(atPath: tmpFile, contents: contents.data(using: .utf8), attributes: nil)
+
+    try block(tmpFile)
+}
+
 final class StageTests: XCTestCase {
     override class func setUp() {
         Pipe.register(ZZZTestGeneratorStage.self)
@@ -19,6 +28,26 @@ final class StageTests: XCTestCase {
         try Pipe("zzzgen /a/b/c/d/ | cons | console | zzzcheck /a/b/c/d/").run()
 
         XCTAssertThrows(try Pipe("cons broken"), PipeError.excessiveOptions(string: "broken"))
+    }
+
+    func testDiskr() throws {
+        XCTAssertThrows(try Pipe("diskr a-non-existing-file").run(), PipeError.fileDoesNotExist(filename: "a-non-existing-file"))
+
+        try withTempFileContaining("a\n\n\nb\nc\n  \nd\ne\n") { (filename) in
+            try Pipe("diskr \(filename) | zzzcheck /a///b/c/  /d/e/").run()
+        }
+        try withTempFileContaining("a\n\n\nb\nc\n  \nd\ne") { (filename) in
+            try Pipe("diskr \(filename) | zzzcheck /a///b/c/  /d/e/").run()
+        }
+        try withTempFileContaining("") { (filename) in
+            try Pipe("diskr \(filename) | zzzcheck").run()
+        }
+        try withTempFileContaining("\n") { (filename) in
+            try Pipe("diskr \(filename) | zzzcheck //").run()
+        }
+        try withTempFileContaining(" \n") { (filename) in
+            try Pipe("diskr \(filename) | cons | zzzcheck / /").run()
+        }
     }
 
     func testHelp() throws {

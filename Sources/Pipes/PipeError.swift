@@ -19,10 +19,12 @@ public enum PipeError: Error {
     case delimiterMissing(delimiter: String)
     case hexDataMissing(prefix: String)
     case hexStringNotHex(string: String)
+    case mustBeFirstStage
     case operandNotValid(keyword: String)
     case excessiveOptions(string: String)
     case requiredKeywordsMissing(keywords: [String])
     case requiredOperandMissing
+    case fileDoesNotExist(filename: String)
     case missingEndingParenthesis
     case hexStringNotDivisibleBy2(string: String)
     case binaryStringNotDivisibleBy8(string: String)
@@ -45,6 +47,8 @@ public enum PipeError: Error {
             return Detail(code: -64, title: "Hexadecimal data missing after \(prefix)", explanation: "A prefix is found, indicating that a hexadecimal constant should follow, but the next character is blank or the end of the argument string.", response: "Do not use letters as delimiters for a delimited string.")
         case .hexStringNotHex(let string):
             return Detail(code: -65, title: "\"\(string)\" is not hexadecimal", explanation: "An h, H, x, or X is found in the first char- acter of a specification item to specify a hexadecimal literal, but the remainder of the word is not composed of hexadecimal digits.", response: "Do not use letters as delimiters for a delimited string.")
+        case .mustBeFirstStage:
+            return Detail(code: -87, title: "This stage must be the first stage of a pipeline", explanation: "A program that cannot process input records is not in the first position of the pipeline.", response: "")
         case .operandNotValid(let keyword):
             return Detail(code: -111, title: "Operand \(keyword) is not valid", explanation: "A keyword operand is expected, but the word does not match any keyword that is valid in the context.", response: "")
         case .excessiveOptions(let string):
@@ -53,6 +57,8 @@ public enum PipeError: Error {
             return Detail(code: -113, title: "Required keyword missing. Allowed: \(keywords.joined(separator: "/"))", explanation: "A stage is missing a required keyword.", response: "")
         case .requiredOperandMissing:
             return Detail(code: -113, title: "Required operand missing", explanation: "A stage has found some, but not all, required operands.", response: "")
+        case .fileDoesNotExist(let filename):
+            return Detail(code: -146, title: "File \(filename) does not exist.", explanation: "A file does not exist.", response: "")
         case .missingEndingParenthesis:
             return Detail(code: -200, title: "Missing ending parenthesis in expression", explanation: "More left parentheses are met than can be paired with right parentheses in the expression.", response: "")
         case .hexStringNotDivisibleBy2(let string):
