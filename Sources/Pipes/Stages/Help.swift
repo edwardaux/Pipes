@@ -38,7 +38,11 @@ extension Help: RegisteredStage {
     }
 
     public static func createStage(args: Args) throws -> Stage {
-        return Help(stageName: try args.scanWord())
+        let stageName = try args.scanWord()
+
+        try args.ensureNoRemainder()
+
+        return Help(stageName: stageName)
     }
 
     public static var helpSummary: String? {

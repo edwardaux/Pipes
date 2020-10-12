@@ -17,12 +17,16 @@ final class StageTests: XCTestCase {
     func testConsole() throws {
         // Tricky to test reading from console, but we can verify that at least the records pass through OK
         try Pipe("zzzgen /a/b/c/d/ | cons | console | zzzcheck /a/b/c/d/").run()
+
+        XCTAssertThrows(try Pipe("cons broken"), PipeError.excessiveOptions(string: "broken"))
     }
 
     func testHelp() throws {
         let syntax = Help.helpSyntax!
         let summary = Help.helpSummary!
         try Pipe("help help | zzzcheck /\(syntax)/\(summary)/").run()
+
+        XCTAssertThrows(try Pipe("help help broken"), PipeError.excessiveOptions(string: "broken"))
     }
 
     func testLiteral() throws {

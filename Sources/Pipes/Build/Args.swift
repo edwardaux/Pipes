@@ -94,8 +94,15 @@ public class Args {
         return expression
     }
 
-    public func scanRemaining() throws -> String {
-        return tokenizer.remainder
+    public func scanRemainder(trimLeading: Bool = true, trimTrailing: Bool = true) -> String {
+        return tokenizer.scanRemainder(trimLeading: trimLeading, trimTrailing: trimTrailing)
+    }
+
+    public func ensureNoRemainder() throws {
+        let remainder = scanRemainder()
+        if remainder != "" {
+            throw PipeError.excessiveOptions(string: remainder)
+        }
     }
 
     public func undo() {

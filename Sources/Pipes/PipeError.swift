@@ -20,6 +20,7 @@ public enum PipeError: Error {
     case hexDataMissing(prefix: String)
     case hexStringNotHex(string: String)
     case operandNotValid(keyword: String)
+    case excessiveOptions(string: String)
     case requiredKeywordsMissing(keywords: [String])
     case requiredOperandMissing
     case missingEndingParenthesis
@@ -46,6 +47,8 @@ public enum PipeError: Error {
             return Detail(code: -65, title: "\"\(string)\" is not hexadecimal", explanation: "An h, H, x, or X is found in the first char- acter of a specification item to specify a hexadecimal literal, but the remainder of the word is not composed of hexadecimal digits.", response: "Do not use letters as delimiters for a delimited string.")
         case .operandNotValid(let keyword):
             return Detail(code: -111, title: "Operand \(keyword) is not valid", explanation: "A keyword operand is expected, but the word does not match any keyword that is valid in the context.", response: "")
+        case .excessiveOptions(let string):
+            return Detail(code: -112, title: "Excessive options \"\(string)", explanation: "A stage has scanned all options it recognises; the string shown remains.", response: "")
         case .requiredKeywordsMissing(let keywords):
             return Detail(code: -113, title: "Required keyword missing. Allowed: \(keywords.joined(separator: "/"))", explanation: "A stage is missing a required keyword.", response: "")
         case .requiredOperandMissing:

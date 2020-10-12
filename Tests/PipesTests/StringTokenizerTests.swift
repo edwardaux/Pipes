@@ -17,29 +17,30 @@ final class StringTokenizerTests: XCTestCase {
         XCTAssertEqual(nil, st.peekChar())
         XCTAssertEqual(nil, st.scanChar())
         XCTAssertEqual(nil, st.scan(between: "(", and: ")"))
-        XCTAssertEqual("", st.remainder)
+        XCTAssertEqual("", st.scanRemainder(trimLeading: true, trimTrailing: true))
 
         st = StringTokenizer("hello")
         XCTAssertEqual("hello", st.peekWord())
         XCTAssertEqual("hello", st.scanWord())
         XCTAssertEqual(nil, st.scanWord())
-        XCTAssertEqual("", st.remainder)
+        XCTAssertEqual("", st.scanRemainder(trimLeading: true, trimTrailing: true))
 
         st = StringTokenizer("  hello")
         XCTAssertEqual("hello", st.scanWord())
         XCTAssertEqual(nil, st.scanWord())
-        XCTAssertEqual("", st.remainder)
+        XCTAssertEqual("", st.scanRemainder(trimLeading: true, trimTrailing: true))
 
         st = StringTokenizer("  hello ")
         XCTAssertEqual("hello", st.scanWord())
         XCTAssertEqual(nil, st.scanWord())
-        XCTAssertEqual("", st.remainder)
+        XCTAssertEqual("", st.scanRemainder(trimLeading: true, trimTrailing: true))
 
         st = StringTokenizer("  hello there, how are you  ")
         XCTAssertEqual("hello", st.scanWord())
         XCTAssertEqual("there,", st.scanWord())
         XCTAssertEqual("how", st.scanWord())
-        XCTAssertEqual("are you  ", st.remainder)
+        XCTAssertEqual("are you", st.scanRemainder(trimLeading: true, trimTrailing: true))
+        XCTAssertEqual("are you  ", st.scanRemainder(trimLeading: true, trimTrailing: false))
 
         st = StringTokenizer("  abc d (e f) g h   i  ")
         XCTAssertEqual("abc", st.peekWord())
@@ -51,7 +52,7 @@ final class StringTokenizerTests: XCTestCase {
         XCTAssertEqual("g", st.scanWord())
         XCTAssertEqual("h", st.scanWord())
         XCTAssertEqual("i", st.scanWord())
-        XCTAssertEqual("", st.remainder)
+        XCTAssertEqual("", st.scanRemainder(trimLeading: true, trimTrailing: true))
 
         st = StringTokenizer("  abc d (e f) g h   i  ")
         XCTAssertEqual("e f", st.scan(between: "(", and: ")"))
@@ -78,33 +79,34 @@ final class StringTokenizerTests: XCTestCase {
 
         args = try Args("dummy")
         XCTAssertThrows(try args.scanDelimitedString(), PipeError.requiredOperandMissing)
-        XCTAssertEqual("", try args.scanRemaining())
+        XCTAssertEqual("", args.scanRemainder())
 
         args = try Args("dummy /hello/")
         XCTAssertEqual("hello", try args.scanDelimitedString())
         XCTAssertThrows(try args.scanDelimitedString(), PipeError.requiredOperandMissing)
-        XCTAssertEqual("", try args.scanRemaining())
+        XCTAssertEqual("", args.scanRemainder())
 
         args = try Args("dummy   /hello/")
         XCTAssertEqual("hello", try args.scanDelimitedString())
         XCTAssertThrows(try args.scanDelimitedString(), PipeError.requiredOperandMissing)
-        XCTAssertEqual("", try args.scanRemaining())
+        XCTAssertEqual("", args.scanRemainder())
 
         args = try Args("dummy   /hello/ ")
         XCTAssertEqual("hello", try args.scanDelimitedString())
         XCTAssertThrows(try args.scanDelimitedString(), PipeError.requiredOperandMissing)
-        XCTAssertEqual("", try args.scanRemaining())
+        XCTAssertEqual("", args.scanRemainder())
 
         args = try Args("dummy   ,hello,  ")
         XCTAssertEqual("hello", try args.scanDelimitedString())
         XCTAssertThrows(try args.scanDelimitedString(), PipeError.requiredOperandMissing)
-        XCTAssertEqual("", try args.scanRemaining())
+        XCTAssertEqual("", args.scanRemainder())
 
         args = try Args("dummy   ,hello, /there,/ /how/ /are/ /you/  ")
         XCTAssertEqual("hello", try args.scanDelimitedString())
         XCTAssertEqual("there,", try args.scanDelimitedString())
         XCTAssertEqual("how", try args.scanDelimitedString())
-        XCTAssertEqual("/are/ /you/  ", try args.scanRemaining())
+        XCTAssertEqual("/are/ /you/", args.scanRemainder())
+        XCTAssertEqual("/are/ /you/  ", args.scanRemainder(trimTrailing: false))
 
         args = try Args("dummy /hello")
         XCTAssertThrows(try args.scanDelimitedString(), PipeError.delimiterMissing(delimiter: "/"))
@@ -117,13 +119,13 @@ final class StringTokenizerTests: XCTestCase {
 
         args = try Args("dummy   b00111000  ")
         XCTAssertEqual("8", try args.scanDelimitedString())
-        XCTAssertEqual("", try args.scanRemaining())
+        XCTAssertEqual("", args.scanRemainder())
 
         args = try Args("dummy   b00111000 b00111000 /a/  ")
         XCTAssertEqual("8", try args.scanDelimitedString())
         XCTAssertEqual("8", try args.scanDelimitedString())
         XCTAssertEqual("a", try args.scanDelimitedString())
-        XCTAssertEqual("", try args.scanRemaining())
+        XCTAssertEqual("", args.scanRemainder())
 
         args = try Args("dummy b001110000011100100111010")
         XCTAssertEqual("89:", try args.scanDelimitedString())

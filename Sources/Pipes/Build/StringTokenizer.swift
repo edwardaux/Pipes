@@ -14,11 +14,6 @@ class StringTokenizer {
     /// return to it a later state (useful for undoing multiple reads)
     private var markIndex: String.Index?
 
-    var remainder: String {
-        _ = skipChars(" ")
-        return String(input[currentIndex...])
-    }
-
     init(_ input: String) {
         self.input = input
         self.currentIndex = input.startIndex
@@ -66,6 +61,14 @@ class StringTokenizer {
         currentIndex = input.index(after: endIndex)
 
         return String(input[startIndex..<endIndex])
+    }
+
+    func scanRemainder(trimLeading: Bool, trimTrailing: Bool) -> String {
+        if trimLeading {
+            _ = skipChars(" ")
+        }
+        let remainder = String(input[currentIndex...])
+        return trimTrailing ? remainder.trimmingCharacters(in: CharacterSet.whitespaces) : remainder
     }
 
     func undo() {

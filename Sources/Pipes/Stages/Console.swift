@@ -51,6 +51,9 @@ extension Console: RegisteredStage {
             ],
             defaultValue: EOF.none
         )
+
+        try args.ensureNoRemainder()
+
         return Console(eof: eof)
     }
 
