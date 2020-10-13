@@ -24,7 +24,11 @@ extension Literal: RegisteredStage {
     }
 
     public static func createStage(args: Args) throws -> Stage {
-        return Literal(args.scanRemainder(trimLeading: true, trimTrailing: false))
+        var literal = args.scanRemainder(trimLeading: false, trimTrailing: false)
+        if literal.first == " " {
+            literal = String(literal.dropFirst())
+        }
+        return Literal(literal)
     }
 
     public static var helpSummary: String? {

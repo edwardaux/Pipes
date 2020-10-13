@@ -27,6 +27,7 @@ final class StageTests: XCTestCase {
         // Tricky to test reading from console, but we can verify that at least the records pass through OK
         try Pipe("zzzgen /a/b/c/d/ | cons | console | zzzcheck /a/b/c/d/").run()
 
+        XCTAssertThrows(try Pipe("cons eof"), PipeError.requiredOperandMissing)
         XCTAssertThrows(try Pipe("cons broken"), PipeError.excessiveOptions(string: "broken"))
     }
 
@@ -60,11 +61,13 @@ final class StageTests: XCTestCase {
 
     func testLiteral() throws {
         try Pipe("literal a| zzzcheck /a/").run()
+        try Pipe("literal  a| zzzcheck / a/").run()
         try Pipe("literal a | zzzcheck /a /").run()
         try Pipe("literal aa | zzzcheck /aa /").run()
         try Pipe("literal | zzzcheck //").run()
         try Pipe("literal| zzzcheck //").run()
         try Pipe("literal b| literal a| zzzcheck /a/b/").run()
+        try Pipe("literal b | literal a | zzzcheck /a /b /").run()
     }
 
     func testZZZ() throws {
