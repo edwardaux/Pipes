@@ -50,9 +50,11 @@ final class StageTests: XCTestCase {
     }
 
     func testDiskw() throws {
+        class IgnoredError: Error {}
         XCTAssertThrows(try Pipe("diskw").run(), PipeError.requiredOperandMissing)
         XCTAssertThrows(try Pipe("diskw ").run(), PipeError.requiredOperandMissing)
         XCTAssertThrows(try Pipe("diskw foobar").run(), PipeError.cannotBeFirstStage)
+        XCTAssertThrows(try Pipe("literal abc | diskw /cantWriteToRoot").run(), PipeError.unableToWriteToFile(path: "/cantWriteToRoot", error: IgnoredError()))
 
         try withFileContentsFor("literal | > /tmp/foobar", filename: "/tmp/foobar") { (contents) in
             XCTAssertEqual(contents, "\n")
@@ -70,6 +72,31 @@ final class StageTests: XCTestCase {
             }
         }
 //        try withFileContentsFor("zzzgen /a/b/c/d/e/ | diskw /tmp/foobar | take 3 | zzzcheck /a/b/c/", filename: "/tmp/foobar") { contents in
+//            XCTAssertEqual(contents, "a\nb\nc\nd\ne\n")
+//        }
+    }
+
+    func testDiskwa() throws {
+        XCTAssertThrows(try Pipe("diskwa").run(), PipeError.requiredOperandMissing)
+        XCTAssertThrows(try Pipe("diskwa ").run(), PipeError.requiredOperandMissing)
+        XCTAssertThrows(try Pipe("diskwa foobar").run(), PipeError.cannotBeFirstStage)
+
+        try withFileContentsFor("literal | >> /tmp/foobar", filename: "/tmp/foobar") { (contents) in
+            XCTAssertEqual(contents, "\n")
+        }
+        try withFileContentsFor("literal  | >> /tmp/foobar", filename: "/tmp/foobar") { (contents) in
+            XCTAssertEqual(contents, " \n")
+        }
+//        try withFileContentsFor("literal a| take 0 | >> /tmp/foobar", filename: "/tmp/foobar") { (contents) in
+//            XCTAssertEqual(contents, "")
+//        }
+        try withFileContentsFor("zzzgen /a/b/c/ | > /tmp/foobar", filename: "/tmp/foobar", remove: false) { contents1 in
+            XCTAssertEqual(contents1, "a\nb\nc\n")
+            try withFileContentsFor("zzzgen /d/e/f/ | >> /tmp/foobar", filename: "/tmp/foobar") { (contents2) in
+                XCTAssertEqual(contents2, "a\nb\nc\nd\ne\nf\n")
+            }
+        }
+//        try withFileContentsFor("zzzgen /a/b/c/d/e/ | >> /tmp/foobar | take 3 | zzzcheck /a/b/c/", filename: "/tmp/foobar") { contents in
 //            XCTAssertEqual(contents, "a\nb\nc\nd\ne\n")
 //        }
     }

@@ -10,7 +10,7 @@ public final class Diskw: Stage {
     override public func run() throws {
         guard stageNumber != 1 else { throw PipeError.cannotBeFirstStage }
 
-        let lineWriter = try FileWriter(path: filename)
+        let lineWriter = try FileWriter(path: filename, append: false)
 
         do {
             while true {
@@ -52,26 +52,34 @@ extension Diskw: RegisteredStage {
 
     public static var helpSyntax: String? {
         """
-        ►►──DISKW──filename──►◄
+        ►►──>──filename──►◄
         """
     }
 }
 
 class FileWriter {
     private let path: String
+    private let append: Bool
     private let tmpHandle: FileHandle
     private let tmpURL: URL
 
-    init(path: String) throws {
+    init(path: String, append: Bool) throws {
         let url = URL(fileURLWithPath: path)
         do {
             let tmpDir = try FileManager.default.url(for: .itemReplacementDirectory, in: .userDomainMask, appropriateFor: url, create: true)
 
-            self.tmpURL = tmpDir.appendingPathComponent("PIP_\(UUID().uuidString)")
             self.path = path
+            self.append = append
+            self.tmpURL = tmpDir.appendingPathComponent("PIP_\(UUID().uuidString)")
 
-            FileManager.default.createFile(atPath: tmpURL.path, contents: nil, attributes: nil)
-            self.tmpHandle = try FileHandle(forWritingTo: tmpURL)
+            if append && FileManager.default.fileExists(atPath: url.path) {
+                try FileManager.default.copyItem(at: url, to: tmpURL)
+                self.tmpHandle = try FileHandle(forWritingTo: tmpURL)
+                self.tmpHandle.seekToEndOfFile()
+            } else {
+                FileManager.default.createFile(atPath: tmpURL.path, contents: nil, attributes: nil)
+                self.tmpHandle = try FileHandle(forWritingTo: tmpURL)
+            }
         } catch let error {
             throw PipeError.unableToWriteToFile(path: path, error: error)
         }
@@ -84,11 +92,7 @@ class FileWriter {
     }
 
     func close() throws {
-        if #available(OSX 10.15, *) {
-            try tmpHandle.close()
-        } else {
-            tmpHandle.closeFile()
-        }
+        tmpHandle.closeFile()
 
         do {
             let url = URL(fileURLWithPath: path)

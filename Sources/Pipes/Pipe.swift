@@ -90,6 +90,7 @@ extension Pipe {
         register(Console.self)
         register(Diskr.self)
         register(Diskw.self)
+        register(Diskwa.self)
         register(Help.self)
         register(Literal.self)
     }
