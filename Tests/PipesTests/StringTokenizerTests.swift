@@ -1,12 +1,6 @@
 import XCTest
 @testable import Pipes
 
-func XCTAssertThrows<T>(_ expression: @autoclosure () throws -> T, _ expectedError: PipeError) {
-    XCTAssertThrowsError(try expression()) { (error) in
-        XCTAssertEqual(error as? PipeError, expectedError)
-    }
-}
-
 final class StringTokenizerTests: XCTestCase {
     func testTokenizing() throws {
         var st: StringTokenizer

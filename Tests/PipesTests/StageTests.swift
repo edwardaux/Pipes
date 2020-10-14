@@ -1,15 +1,6 @@
 import XCTest
 @testable import Pipes
 
-func withTempFileContaining(_ contents: String, block: (String) throws -> Void) throws {
-    let tmpFile = NSTemporaryDirectory() + "/" + UUID().uuidString
-
-    defer { try? FileManager.default.removeItem(atPath: tmpFile) }
-    FileManager.default.createFile(atPath: tmpFile, contents: contents.data(using: .utf8), attributes: nil)
-
-    try block(tmpFile)
-}
-
 final class StageTests: XCTestCase {
     override class func setUp() {
         Pipe.register(ZZZTestGeneratorStage.self)
@@ -32,8 +23,15 @@ final class StageTests: XCTestCase {
     }
 
     func testDiskr() throws {
+        XCTAssertThrows(try Pipe("diskr").run(), PipeError.requiredOperandMissing)
+        XCTAssertThrows(try Pipe("diskr ").run(), PipeError.requiredOperandMissing)
         XCTAssertThrows(try Pipe("diskr a-non-existing-file").run(), PipeError.fileDoesNotExist(filename: "a-non-existing-file"))
+        XCTAssertThrows(try Pipe("literal abc | diskr foobar").run(), PipeError.mustBeFirstStage)
 
+        try withTempFileContaining("ignored") { (filename) in
+            try Pipe("diskr \(filename)").run()
+            try Pipe("< \(filename)").run()
+        }
         try withTempFileContaining("a\n\n\nb\nc\n  \nd\ne\n") { (filename) in
             try Pipe("diskr \(filename) | zzzcheck /a///b/c/  /d/e/").run()
         }
@@ -49,6 +47,31 @@ final class StageTests: XCTestCase {
         try withTempFileContaining(" \n") { (filename) in
             try Pipe("diskr \(filename) | cons | zzzcheck / /").run()
         }
+    }
+
+    func testDiskw() throws {
+        XCTAssertThrows(try Pipe("diskw").run(), PipeError.requiredOperandMissing)
+        XCTAssertThrows(try Pipe("diskw ").run(), PipeError.requiredOperandMissing)
+        XCTAssertThrows(try Pipe("diskw foobar").run(), PipeError.cannotBeFirstStage)
+
+        try withFileContentsFor("literal | > /tmp/foobar", filename: "/tmp/foobar") { (contents) in
+            XCTAssertEqual(contents, "\n")
+        }
+        try withFileContentsFor("literal  | > /tmp/foobar", filename: "/tmp/foobar") { (contents) in
+            XCTAssertEqual(contents, " \n")
+        }
+//        try withFileContentsFor("literal a| take 0 | > /tmp/foobar", filename: "/tmp/foobar") { (contents) in
+//            XCTAssertEqual(contents, "")
+//        }
+        try withFileContentsFor("zzzgen /a/b/c/ | > /tmp/foobar", filename: "/tmp/foobar", remove: false) { contents1 in
+            XCTAssertEqual(contents1, "a\nb\nc\n")
+            try withFileContentsFor("zzzgen /d/e/f/ | > /tmp/foobar", filename: "/tmp/foobar") { (contents2) in
+                XCTAssertEqual(contents2, "d\ne\nf\n")
+            }
+        }
+//        try withFileContentsFor("zzzgen /a/b/c/d/e/ | diskw /tmp/foobar | take 3 | zzzcheck /a/b/c/", filename: "/tmp/foobar") { contents in
+//            XCTAssertEqual(contents, "a\nb\nc\nd\ne\n")
+//        }
     }
 
     func testHelp() throws {

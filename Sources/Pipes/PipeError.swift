@@ -24,12 +24,14 @@ public enum PipeError: Error {
     case excessiveOptions(string: String)
     case requiredKeywordsMissing(keywords: [String])
     case requiredOperandMissing
+    case cannotBeFirstStage
     case fileDoesNotExist(filename: String)
     case missingEndingParenthesis
     case hexStringNotDivisibleBy2(string: String)
     case binaryStringNotDivisibleBy8(string: String)
     case binaryDataMissing(prefix: String)
     case binaryStringNotBinary(string: String)
+    case unableToWriteToFile(path: String, error: Error)
 
     private var detail: Detail {
         switch self {
@@ -57,6 +59,8 @@ public enum PipeError: Error {
             return Detail(code: -113, title: "Required keyword missing. Allowed: \(keywords.joined(separator: "/"))", explanation: "A stage is missing a required keyword.", response: "")
         case .requiredOperandMissing:
             return Detail(code: -113, title: "Required operand missing", explanation: "A stage has found some, but not all, required operands.", response: "")
+        case .cannotBeFirstStage:
+            return Detail(code: -127, title: "This stage cannot be the first stage of a pipeline", explanation: "A device driver that requires an input stream is first in a pipeline, where there can be no input to read", response: "")
         case .fileDoesNotExist(let filename):
             return Detail(code: -146, title: "File \(filename) does not exist.", explanation: "A file does not exist.", response: "")
         case .missingEndingParenthesis:
@@ -69,6 +73,8 @@ public enum PipeError: Error {
             return Detail(code: -337, title: "Binary data missing after \(prefix)", explanation: "A prefix indicating a binary constant is found, but there are no more characters in the argument string or the next character is blank.", response: "")
         case .binaryStringNotBinary(let string):
             return Detail(code: -338, title: "Not binary data: \(string)", explanation: "A prefix indicating a binary constant is found, but the remainder of the word contains a character that is neither 0 nor 1.", response: "")
+        case .unableToWriteToFile(let path, let error):
+            return Detail(code: -780, title: "You are not allowed to write to \(path). Reason: \(error.localizedDescription)", explanation: "The directory record for an existing file indicates that you cannot write to it.", response: "")
         }
     }
 

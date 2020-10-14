@@ -9,8 +9,8 @@ public final class Diskr: Stage {
 
     override public func run() throws {
         guard stageNumber == 1 else { throw PipeError.mustBeFirstStage }
-        guard let lineReader = LineReader(path: filename) else { throw PipeError.fileDoesNotExist(filename: filename) }
 
+        let lineReader = try LineReader(path: filename)
         for line in lineReader {
             try output(line)
         }
@@ -43,14 +43,12 @@ extension Diskr: RegisteredStage {
 }
 
 private class LineReader {
-    let path: String
+    private let file: UnsafeMutablePointer<FILE>!
 
-    fileprivate let file: UnsafeMutablePointer<FILE>!
+    init(path: String) throws {
+        guard let file = fopen(path, "r") else { throw PipeError.fileDoesNotExist(filename: path) }
 
-    init?(path: String) {
-        self.path = path
-        file = fopen(path, "r")
-        guard file != nil else { return nil }
+        self.file = file
     }
 
     public var nextLine: String? {
@@ -68,6 +66,7 @@ private class LineReader {
       fclose(file)
     }
 }
+
 extension LineReader: Sequence {
    public func  makeIterator() -> AnyIterator<String> {
       return AnyIterator<String> {
