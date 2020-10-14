@@ -74,6 +74,15 @@ final class StageTests: XCTestCase {
 //        try withFileContentsFor("zzzgen /a/b/c/d/e/ | diskw /tmp/foobar | take 3 | zzzcheck /a/b/c/", filename: "/tmp/foobar") { contents in
 //            XCTAssertEqual(contents, "a\nb\nc\nd\ne\n")
 //        }
+        try withFileContentsFor("literal abc| > /tmp/file with spaces in name", filename: "/tmp/file with spaces in name") { (contents) in
+            XCTAssertEqual(contents, "abc\n")
+        }
+        try withFileContentsFor("literal abc| >     /tmp/trailingspaces    ", filename: "/tmp/trailingspaces") { (contents) in
+            XCTAssertEqual(contents, "abc\n")
+        }
+        try withFileContentsFor("literal abc| >     /tmp/  trailingspaces    ", filename: "/tmp/  trailingspaces") { (contents) in
+            XCTAssertEqual(contents, "abc\n")
+        }
     }
 
     func testDiskwa() throws {
