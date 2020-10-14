@@ -118,6 +118,10 @@ final class StageTests: XCTestCase {
         XCTAssertThrows(try Pipe("help help broken"), PipeError.excessiveOptions(string: "broken"))
     }
 
+    func testHole() throws {
+        try Pipe("literal a|literal b| hole | literal c| zzzcheck /c/").run()
+    }
+
     func testLiteral() throws {
         try Pipe("literal a| zzzcheck /a/").run()
         try Pipe("literal  a| zzzcheck / a/").run()

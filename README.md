@@ -9,7 +9,7 @@ A description of this package.
 [X] Diskr.java
 [X] Diskw.java
 [ ] Count.java
-[ ] Hole.java
+[X] Hole.java
 [ ] Fanin.java
 [ ] Faninany.java
 [ ] Fanout.java
