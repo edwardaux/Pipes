@@ -41,36 +41,3 @@ extension Diskr: RegisteredStage {
         """
     }
 }
-
-private class LineReader {
-    private let file: UnsafeMutablePointer<FILE>!
-
-    init(path: String) throws {
-        guard let file = fopen(path, "r") else { throw PipeError.fileDoesNotExist(filename: path) }
-
-        self.file = file
-    }
-
-    public var nextLine: String? {
-        var chars: UnsafeMutablePointer<CChar>? = nil
-        var linecap: Int = 0
-
-        defer { free(chars) }
-        guard getline(&chars, &linecap, file) > 0 else { return nil }
-
-        let line = String(cString: chars!)
-        return line.last?.isNewline == true ? String(line.dropLast()) : line
-    }
-
-    deinit {
-      fclose(file)
-    }
-}
-
-extension LineReader: Sequence {
-   public func  makeIterator() -> AnyIterator<String> {
-      return AnyIterator<String> {
-         return self.nextLine
-      }
-   }
-}
