@@ -29,7 +29,7 @@ public final class Console: Stage {
             while true {
                 let record = try peekto()
                 print(record)
-                if streamState(.output).isConnected {
+                if isPrimaryOutputStreamConnected {
                     try output(record)
                 }
                 _ = try readto()

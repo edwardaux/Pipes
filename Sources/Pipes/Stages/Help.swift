@@ -21,7 +21,7 @@ public final class Help: Stage {
             }
 
             // If we're in a pipeline, then send the records down the line.
-            if streamState(.output).isConnected {
+            if isPrimaryOutputStreamConnected {
                 for line in outputLines {
                     try output(line)
                 }

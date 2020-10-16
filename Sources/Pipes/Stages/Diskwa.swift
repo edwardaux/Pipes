@@ -17,7 +17,7 @@ public final class Diskwa: Stage {
                 let record = try peekto()
                 lineWriter.write(record)
                 do {
-                    if streamState(.output).isConnected {
+                    if isPrimaryOutputStreamConnected {
                         try output(record)
                     }
                 } catch _ as PipeReturnCode {

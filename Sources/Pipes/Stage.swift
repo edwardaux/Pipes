@@ -61,6 +61,30 @@ extension Stage {
         return outputStreams.count - 1
     }
 
+    public var isPrimaryInputStreamConnected: Bool {
+        return streamState(.input, streamNo: 0).isConnected
+    }
+
+    public var isPrimaryOutputStreamConnected: Bool {
+        return streamState(.output, streamNo: 0).isConnected
+    }
+
+    public var isSecondaryInputStreamConnected: Bool {
+        return streamState(.input, streamNo: 1).isConnected
+    }
+
+    public var isSecondaryOutputStreamConnected: Bool {
+        return streamState(.output, streamNo: 1).isConnected
+    }
+
+    public var isTertiaryInputStreamConnected: Bool {
+        return streamState(.input, streamNo: 2).isConnected
+    }
+
+    public var isTertiaryOutputStreamConnected: Bool {
+        return streamState(.output, streamNo: 2).isConnected
+    }
+
     public func output(_ record: String, streamNo: UInt = 0) throws {
         guard streamNo < outputStreams.count else { throw PipeReturnCode.streamDoesNotExist(streamNo: streamNo) }
 
