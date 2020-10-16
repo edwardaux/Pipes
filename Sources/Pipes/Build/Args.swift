@@ -110,9 +110,14 @@ public class Args {
     }
     
     public func onMandatoryKeyword<T>(_ keywords: [String: () throws -> T]) throws -> T {
-        guard let keyword = tokenizer.peekWord()?.uppercased() else { throw PipeError.requiredKeywordsMissing(keywords: keywords.keys.sorted()) }
+        guard let keyword = tokenizer.peekWord() else {
+            throw PipeError.requiredKeywordsMissing(keywords: keywords.keys.sorted())
+        }
+
         // TODO mixed case input. also, deal with keys of different lengths. eg. STR vs STRing
-        guard let closure = keywords[keyword] else { throw PipeError.operandNotValid(keyword: keyword) }
+        guard let closure = keywords[keyword.uppercased()] else {
+            throw PipeError.operandNotValid(keyword: keyword)
+        }
 
         // We have a closure that can handle this keyword, so we can safely consume the keyword
         _ = tokenizer.scanWord()
@@ -120,9 +125,18 @@ public class Args {
         return try closure()
     }
 
-    public func onOptionalKeyword<T>(_ keywords: [String: () throws -> T], defaultValue: T) throws -> T {
-        guard let keyword = tokenizer.peekWord()?.uppercased() else { return defaultValue }
-        guard let closure = keywords[keyword] else { return defaultValue }
+    public func onOptionalKeyword<T>(_ keywords: [String: () throws -> T], throwsOnUnsupportedKeyword: Bool) throws -> T? {
+        guard let keyword = tokenizer.peekWord() else {
+            return nil
+        }
+
+        guard let closure = keywords[keyword.uppercased()] else {
+            if throwsOnUnsupportedKeyword {
+                throw PipeError.operandNotValid(keyword: keyword)
+            } else {
+                return nil
+            }
+        }
 
         // We have a closure that can handle this keyword, so we can safely consume the keyword
         _ = tokenizer.scanWord()

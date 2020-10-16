@@ -19,7 +19,38 @@ final class StageTests: XCTestCase {
         try Pipe("zzzgen /a/b/c/d/ | cons | console | zzzcheck /a/b/c/d/").run()
 
         XCTAssertThrows(try Pipe("cons eof"), PipeError.requiredOperandMissing)
-        XCTAssertThrows(try Pipe("cons broken"), PipeError.excessiveOptions(string: "broken"))
+        XCTAssertThrows(try Pipe("cons aaa"), PipeError.operandNotValid(keyword: "aaa"))
+        XCTAssertThrows(try Pipe("cons noeof broken"), PipeError.excessiveOptions(string: "broken"))
+    }
+
+    func testCount() throws {
+        XCTAssertThrows(try Pipe("count"), PipeError.requiredOperandMissing)
+        XCTAssertThrows(try Pipe("count xxx"), PipeError.operandNotValid(keyword: "xxx"))
+        XCTAssertThrows(try Pipe("count bytes aa words"), PipeError.operandNotValid(keyword: "aa"))
+
+        try Pipe("literal a|count words").run()
+        try Pipe("literal a|count words lines").run()
+        try Pipe("literal a|count words lines lines").run()
+
+        try Pipe("literal aa bb     cc dd       ee      | count bytes chars words | zzzcheck /30 30 5/").run()
+        try Pipe("literal abc d \u{1F99C} \u{1F46A} 🌍| count bytes chars words lines min max | zzzcheck /20 11 5 1 11 11/").run()
+        try Pipe("literal 🤦🏼‍♂️| count bytes chars words | zzzcheck /17 1 1/").run()
+
+        try Pipe("literal abc|literal def|literal hello there how are you|literal | count chars words lines min max | zzzcheck /29 7 4 0 23/").run()
+        try Pipe("literal abc|literal def|literal hello there how are you|literal | count max min lines words chars chars chars | zzzcheck /23 0 4 7 29 29 29/").run()
+        // TODO Use simple syntax
+        // try Pipe("literal abc|literal def|literal hello there how are you|literal | c: count chars words lines min max | zzzcheck //hello there how are you/def/abc/ ? c: | zzzcheck /29 7 4 0 23/").run()
+        try Pipe()
+            .add(Literal("abc"))
+            .add(Literal("def"))
+            .add(Literal("hello there how are you"))
+            .add(Literal(""))
+            .add(Count(metrics: [.characters, .words, .lines, .minLine, .maxLine]), label: "c")
+            .add(ZZZTestCheckerStage(["", "hello there how are you", "def", "abc"]))
+            .end()
+            .add(label: "c")
+            .add(ZZZTestCheckerStage(["29 7 4 0 23"]))
+            .run()
     }
 
     func testDiskr() throws {

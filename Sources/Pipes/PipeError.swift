@@ -32,6 +32,8 @@ public enum PipeError: Error {
     case binaryDataMissing(prefix: String)
     case binaryStringNotBinary(string: String)
     case unableToWriteToFile(path: String, error: Error)
+    case unusedInputStreamConnected(streamNo: Int)
+    case unusedOutputStreamConnected(streamNo: Int)
 
     private var detail: Detail {
         switch self {
@@ -75,6 +77,10 @@ public enum PipeError: Error {
             return Detail(code: -338, title: "Not binary data: \(string)", explanation: "A prefix indicating a binary constant is found, but the remainder of the word contains a character that is neither 0 nor 1.", response: "")
         case .unableToWriteToFile(let path, let error):
             return Detail(code: -780, title: "You are not allowed to write to \(path). Reason: \(error.localizedDescription)", explanation: "The directory record for an existing file indicates that you cannot write to it.", response: "")
+        case .unusedInputStreamConnected(let streamNo):
+            return Detail(code: -1196, title: "Input stream \(streamNo) is unexpectedly connected.", explanation: "A stream is connected that the stage does not use. This is often a symptom of an incorrect placement of a label reference.", response: "")
+        case .unusedOutputStreamConnected(let streamNo):
+            return Detail(code: -1196, title: "Output stream \(streamNo) is unexpectedly connected.", explanation: "A stream is connected that the stage does not use. This is often a symptom of an incorrect placement of a label reference.", response: "")
         }
     }
 

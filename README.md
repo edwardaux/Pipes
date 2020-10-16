@@ -8,7 +8,7 @@ A description of this package.
 [X] Literal.java
 [X] Diskr.java
 [X] Diskw.java
-[ ] Count.java
+[X] Count.java
 [X] Hole.java
 [ ] Fanin.java
 [ ] Faninany.java

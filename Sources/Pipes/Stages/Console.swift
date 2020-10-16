@@ -49,8 +49,8 @@ extension Console: RegisteredStage {
                 "EOF": { EOF.delimited(try args.scanDelimitedString()) },
                 "NOEOF": { EOF.none }
             ],
-            defaultValue: EOF.none
-        )
+            throwsOnUnsupportedKeyword: true
+            ) ?? EOF.none
 
         try args.ensureNoRemainder()
 
