@@ -183,4 +183,75 @@ final class StringTokenizerTests: XCTestCase {
         args = try Args("dummy (hi")
         XCTAssertThrows(try args.scanExpression(), PipeError.missingEndingParenthesis)
     }
+
+    func testSplitSimple() {
+        XCTAssertEqual("".split(separator: "|", escape: nil), [""])
+        XCTAssertEqual(" ".split(separator: "|", escape: nil), [" "])
+        XCTAssertEqual(" |".split(separator: "|", escape: nil), [" ", ""])
+        XCTAssertEqual(" | ".split(separator: "|", escape: nil), [" ", " "])
+        XCTAssertEqual("a | b | c | d ".split(separator: "|", escape: nil), ["a ", " b ", " c ", " d "])
+        XCTAssertEqual("||||".split(separator: "|", escape: nil), ["", "", "", "", ""])
+
+        XCTAssertEqual("".split(separator: "|", escape: "^"), [""])
+        XCTAssertEqual(" ".split(separator: "|", escape: "^"), [" "])
+        XCTAssertEqual(" |".split(separator: "|", escape: "^"), [" ", ""])
+        XCTAssertEqual(" | ".split(separator: "|", escape: "^"), [" ", " "])
+        XCTAssertEqual("a | b | c | d ".split(separator: "|", escape: "^"), ["a ", " b ", " c ", " d "])
+        XCTAssertEqual("||||".split(separator: "|", escape: "^"), ["", "", "", "", ""])
+    }
+
+    func testEscapingStages() {
+        XCTAssertEqual("a ^| b | ".split(separator: "|", escape: "^"), ["a | b ", " "])
+        XCTAssertEqual("^| ".split(separator: "|", escape: "^"), ["| "])
+        XCTAssertEqual("^|^| b | ".split(separator: "|", escape: "^"), ["|| b ", " "])
+        XCTAssertEqual("^^ b | ".split(separator: "|", escape: "^"), ["^ b ", " "])
+        XCTAssertEqual("^^| b | ".split(separator: "|", escape: "^"), ["^", " b ", " "])
+        XCTAssertEqual("a | b | ^".split(separator: "|", escape: "^"), ["a ", " b ", " "])
+        XCTAssertEqual("|^||^^^||^||^".split(separator: "|", escape: "^"), ["", "|", "^|", "|", ""])
+    }
+
+    func testEscapingStrings() {
+        XCTAssertEqual(StringTokenizer("", escape: nil).peekChar(), nil)
+        XCTAssertEqual(StringTokenizer("X", escape: nil).peekChar(), "X")
+        XCTAssertEqual(StringTokenizer("^", escape: nil).peekChar(), "^")
+        XCTAssertEqual(StringTokenizer("^ X", escape: nil).peekChar(), "^")
+        XCTAssertEqual(StringTokenizer("^A X", escape: nil).peekChar(), "^")
+        XCTAssertEqual(StringTokenizer("^^ X", escape: nil).peekChar(), "^")
+        XCTAssertEqual(StringTokenizer("^^^ X", escape: nil).peekChar(), "^")
+        XCTAssertEqual(StringTokenizer("", escape: "^").peekChar(), nil)
+        XCTAssertEqual(StringTokenizer("X", escape: "^").peekChar(), "X")
+        XCTAssertEqual(StringTokenizer("^", escape: "^").peekChar(), nil)
+        XCTAssertEqual(StringTokenizer("^ X", escape: "^").peekChar(), "X")
+        XCTAssertEqual(StringTokenizer("^A X", escape: "^").peekChar(), "A")
+        XCTAssertEqual(StringTokenizer("  ^A X", escape: "^").peekChar(), "A")
+        XCTAssertEqual(StringTokenizer("^^ X", escape: "^").peekChar(), "^")
+        XCTAssertEqual(StringTokenizer("^^^ X", escape: "^").peekChar(), "^")
+
+        XCTAssertEqual(StringTokenizer("", escape: nil).peekWord(), nil)
+        XCTAssertEqual(StringTokenizer("X", escape: nil).peekWord(), "X")
+        XCTAssertEqual(StringTokenizer("abc^de fgh", escape: nil).peekWord(), "abc^de")
+        XCTAssertEqual(StringTokenizer("abc^ de fgh", escape: nil).peekWord(), "abc^")
+        XCTAssertEqual(StringTokenizer("", escape: "^").peekWord(), nil)
+        XCTAssertEqual(StringTokenizer(" ", escape: "^").peekWord(), nil)
+        XCTAssertEqual(StringTokenizer("abc^de fgh", escape: "^").peekWord(), "abcde")
+        XCTAssertEqual(StringTokenizer("abc^ de fgh", escape: "^").peekWord(), "abc de")
+
+        XCTAssertEqual(StringTokenizer("a/bcde/f", escape: nil).scan(between: "/", and: "/"), "bcde")
+        XCTAssertEqual(StringTokenizer("a/bc^de/f", escape: nil).scan(between: "/", and: "/"), "bc^de")
+        XCTAssertEqual(StringTokenizer("a/bc^/de/f", escape: nil).scan(between: "/", and: "/"), "bc^")
+        XCTAssertEqual(StringTokenizer("a/bcde/f", escape: "^").scan(between: "/", and: "/"), "bcde")
+        XCTAssertEqual(StringTokenizer("a/bc^de/f", escape: "^").scan(between: "/", and: "/"), "bcde")
+        XCTAssertEqual(StringTokenizer("a/bc^/de/f", escape: "^").scan(between: "/", and: "/"), "bc/de")
+
+        XCTAssertEqual(StringTokenizer("  a/bc^de/f  ", escape: nil).scanRemainder(trimLeading: true, trimTrailing: true), "a/bc^de/f")
+        XCTAssertEqual(StringTokenizer("  a/bc^de/f  ", escape: nil).scanRemainder(trimLeading: false, trimTrailing: false), "  a/bc^de/f  ")
+        XCTAssertEqual(StringTokenizer("  a/bc^de/f  ", escape: "^").scanRemainder(trimLeading: true, trimTrailing: true), "a/bcde/f")
+        XCTAssertEqual(StringTokenizer("  a/bc^de/f  ", escape: "^").scanRemainder(trimLeading: false, trimTrailing: false), "  a/bcde/f  ")
+    }
+
+    func testOptions() throws {
+        XCTAssertEqual(try Parser(pipeSpec: "< blah | cons").parseOptions(), Options(escape: nil))
+        XCTAssertEqual(try Parser(pipeSpec: "(foobar) < blah | cons").parseOptions(), Options(escape: "f"))
+        XCTAssertThrows(try Parser(pipeSpec: "(foobar < blah | cons").parseOptions(), PipeError.missingEndingParenthesis)
+    }
 }

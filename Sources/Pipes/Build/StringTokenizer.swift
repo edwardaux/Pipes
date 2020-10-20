@@ -14,11 +14,14 @@ class StringTokenizer {
     /// return to it a later state (useful for undoing multiple reads)
     private var markIndex: String.Index?
 
-    init(_ input: String) {
+    private let escape: Character?
+
+    init(_ input: String, escape: Character? = nil) {
         self.input = input
         self.currentIndex = input.startIndex
         self.undoIndex = input.startIndex
         self.markIndex = nil
+        self.escape = escape
     }
 
     func peekChar() -> String? {
@@ -33,7 +36,7 @@ class StringTokenizer {
         guard let firstNonBlankIndex = skipChars(" ") else { return nil }
 
         currentIndex = input.index(after: firstNonBlankIndex)
-        return String(input[firstNonBlankIndex])
+        return String(input[firstNonBlankIndex]).unescaped(escape)
     }
 
     func peekWord() -> String? {
@@ -49,7 +52,7 @@ class StringTokenizer {
 
         let nextBlankIndex = findNext(" ") ?? input.endIndex
         currentIndex = nextBlankIndex
-        return String(input[firstNonBlankIndex..<nextBlankIndex])
+        return String(input[firstNonBlankIndex..<nextBlankIndex]).unescaped(escape)
     }
 
     func scan(between start: Character, and end: Character) -> String? {
@@ -60,7 +63,7 @@ class StringTokenizer {
 
         currentIndex = input.index(after: endIndex)
 
-        return String(input[startIndex..<endIndex])
+        return String(input[startIndex..<endIndex]).unescaped(escape)
     }
 
     func scanRemainder(trimLeading: Bool, trimTrailing: Bool) -> String {
@@ -68,7 +71,7 @@ class StringTokenizer {
             _ = skipChars(" ")
         }
         let remainder = String(input[currentIndex...])
-        return trimTrailing ? remainder.trimmingCharacters(in: CharacterSet.whitespaces) : remainder
+        return (trimTrailing ? remainder.trimmingCharacters(in: CharacterSet.whitespaces) : remainder).unescaped(escape)
     }
 
     func undo() {
@@ -89,8 +92,15 @@ class StringTokenizer {
     private func skipChars(_ char: Character) -> String.Index? {
         guard currentIndex != input.endIndex else { return nil }
 
-        while currentIndex != input.endIndex, input[currentIndex] == char {
-            currentIndex = input.index(after: currentIndex)
+        while currentIndex != input.endIndex {
+            if input[currentIndex] == escape {
+                currentIndex = safelyAdvance(currentIndex)
+            }
+            if currentIndex != input.endIndex && input[currentIndex] == char {
+                currentIndex = safelyAdvance(currentIndex)
+            } else {
+                break
+            }
         }
         return currentIndex == input.endIndex ? nil : currentIndex
     }
@@ -98,13 +108,65 @@ class StringTokenizer {
     private func findNext(_ char: Character, consume: Bool = false, startingIndex: String.Index? = nil) -> String.Index? {
         var index = startingIndex ?? currentIndex
 
-        while index != input.endIndex, input[index] != char {
-            index = input.index(after: index)
+        while index != input.endIndex {
+            if input[index] == escape {
+                index = safelyAdvance(index)
+                index = safelyAdvance(index)
+            }
+            if index != input.endIndex && input[index] != char {
+                index = safelyAdvance(index)
+            } else {
+                break
+            }
         }
         if index != input.endIndex && consume {
             index = input.index(after: index)
         }
         return index == input.endIndex ? nil : index
     }
+
+    private func safelyAdvance(_ index: String.Index) -> String.Index {
+        guard index != input.endIndex else { return index }
+        return input.index(after: index)
+    }
 }
 
+extension String {
+    func unescaped(_ escape: Character?) -> String {
+        guard let escape = escape else { return self }
+
+        var output = ""
+        var chars = makeIterator()
+        while let char = chars.next() {
+            if char == escape, let escaped = chars.next() {
+                output.append(escaped)
+            } else {
+                output.append(char)
+            }
+        }
+        return output
+    }
+
+    func split(separator: Character, escape: Character?) -> [String] {
+        var token = ""
+        var tokens = [String]()
+        var chars = makeIterator()
+
+        while let char = chars.next() {
+            switch char {
+            case separator:
+                tokens.append(token)
+                token = ""
+            case escape:
+                if let next = chars.next() {
+                    token.append(next)
+                }
+            case _:
+                token.append(char)
+            }
+        }
+        tokens.append(token)
+
+        return tokens
+    }
+}
