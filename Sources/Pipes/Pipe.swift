@@ -57,7 +57,7 @@ extension Pipe {
 
         self.init()
 
-        let parser = Parser(pipeSpec: pipeSpec)
+        let parser = try Parser(pipeSpec: pipeSpec)
         try parser.parse(into: self)
     }
 

@@ -250,8 +250,10 @@ final class StringTokenizerTests: XCTestCase {
     }
 
     func testOptions() throws {
-        XCTAssertEqual(try Parser(pipeSpec: "< blah | cons").parseOptions(), Options(escape: nil))
-        XCTAssertEqual(try Parser(pipeSpec: "(foobar) < blah | cons").parseOptions(), Options(escape: "f"))
-        XCTAssertThrows(try Parser(pipeSpec: "(foobar < blah | cons").parseOptions(), PipeError.missingEndingParenthesis)
+        XCTAssertEqual(try Parser.parseOptions(pipeSpec: "< blah | cons").0, Options.default)
+        XCTAssertEqual(try Parser.parseOptions(pipeSpec: "< blah | cons").1, "< blah | cons")
+        XCTAssertEqual(try Parser.parseOptions(pipeSpec: "(foobar)   < blah | cons  ").0, Options(stageSep: "|", escape: nil, endChar: nil))
+        XCTAssertEqual(try Parser.parseOptions(pipeSpec: "(foobar)   < blah | cons  ").1, "   < blah | cons  ")
+        XCTAssertThrows(try Parser.parseOptions(pipeSpec: "(foobar < blah | cons"), PipeError.missingEndingParenthesis)
     }
 }
