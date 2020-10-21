@@ -37,7 +37,8 @@ extension Diskr: RegisteredStage {
 
     public static var helpSyntax: String? {
         """
-        ►►──DISKR──filename──►◄
+        ►►──┬───<───┬──filename──►◄
+            └─DISKR─┘
         """
     }
 }
