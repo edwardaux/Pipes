@@ -252,8 +252,23 @@ final class StringTokenizerTests: XCTestCase {
     func testOptions() throws {
         XCTAssertEqual(try Parser.parseOptions(pipeSpec: "< blah | cons").0, Options.default)
         XCTAssertEqual(try Parser.parseOptions(pipeSpec: "< blah | cons").1, "< blah | cons")
-        XCTAssertEqual(try Parser.parseOptions(pipeSpec: "(foobar)   < blah | cons  ").0, Options(stageSep: "|", escape: nil, endChar: nil))
-        XCTAssertEqual(try Parser.parseOptions(pipeSpec: "(foobar)   < blah | cons  ").1, "   < blah | cons  ")
-        XCTAssertThrows(try Parser.parseOptions(pipeSpec: "(foobar < blah | cons"), PipeError.missingEndingParenthesis)
+        XCTAssertEqual(try Parser.parseOptions(pipeSpec: "(sep |)   < blah | cons  ").0, Options(stageSep: "|", escape: nil, endChar: nil))
+        XCTAssertEqual(try Parser.parseOptions(pipeSpec: "(sep |)   < blah | cons  ").1, "   < blah | cons  ")
+        XCTAssertEqual(try Parser.parseOptions(pipeSpec: "(   sep    |  )   < blah | cons  ").0, Options(stageSep: "|", escape: nil, endChar: nil))
+        XCTAssertEqual(try Parser.parseOptions(pipeSpec: "(sep ! esc ^ end ?)   < blah | cons  ").0, Options(stageSep: "!", escape: "^", endChar: "?"))
+        XCTAssertEqual(try Parser.parseOptions(pipeSpec: "(end ? sep ! esc ^)   < blah | cons  ").0, Options(stageSep: "!", escape: "^", endChar: "?"))
+        XCTAssertEqual(try Parser.parseOptions(pipeSpec: "(sep X esc ^ end ? sep !)   < blah | cons  ").0, Options(stageSep: "!", escape: "^", endChar: "?"))
+        XCTAssertEqual(try Parser.parseOptions(pipeSpec: "(sep 20)").0, Options(stageSep: " ", escape: nil, endChar: nil))
+        XCTAssertEqual(try Parser.parseOptions(pipeSpec: "(sep 40)").0, Options(stageSep: "@", escape: nil, endChar: nil))
+        XCTAssertEqual(try Parser.parseOptions(pipeSpec: "(sep 65)").0, Options(stageSep: "e", escape: nil, endChar: nil))
+        XCTAssertEqual(try Parser.parseOptions(pipeSpec: "(sep BLANK)").0, Options(stageSep: " ", escape: nil, endChar: nil))
+        XCTAssertEqual(try Parser.parseOptions(pipeSpec: "(sep TAB)").0, Options(stageSep: "\t", escape: nil, endChar: nil))
+
+        XCTAssertThrows(try Parser.parseOptions(pipeSpec: "(sep |"), PipeError.missingEndingParenthesis)
+        XCTAssertThrows(try Parser.parseOptions(pipeSpec: "(foo |)"), PipeError.optionNotValid(option: "foo"))
+        XCTAssertThrows(try Parser.parseOptions(pipeSpec: "(sep)"), PipeError.valueMissingForOption(keyword: "sep"))
+        XCTAssertThrows(try Parser.parseOptions(pipeSpec: "(sep )"), PipeError.valueMissingForOption(keyword: "sep"))
+        XCTAssertThrows(try Parser.parseOptions(pipeSpec: "(sep abc)"), PipeError.invalidCharacterRepresentation(word: "abc"))
+        XCTAssertThrows(try Parser.parseOptions(pipeSpec: "(sep zz)"), PipeError.invalidCharacterRepresentation(word: "zz"))
     }
 }

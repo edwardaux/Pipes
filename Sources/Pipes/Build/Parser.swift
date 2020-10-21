@@ -13,9 +13,16 @@ class Parser {
     func parse(into pipe: Pipe) throws {
         let pipelineSpecs = try parsePipe(pipeSpec: pipeSpec, options: options)
         for pipelineSpec in pipelineSpecs {
-            let stages = try parsePipeline(pipelineSpec: pipelineSpec, options: options)
-            try stages.forEach {
-                _ = try pipe.add($0)
+            let argsList = try parsePipeline(pipelineSpec: pipelineSpec, options: options)
+            for args in argsList {
+                switch args.type {
+                case .label(let label):
+                    _ = try pipe.add(label: label)
+                case .stage(let stageName, let label):
+                    let stageType = try Pipe.registeredStageType(for: stageName)
+                    let stage = try stageType.createStage(args: args)
+                    _ = try pipe.add(stage, label: label)
+                }
             }
             _ = pipe.end()
         }
@@ -29,7 +36,38 @@ class Parser {
         guard let pipeOptions = tokenizer.scan(between: "(", and: ")") else {
             throw PipeError.missingEndingParenthesis
         }
-        let options = Options(stageSep: "|", escape: nil, endChar: nil)
+
+        var stageSep: Character = "|"
+        var escape: Character? = nil
+        var endChar: Character? = nil
+
+        let optionsTokenizer = StringTokenizer(pipeOptions)
+        while let keyword = optionsTokenizer.scanWord() {
+            switch keyword.uppercased() {
+            case "SEP", "SEPARATOR", "STAGESEP":
+                if let word = optionsTokenizer.scanWord() {
+                    stageSep = try word.asXorC()
+                } else {
+                    throw PipeError.valueMissingForOption(keyword: keyword)
+                }
+            case "END", "ENDCHAR":
+                if let word = optionsTokenizer.scanWord() {
+                    endChar = try word.asXorC()
+                } else {
+                    throw PipeError.valueMissingForOption(keyword: keyword)
+                }
+            case "ESC", "ESCAPE":
+                if let word = optionsTokenizer.scanWord() {
+                    escape = try word.asXorC()
+                } else {
+                    throw PipeError.valueMissingForOption(keyword: keyword)
+                }
+            default:
+                throw PipeError.optionNotValid(option: keyword)
+            }
+        }
+
+        let options = Options(stageSep: stageSep, escape: escape, endChar: endChar)
         let remainingPipeSpec = tokenizer.scanRemainder(trimLeading: false, trimTrailing: false)
         return (options, remainingPipeSpec)
     }
@@ -40,14 +78,9 @@ class Parser {
         return pipeSpec.split(separator: endChar, escape: options.escape)
     }
 
-    func parsePipeline(pipelineSpec: String, options: Options) throws -> [Stage] {
+    func parsePipeline(pipelineSpec: String, options: Options) throws -> [Args] {
         let stageSpecs = pipelineSpec.split(separator: options.stageSep).map { String($0) }
         let argsList = try stageSpecs.map { try Args($0) }
-        let stages: [Stage] = try argsList.map { (args: Args) in
-            let stageType = try Pipe.registeredStageType(for: args.stageName)
-            let stage = try stageType.createStage(args: args)
-            return stage
-        }
-        return stages
+        return argsList
     }
 }

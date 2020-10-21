@@ -12,10 +12,13 @@ public enum PipeReturnCode: Error {
 
 // A PipeError would normally mean termination of the stage.
 public enum PipeError: Error {
+    case optionNotValid(option: String)
+    case valueMissingForOption(keyword: String)
     case nullStageFound
     case stageNotFound(stageName: String)
     case labelNotDeclared(label: String)
     case labelAlreadyDeclared(label: String)
+    case invalidCharacterRepresentation(word: String)
     case delimiterMissing(delimiter: String)
     case hexDataMissing(prefix: String)
     case hexStringNotHex(string: String)
@@ -37,6 +40,10 @@ public enum PipeError: Error {
 
     private var detail: Detail {
         switch self {
+        case .optionNotValid(let word):
+            return Detail(code: -14, title: "Option \(word) not valid", explanation: "The word substituted is not recognised as one of the global options supported.", response: "Defined global options are: NAME TRACE LISTRC LISTERR LISTCMD STOP SEPARATOR ENDCHAR ESCAPE MSGLEVEL.")
+        case .valueMissingForOption(let keyword):
+            return Detail(code: -15, title: "Value missing for keyword \(keyword)", explanation: "An operand is specified that requires a value (for instance, NAME), but the following non-blank character is the right parenthesis that ends the global options, or the operand is the last word of the argument string to a stage.", response: "")
         case .nullStageFound:
             return Detail(code: -17, title: "Null stage found", explanation: "There is a stage separator at the end of a pipeline specification; a stage separator is adjacent to an end character; or there are two stage separators with only blank characters between them.", response: "Ensure that the pipeline specification is complete")
         case .stageNotFound(let stageName):
@@ -45,6 +52,8 @@ public enum PipeError: Error {
             return Detail(code: -46, title: "Label \(label) not declared", explanation: "No specification for a stage is found the first time the label is used. The first usage of a label defines the stage to run, and any operands it may have. Subsequent references are to the label by itself.", response: "Ensure that the label is spelt correctly. If this is the case, inspect the pipeline specification to see if a stage separator is erroneously put between the label and the verb for the stage.")
         case .labelAlreadyDeclared(let label):
             return Detail(code: -47, title: "Label \(label) already declared", explanation: "A reference is made to a label that is already defined. The label reference should be followed by a stage separator or an end character to indicate reference rather than definition.", response: "Ensure that the label is spelt correctly. If this is the case, add a stage separator after the label to indi- cate that this is a reference to a stream other than the primary one. Note that all references to a label refer to the invocation of the stage that is defined with the first usage of the label.")
+        case .invalidCharacterRepresentation(let word):
+            return Detail(code: -50, title: "Not a character or hexadecimal representation: \(word)", explanation: "\(word) is not a character or a two-digit hexadecimal representation of a character.", response: "")
         case .delimiterMissing(let delimiter):
             return Detail(code: -60, title: "Delimiter missing after string \(delimiter)", explanation: "No closing delimiter found for a delimited string.", response: "")
         case .hexDataMissing(let prefix):

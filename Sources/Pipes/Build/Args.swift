@@ -1,15 +1,27 @@
 import Foundation
 
 public class Args {
+    enum ArgsType {
+        case label(String)
+        case stage(stageName: String, label: String?)
+    }
     let tokenizer: StringTokenizer
-    let stageName: String
+    let type: ArgsType
 
     init(_ stageSpec: String) throws {
         tokenizer = StringTokenizer(stageSpec)
-        guard let stageName = tokenizer.scanWord() else {
+        guard let word = tokenizer.scanWord() else {
             throw PipeError.nullStageFound
         }
-        self.stageName = stageName
+        if word.trimmingCharacters(in: .whitespaces).hasSuffix(":") {
+            if let stageName = tokenizer.scanWord() {
+                type = .stage(stageName: stageName, label: word)
+            } else {
+                type = .label(word)
+            }
+        } else {
+            type = .stage(stageName: word, label: nil)
+        }
     }
 
     public func peekWord() throws -> String? {
