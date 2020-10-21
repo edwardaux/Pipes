@@ -30,6 +30,7 @@ public enum PipeError: Error {
     case cannotBeFirstStage
     case fileDoesNotExist(filename: String)
     case missingEndingParenthesis
+    case noPipelineSpecified
     case hexStringNotDivisibleBy2(string: String)
     case binaryStringNotDivisibleBy8(string: String)
     case binaryDataMissing(prefix: String)
@@ -76,6 +77,8 @@ public enum PipeError: Error {
             return Detail(code: -146, title: "File \(filename) does not exist.", explanation: "A file does not exist.", response: "")
         case .missingEndingParenthesis:
             return Detail(code: -200, title: "Missing ending parenthesis in expression", explanation: "More left parentheses are met than can be paired with right parentheses in the expression.", response: "")
+        case .noPipelineSpecified:
+            return Detail(code: -256, title: "No pipeline specified on pipe command", explanation: "The PIPE command is issued without arguments.", response: "")
         case .hexStringNotDivisibleBy2(let string):
             return Detail(code: -335, title: "Odd number of characters in hex data: \(string)", explanation: "A prefix indicating a hexadecimal constant is found, but the remainder of the word does not contain an even number of characters.", response: "")
         case .binaryStringNotDivisibleBy8(let string):

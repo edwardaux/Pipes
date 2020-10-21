@@ -263,6 +263,7 @@ final class StringTokenizerTests: XCTestCase {
         XCTAssertEqual(try Parser.parseOptions(pipeSpec: "(sep 65)").0, Options(stageSep: "e", escape: nil, endChar: nil))
         XCTAssertEqual(try Parser.parseOptions(pipeSpec: "(sep BLANK)").0, Options(stageSep: " ", escape: nil, endChar: nil))
         XCTAssertEqual(try Parser.parseOptions(pipeSpec: "(sep TAB)").0, Options(stageSep: "\t", escape: nil, endChar: nil))
+        XCTAssertEqual(try Parser.parseOptions(pipeSpec: "()").0, Options.default)
 
         XCTAssertThrows(try Parser.parseOptions(pipeSpec: "(sep |"), PipeError.missingEndingParenthesis)
         XCTAssertThrows(try Parser.parseOptions(pipeSpec: "(foo |)"), PipeError.optionNotValid(option: "foo"))
@@ -270,5 +271,18 @@ final class StringTokenizerTests: XCTestCase {
         XCTAssertThrows(try Parser.parseOptions(pipeSpec: "(sep )"), PipeError.valueMissingForOption(keyword: "sep"))
         XCTAssertThrows(try Parser.parseOptions(pipeSpec: "(sep abc)"), PipeError.invalidCharacterRepresentation(word: "abc"))
         XCTAssertThrows(try Parser.parseOptions(pipeSpec: "(sep zz)"), PipeError.invalidCharacterRepresentation(word: "zz"))
+    }
+
+    func testPipeScanning() throws {
+        XCTAssertThrows(try Pipe(""), PipeError.noPipelineSpecified)
+        XCTAssertThrows(try Pipe("()"), PipeError.noPipelineSpecified)
+        XCTAssertThrows(try Pipe("(end ?) |"), PipeError.nullStageFound)
+        XCTAssertThrows(try Pipe("(end ?) ?"), PipeError.noPipelineSpecified)
+        XCTAssertThrows(try Pipe("(end ?) literal a| cons ?"), PipeError.noPipelineSpecified)
+        _ = try Pipe("() literal blah")
+
+        XCTAssertThrows(try Pipe("console | | console"), PipeError.nullStageFound)
+        XCTAssertThrows(try Pipe("gsdfgsdfgsd"), PipeError.stageNotFound(stageName: "gsdfgsdfgsd"))
+        XCTAssertThrows(try Pipe("(end ?) literal a f: fanout | cons ? f: | cons"), PipeError.labelNotDeclared(label: "f:"))
     }
 }

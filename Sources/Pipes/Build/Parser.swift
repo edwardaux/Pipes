@@ -13,6 +13,10 @@ class Parser {
     func parse(into pipe: Pipe) throws {
         let pipelineSpecs = try parsePipe(pipeSpec: pipeSpec, options: options)
         for pipelineSpec in pipelineSpecs {
+            if pipelineSpec.trimmingCharacters(in: .whitespaces).isEmpty {
+                throw PipeError.noPipelineSpecified
+            }
+
             let argsList = try parsePipeline(pipelineSpec: pipelineSpec, options: options)
             for args in argsList {
                 switch args.type {
