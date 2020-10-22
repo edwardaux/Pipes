@@ -5,7 +5,7 @@ public final class Hole: Stage {
         for i in 0..<maxInputStreamNo {
             do {
                 while true {
-                    _ = try readto(streamNo: UInt(i))
+                    _ = try readto(streamNo: i)
                 }
             } catch _ as PipeReturnCode {
             }

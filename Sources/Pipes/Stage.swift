@@ -14,7 +14,7 @@ open class Stage: Identifiable {
 
     /// Returns the position of this stage in the pipeline of its primary stream. First
     /// stage returns 1.
-    public internal(set) var stageNumber: UInt = 1
+    public internal(set) var stageNumber: Int = 1
 
     public init() {
         self.inputStreams = []
@@ -34,10 +34,10 @@ extension Stage {
     internal func dispatch() throws {
         defer {
             for (streamNo, stream) in inputStreams.enumerated() {
-                try? sever(.input, streamNo: UInt(streamNo))
+                try? sever(.input, streamNo: streamNo)
             }
             for (streamNo, stream) in outputStreams.enumerated() {
-                try? sever(.output, streamNo: UInt(streamNo))
+                try? sever(.output, streamNo: streamNo)
             }
         }
 
@@ -85,63 +85,63 @@ extension Stage {
         return streamState(.output, streamNo: 2).isConnected
     }
 
-    public func output(_ record: String, streamNo: UInt = 0) throws {
+    public func output(_ record: String, streamNo: Int = 0) throws {
         guard streamNo < outputStreams.count else { throw PipeReturnCode.streamDoesNotExist(streamNo: streamNo) }
 
-        let stream = outputStreams[Int(streamNo)]
+        let stream = outputStreams[streamNo]
         guard let consumer = stream.consumer else { throw PipeReturnCode.endOfFile }
 
         try consumer.stage.lock.output(record, stream: stream)
     }
 
-    public func readto(streamNo: UInt = 0) throws -> String {
+    public func readto(streamNo: Int = 0) throws -> String {
         if streamNo == Stream.ANY {
             let record = try lock.readtoAny(streams: inputStreams)
             return record
         } else {
             guard streamNo < inputStreams.count else { throw PipeReturnCode.streamDoesNotExist(streamNo: streamNo) }
 
-            let stream = inputStreams[Int(streamNo)]
+            let stream = inputStreams[streamNo]
             guard stream.isProducerConnected else { throw PipeReturnCode.endOfFile }
 
             return try lock.readto(stream: stream)
         }
     }
 
-    public func peekto(streamNo: UInt = 0) throws -> String {
+    public func peekto(streamNo: Int = 0) throws -> String {
         if streamNo == Stream.ANY {
             return try lock.peektoAny(streams: inputStreams)
         } else {
             guard streamNo < inputStreams.count else { throw PipeReturnCode.streamDoesNotExist(streamNo: streamNo) }
 
-            let stream = inputStreams[Int(streamNo)]
+            let stream = inputStreams[streamNo]
             guard stream.isProducerConnected else { throw PipeReturnCode.endOfFile }
 
             return try lock.peekto(stream: stream)
         }
     }
 
-    public func sever(_ direction: StreamDirection, streamNo: UInt = 0) throws {
+    public func sever(_ direction: StreamDirection, streamNo: Int = 0) throws {
         switch direction {
         case .input:
             guard streamNo < inputStreams.count else { throw PipeReturnCode.streamDoesNotExist(streamNo: streamNo) }
 
-            let stream = inputStreams[Int(streamNo)]
+            let stream = inputStreams[streamNo]
             lock.sever(stream: stream)
         case .output:
             guard streamNo < outputStreams.count else { throw PipeReturnCode.streamDoesNotExist(streamNo: streamNo) }
 
-            let stream = outputStreams[Int(streamNo)]
+            let stream = outputStreams[streamNo]
             stream.consumer?.stage.lock.sever(stream: stream)
         }
     }
 
-    public func streamState(_ direction: StreamDirection, streamNo: UInt = 0) -> StreamState {
+    public func streamState(_ direction: StreamDirection, streamNo: Int = 0) -> StreamState {
         switch direction {
         case .input:
             guard streamNo < inputStreams.count else { return .notDefined }
 
-            let stream = inputStreams[Int(streamNo)]
+            let stream = inputStreams[streamNo]
             if !stream.isProducerConnected { return .notConnected }
 
             switch stream.lockState {
@@ -155,7 +155,7 @@ extension Stage {
         case .output:
             guard streamNo < outputStreams.count else { return .notDefined }
 
-            let stream = outputStreams[Int(streamNo)]
+            let stream = outputStreams[streamNo]
             if !stream.isConsumerConnected { return .notConnected }
 
             switch stream.lockState {

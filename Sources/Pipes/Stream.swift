@@ -12,10 +12,10 @@ enum InternalLockState: Equatable {
 class Stream {
     struct Endpoint: Equatable {
         public let stage: Stage
-        public let streamNo: UInt
+        public let streamNo: Int
     }
 
-    public static let ANY = UInt.max
+    public static let ANY = Int.max
 
     var lockState: InternalLockState
     let producer: Endpoint?
@@ -28,19 +28,19 @@ class Stream {
         return consumer != nil
     }
     
-    init(producer: Stage, producerStreamNo: UInt, consumer: Stage, consumerStreamNo: UInt) {
+    init(producer: Stage, producerStreamNo: Int, consumer: Stage, consumerStreamNo: Int) {
         self.lockState = .empty
         self.producer = Endpoint(stage: producer, streamNo: producerStreamNo)
         self.consumer = Endpoint(stage: consumer, streamNo: consumerStreamNo)
     }
 
-    init(consumer: Stage, consumerStreamNo: UInt) {
+    init(consumer: Stage, consumerStreamNo: Int) {
         self.lockState = .empty
         self.producer = nil
         self.consumer = Endpoint(stage: consumer, streamNo: consumerStreamNo)
     }
 
-    init(producer: Stage, producerStreamNo: UInt) {
+    init(producer: Stage, producerStreamNo: Int) {
         self.lockState = .empty
         self.producer = Endpoint(stage: producer, streamNo: producerStreamNo)
         self.consumer = nil

@@ -7,7 +7,7 @@ import Foundation
 // code and continue processing.
 public enum PipeReturnCode: Error {
     case endOfFile
-    case streamDoesNotExist(streamNo: UInt)
+    case streamDoesNotExist(streamNo: Int)
 }
 
 // A PipeError would normally mean termination of the stage.

@@ -57,7 +57,7 @@ public final class Count: Stage {
             }
         }
         let outputRecord = counts.map { "\($0)" }.joined(separator: " ")
-        let outputStream: UInt = isSecondaryOutputStreamConnected ? 1 : 0
+        let outputStream: Int = isSecondaryOutputStreamConnected ? 1 : 0
         try output(outputRecord, streamNo: outputStream)
     }
 }
