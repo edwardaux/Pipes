@@ -43,7 +43,7 @@ extension Stage {
 
         do {
             try run()
-        } catch _ as PipeReturnCode {
+        } catch _ as EndOfFile {
             // These types of errors don't constitute an error
         }
     }
@@ -86,10 +86,10 @@ extension Stage {
     }
 
     public func output(_ record: String, streamNo: Int = 0) throws {
-        guard streamNo < outputStreams.count else { throw PipeReturnCode.streamDoesNotExist(streamNo: streamNo) }
+        guard streamNo < outputStreams.count else { throw PipeError.streamNotDefined(streamNo: streamNo) }
 
         let stream = outputStreams[streamNo]
-        guard let consumer = stream.consumer else { throw PipeReturnCode.endOfFile }
+        guard let consumer = stream.consumer else { throw EndOfFile() }
 
         try consumer.stage.lock.output(record, stream: stream)
     }
@@ -99,10 +99,10 @@ extension Stage {
             let record = try lock.readtoAny(streams: inputStreams)
             return record
         } else {
-            guard streamNo < inputStreams.count else { throw PipeReturnCode.streamDoesNotExist(streamNo: streamNo) }
+            guard streamNo < inputStreams.count else { throw PipeError.streamNotDefined(streamNo: streamNo) }
 
             let stream = inputStreams[streamNo]
-            guard stream.isProducerConnected else { throw PipeReturnCode.endOfFile }
+            guard stream.isProducerConnected else { throw EndOfFile() }
 
             return try lock.readto(stream: stream)
         }
@@ -112,10 +112,10 @@ extension Stage {
         if streamNo == Stream.ANY {
             return try lock.peektoAny(streams: inputStreams)
         } else {
-            guard streamNo < inputStreams.count else { throw PipeReturnCode.streamDoesNotExist(streamNo: streamNo) }
+            guard streamNo < inputStreams.count else { throw PipeError.streamNotDefined(streamNo: streamNo) }
 
             let stream = inputStreams[streamNo]
-            guard stream.isProducerConnected else { throw PipeReturnCode.endOfFile }
+            guard stream.isProducerConnected else { throw EndOfFile() }
 
             return try lock.peekto(stream: stream)
         }
@@ -124,12 +124,12 @@ extension Stage {
     public func sever(_ direction: StreamDirection, streamNo: Int = 0) throws {
         switch direction {
         case .input:
-            guard streamNo < inputStreams.count else { throw PipeReturnCode.streamDoesNotExist(streamNo: streamNo) }
+            guard streamNo < inputStreams.count else { throw PipeError.streamNotDefined(streamNo: streamNo) }
 
             let stream = inputStreams[streamNo]
             lock.sever(stream: stream)
         case .output:
-            guard streamNo < outputStreams.count else { throw PipeReturnCode.streamDoesNotExist(streamNo: streamNo) }
+            guard streamNo < outputStreams.count else { throw PipeError.streamNotDefined(streamNo: streamNo) }
 
             let stream = outputStreams[streamNo]
             stream.consumer?.stage.lock.sever(stream: stream)

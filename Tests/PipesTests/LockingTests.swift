@@ -235,4 +235,8 @@ final class LockingTests: XCTestCase {
         XCTAssertEqual(sequence, ["ba", "ba", "ba", "aa", "ab", "bb", "ac", "bc"])
     }
 
+    func testStall() throws {
+        // TODO stall detection
+//        try Pipe("literal abc | i: fanin | i:").run()
+    }
 }

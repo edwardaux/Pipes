@@ -7,7 +7,7 @@ public final class Hole: Stage {
                 while true {
                     _ = try readto(streamNo: i)
                 }
-            } catch _ as PipeReturnCode {
+            } catch _ as EndOfFile {
             }
         }
     }

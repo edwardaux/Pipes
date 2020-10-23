@@ -43,7 +43,7 @@ public final class Count: Stage {
                 }
                 _ = try readto()
             }
-        } catch _ as PipeReturnCode {
+        } catch _ as EndOfFile {
         }
 
         let counts: [Int] = metrics.map {

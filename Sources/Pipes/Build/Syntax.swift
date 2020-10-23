@@ -16,4 +16,11 @@ extension String {
             throw PipeError.invalidCharacterRepresentation(word: self)
         }
     }
+
+    func asStreamIdentifier() throws -> Int {
+        guard let streamIdentifier = Int(self), streamIdentifier >= 0 else {
+            throw PipeError.invalidStreamIdentifier(identifier: self)
+        }
+        return streamIdentifier
+    }
 }

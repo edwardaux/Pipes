@@ -20,13 +20,13 @@ public final class Diskw: Stage {
                     if isPrimaryOutputStreamConnected {
                         try output(record)
                     }
-                } catch _ as PipeReturnCode {
+                } catch _ as EndOfFile {
                     // If the output stream is propagating EOF back, that's OK.
                     // We'll just keep on writing to the file regardless.
                 }
                 _ = try readto()
             }
-        } catch _ as PipeReturnCode {
+        } catch _ as EndOfFile {
             try lineWriter.close()
         }
     }

@@ -12,7 +12,7 @@ final class ErrorTests: XCTestCase {
     func testWorstErrorNumber() throws {
         do {
             try Pipe()
-                .add(RunnableStage { throw PipeReturnCode.endOfFile })
+                .add(RunnableStage { throw EndOfFile() })
                 .add(RunnableStage { throw PipeError.labelNotDeclared(label: "") })
                 .add(RunnableStage { throw PipeError.labelAlreadyDeclared(label: "") })
                 .add(RunnableStage { throw PipeError.labelNotDeclared(label: "") })
@@ -25,7 +25,7 @@ final class ErrorTests: XCTestCase {
     func testIgnoringEOF() throws {
         try Pipe()
             .add(RunnableStage { })
-            .add(RunnableStage { throw PipeReturnCode.endOfFile })
+            .add(RunnableStage { throw EndOfFile() })
             .add(RunnableStage { })
             .run()
     }

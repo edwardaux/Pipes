@@ -106,6 +106,13 @@ public class Args {
         return expression
     }
 
+    public func scanStreamIdentifier() throws -> Int? {
+        guard let word = try peekWord() else { return nil }
+
+        _ = try scanWord()
+        return try word.asStreamIdentifier()
+    }
+
     public func scanRemainder(trimLeading: Bool = true, trimTrailing: Bool = true) -> String {
         return tokenizer.scanRemainder(trimLeading: trimLeading, trimTrailing: trimTrailing)
     }

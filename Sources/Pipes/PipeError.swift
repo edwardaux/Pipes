@@ -5,13 +5,12 @@ import Foundation
 // they might be). For example, most stages will propagate endOfFile
 // however, there are some stages that will catch that specific return
 // code and continue processing.
-public enum PipeReturnCode: Error {
-    case endOfFile
-    case streamDoesNotExist(streamNo: Int)
+public struct EndOfFile: Error {
 }
 
 // A PipeError would normally mean termination of the stage.
 public enum PipeError: Error {
+    case streamNotDefined(streamNo: Int)
     case optionNotValid(option: String)
     case valueMissingForOption(keyword: String)
     case nullStageFound
@@ -23,6 +22,7 @@ public enum PipeError: Error {
     case hexDataMissing(prefix: String)
     case hexStringNotHex(string: String)
     case mustBeFirstStage
+    case invalidStreamIdentifier(identifier: String)
     case operandNotValid(keyword: String)
     case excessiveOptions(string: String)
     case requiredKeywordsMissing(keywords: [String])
@@ -31,6 +31,7 @@ public enum PipeError: Error {
     case fileDoesNotExist(filename: String)
     case missingEndingParenthesis
     case noPipelineSpecified
+    case tooManyStreams
     case hexStringNotDivisibleBy2(string: String)
     case binaryStringNotDivisibleBy8(string: String)
     case binaryDataMissing(prefix: String)
@@ -41,6 +42,8 @@ public enum PipeError: Error {
 
     private var detail: Detail {
         switch self {
+        case .streamNotDefined(let streamNo):
+            return Detail(code: -4, title: "Stream \(streamNo) is not defined", explanation: "Stream is not defined.", response: "Defined global options are: NAME TRACE LISTRC LISTERR LISTCMD STOP SEPARATOR ENDCHAR ESCAPE MSGLEVEL.")
         case .optionNotValid(let word):
             return Detail(code: -14, title: "Option \(word) not valid", explanation: "The word substituted is not recognised as one of the global options supported.", response: "Defined global options are: NAME TRACE LISTRC LISTERR LISTCMD STOP SEPARATOR ENDCHAR ESCAPE MSGLEVEL.")
         case .valueMissingForOption(let keyword):
@@ -63,6 +66,8 @@ public enum PipeError: Error {
             return Detail(code: -65, title: "\"\(string)\" is not hexadecimal", explanation: "An h, H, x, or X is found in the first char- acter of a specification item to specify a hexadecimal literal, but the remainder of the word is not composed of hexadecimal digits.", response: "Do not use letters as delimiters for a delimited string.")
         case .mustBeFirstStage:
             return Detail(code: -87, title: "This stage must be the first stage of a pipeline", explanation: "A program that cannot process input records is not in the first position of the pipeline.", response: "")
+        case .invalidStreamIdentifier(let identifier):
+            return Detail(code: -102, title: "Stream \(identifier) is not valid", explanation: "Invalid stream identifier.", response: "")
         case .operandNotValid(let keyword):
             return Detail(code: -111, title: "Operand \(keyword) is not valid", explanation: "A keyword operand is expected, but the word does not match any keyword that is valid in the context.", response: "")
         case .excessiveOptions(let string):
@@ -79,6 +84,8 @@ public enum PipeError: Error {
             return Detail(code: -200, title: "Missing ending parenthesis in expression", explanation: "More left parentheses are met than can be paired with right parentheses in the expression.", response: "")
         case .noPipelineSpecified:
             return Detail(code: -256, title: "No pipeline specified on pipe command", explanation: "The PIPE command is issued without arguments.", response: "")
+        case .tooManyStreams:
+            return Detail(code: -264, title: "Too many streams", explanation: "Too many streams are defined for merge, or a selection stage has more than two streams, or a secondary stream is defined for a stage that does not use it.", response: "")
         case .hexStringNotDivisibleBy2(let string):
             return Detail(code: -335, title: "Odd number of characters in hex data: \(string)", explanation: "A prefix indicating a hexadecimal constant is found, but the remainder of the word does not contain an even number of characters.", response: "")
         case .binaryStringNotDivisibleBy8(let string):
