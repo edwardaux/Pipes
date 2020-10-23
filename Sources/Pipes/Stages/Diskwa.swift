@@ -7,9 +7,11 @@ public final class Diskwa: Stage {
         self.filename = filename
     }
 
-    override public func run() throws {
+    public override func commit() throws {
         guard stageNumber != 1 else { throw PipeError.cannotBeFirstStage }
+    }
 
+    override public func run() throws {
         let lineWriter = try LineWriter(path: filename, append: true)
 
         do {

@@ -7,7 +7,7 @@ public final class Fanin: Stage {
         self.inputStreamNos = inputStreamNos
     }
 
-    override public func run() throws {
+    public override func commit() throws {
         guard !isSecondaryOutputStreamConnected else { throw PipeError.unusedOutputStreamConnected(streamNo: 1) }
 
         let streamNos = inputStreamNos.count == 0 ? Array(0...maxInputStreamNo) : inputStreamNos
@@ -16,7 +16,10 @@ public final class Fanin: Stage {
                 throw PipeError.streamNotDefined(streamNo: streamNo)
             }
         }
+    }
 
+    override public func run() throws {
+        let streamNos = inputStreamNos.count == 0 ? Array(0...maxInputStreamNo) : inputStreamNos
         for streamNo in streamNos {
             do {
                 while true {

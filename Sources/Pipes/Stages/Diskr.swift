@@ -7,9 +7,11 @@ public final class Diskr: Stage {
         self.filename = filename
     }
 
-    override public func run() throws {
+    public override func commit() throws {
         guard stageNumber == 1 else { throw PipeError.mustBeFirstStage }
+    }
 
+    override public func run() throws {
         let lineReader = try LineReader(path: filename)
         for line in lineReader {
             try output(line)

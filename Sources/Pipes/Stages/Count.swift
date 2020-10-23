@@ -16,10 +16,12 @@ public final class Count: Stage {
         self.metrics = metrics
     }
 
-    override public func run() throws {
+    public override func commit() throws {
         guard !isSecondaryInputStreamConnected else { throw PipeError.unusedInputStreamConnected(streamNo: 1) }
         guard !isTertiaryOutputStreamConnected else { throw PipeError.unusedOutputStreamConnected(streamNo: maxOutputStreamNo) }
+    }
 
+    override public func run() throws {
         var bytes = 0
         var chars = 0
         var words = 0

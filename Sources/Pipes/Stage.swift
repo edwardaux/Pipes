@@ -11,6 +11,7 @@ open class Stage: Identifiable {
     internal let lock: StreamLock<String>
     internal var inputStreams: [Stream]
     internal var outputStreams: [Stream]
+    internal var committed = false
 
     /// Returns the position of this stage in the pipeline of its primary stream. First
     /// stage returns 1.
@@ -24,6 +25,11 @@ open class Stage: Identifiable {
 
     open func run() throws {
         preconditionFailure("Stage \(self) needs to implement run()")
+    }
+
+    open func commit() throws {
+        // By default, we do nothing but this gives the stages an opportunity to
+        // do some checks before running.
     }
 }
 
@@ -86,6 +92,7 @@ extension Stage {
     }
 
     public func output(_ record: String, streamNo: Int = 0) throws {
+        guard committed else { throw PipeError.commandNotPermitted(command: "OUTPUT") }
         guard streamNo < outputStreams.count else { throw PipeError.streamNotDefined(streamNo: streamNo) }
 
         let stream = outputStreams[streamNo]
@@ -95,6 +102,8 @@ extension Stage {
     }
 
     public func readto(streamNo: Int = 0) throws -> String {
+        guard committed else { throw PipeError.commandNotPermitted(command: "READTO") }
+
         if streamNo == Stream.ANY {
             let record = try lock.readtoAny(streams: inputStreams)
             return record
@@ -109,6 +118,8 @@ extension Stage {
     }
 
     public func peekto(streamNo: Int = 0) throws -> String {
+        guard committed else { throw PipeError.commandNotPermitted(command: "PEEKTO") }
+
         if streamNo == Stream.ANY {
             return try lock.peektoAny(streams: inputStreams)
         } else {
@@ -122,6 +133,8 @@ extension Stage {
     }
 
     public func sever(_ direction: StreamDirection, streamNo: Int = 0) throws {
+        guard committed else { throw PipeError.commandNotPermitted(command: "SEVER") }
+
         switch direction {
         case .input:
             guard streamNo < inputStreams.count else { throw PipeError.streamNotDefined(streamNo: streamNo) }

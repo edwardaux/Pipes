@@ -9,6 +9,9 @@ final class PerformanceTests: XCTestCase {
         stage1.outputStreams = [stream]
         stage2.inputStreams = [stream]
 
+        stage1.committed = true
+        stage2.committed = true
+
         let count = 10_000
         measure {
             DispatchQueue.global().async {

@@ -38,6 +38,8 @@ public enum PipeError: Error {
     case unableToWriteToFile(path: String, error: Error)
     case unusedInputStreamConnected(streamNo: Int)
     case unusedOutputStreamConnected(streamNo: Int)
+    case commandNotPermitted(command: String)
+
 
     private var detail: Detail {
         switch self {
@@ -97,6 +99,8 @@ public enum PipeError: Error {
             return Detail(code: -1196, title: "Input stream \(streamNo) is unexpectedly connected.", explanation: "A stream is connected that the stage does not use. This is often a symptom of an incorrect placement of a label reference.", response: "")
         case .unusedOutputStreamConnected(let streamNo):
             return Detail(code: -1196, title: "Output stream \(streamNo) is unexpectedly connected.", explanation: "A stream is connected that the stage does not use. This is often a symptom of an incorrect placement of a label reference.", response: "")
+        case .commandNotPermitted(let command):
+            return Detail(code: -2000, title: "Command \(command) not permitted during commit() phase.", explanation: "Stream operations are only permitted in the run() function.", response: "")
         }
     }
 

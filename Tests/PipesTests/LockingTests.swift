@@ -8,6 +8,8 @@ final class LockingTests: XCTestCase {
         let stream  = Pipes.Stream(producer: stage1, producerStreamNo: 0, consumer: stage2, consumerStreamNo: 0)
         stage1.outputStreams = [stream]
         stage2.inputStreams = [stream]
+        stage1.committed = true
+        stage2.committed = true
         return (stage1, stage2)
     }
 
@@ -164,6 +166,10 @@ final class LockingTests: XCTestCase {
         stage1b.outputStreams = [stream2]
         stage2.inputStreams = [stream1, stream2]
 
+        stage1a.committed = true
+        stage1b.committed = true
+        stage2.committed = true
+
         var sequence = [String]()
 
         DispatchQueue.global().async {
@@ -194,6 +200,10 @@ final class LockingTests: XCTestCase {
         stage1a.outputStreams = [stream1]
         stage1b.outputStreams = [stream2]
         stage2.inputStreams = [stream1, stream2]
+
+        stage1a.committed = true
+        stage1b.committed = true
+        stage2.committed = true
 
         var sequence = [String]()
 

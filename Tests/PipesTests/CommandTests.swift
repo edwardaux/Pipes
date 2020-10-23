@@ -9,6 +9,9 @@ final class CommandTests: XCTestCase {
         stage1.outputStreams = [stream]
         stage2.inputStreams = [stream]
 
+        stage1.committed = true
+        stage2.committed = true
+
         DispatchQueue.global().async {
             try! stage1.output("a")
         }
@@ -25,5 +28,25 @@ final class CommandTests: XCTestCase {
         XCTAssertEqual(stage1.streamState(.output, streamNo: 1), StreamState.notDefined)
         XCTAssertEqual(stage2.streamState(.input, streamNo: 0), StreamState.connectedNotWaiting)
         XCTAssertEqual(stage2.streamState(.input, streamNo: 1), StreamState.notDefined)
+    }
+
+    func testIllegalCommandInCommit() {
+        class TestStage: Stage {
+            override public func commit() throws {
+                try output("")
+            }
+        }
+
+        XCTAssertThrows(try Pipe().add(TestStage()).run(), PipeError.commandNotPermitted(command: "OUTPUT"))
+    }
+
+    func testValidationInCommit() {
+        class TestStage: Stage {
+            override public func commit() throws {
+                throw PipeError.invalidStreamIdentifier(identifier: "abc")
+            }
+        }
+
+        XCTAssertThrows(try Pipe().add(TestStage()).run(), PipeError.invalidStreamIdentifier(identifier: "abc"))
     }
 }
