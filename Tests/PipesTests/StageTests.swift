@@ -148,6 +148,21 @@ final class StageTests: XCTestCase {
         XCTAssertThrows(try Pipe("help help broken"), PipeError.excessiveOptions(string: "broken"))
     }
 
+    func testFanin() throws {
+        try Pipe("fanin").run()
+        try Pipe("(end ?) zzzgen /a/b/c/ | f: fanin | zzzcheck /a/b/c/").run()
+        try Pipe("(end ?) zzzgen /a/b/c/ | f: fanin | zzzcheck /a/b/c/d/e/f/ ? zzzgen /d/e/f/ | f:").run()
+        try Pipe("(end ?) zzzgen /a/b/c/ | f: fanin | zzzcheck /a/b/c/d/e/f/g/h/i/ ? zzzgen /d/e/f/ | f: ? zzzgen /g/h/i/ | f:").run()
+        try Pipe("(end ?) zzzgen /a/b/c/ | f: fanin 2 1 0 | zzzcheck /g/h/i/d/e/f/a/b/c/ ? zzzgen /d/e/f/ | f: ? zzzgen /g/h/i/ | f:").run()
+        try Pipe("(end ?) zzzgen /a/b/c/ | f: fanin 2 | zzzcheck /g/h/i/ ? zzzgen /d/e/f/ | f: ? zzzgen /g/h/i/ | f:").run()
+        try Pipe("(end ?) zzzgen /a/b/c/ | f: fanin 2 1 2 0 | zzzcheck /g/h/i/d/e/f/a/b/c/ ? zzzgen /d/e/f/ | f: ? zzzgen /g/h/i/ | f:").run()
+
+        XCTAssertThrows(try Pipe("(end ?) zzzgen /a/b/c/ | f: fanin 5 | zzzcheck /g/h/i/ ? zzzgen /d/e/f/ | f: ? zzzgen /g/h/i/ | f:").run(), PipeError.streamNotDefined(streamNo: 5))
+        XCTAssertThrows(try Pipe("(end ?) zzzgen /a/b/c/ | f: fanin -1 | zzzcheck /g/h/i/ ? zzzgen /d/e/f/ | f: ? zzzgen /g/h/i/ | f:").run(), PipeError.invalidStreamIdentifier(identifier: "-1"))
+        XCTAssertThrows(try Pipe("(end ?) zzzgen /a/b/c/ | f: fanin abc | zzzcheck /g/h/i/ ? zzzgen /d/e/f/ | f: ? zzzgen /g/h/i/ | f:").run(), PipeError.invalidStreamIdentifier(identifier: "abc"))
+        XCTAssertThrows(try Pipe("(end ?) literal a | a: fanin | console ? a: | console").run(), PipeError.unusedOutputStreamConnected(streamNo: 1))
+    }
+
     func testHole() throws {
         try Pipe("literal a|literal b| hole | literal c| zzzcheck /c/").run()
     }

@@ -92,6 +92,7 @@ extension Pipe {
         register(Diskr.self)
         register(Diskw.self)
         register(Diskwa.self)
+        register(Fanin.self)
         register(Help.self)
         register(Hole.self)
         register(Literal.self)

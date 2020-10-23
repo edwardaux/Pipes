@@ -31,7 +31,6 @@ public enum PipeError: Error {
     case fileDoesNotExist(filename: String)
     case missingEndingParenthesis
     case noPipelineSpecified
-    case tooManyStreams
     case hexStringNotDivisibleBy2(string: String)
     case binaryStringNotDivisibleBy8(string: String)
     case binaryDataMissing(prefix: String)
@@ -84,8 +83,6 @@ public enum PipeError: Error {
             return Detail(code: -200, title: "Missing ending parenthesis in expression", explanation: "More left parentheses are met than can be paired with right parentheses in the expression.", response: "")
         case .noPipelineSpecified:
             return Detail(code: -256, title: "No pipeline specified on pipe command", explanation: "The PIPE command is issued without arguments.", response: "")
-        case .tooManyStreams:
-            return Detail(code: -264, title: "Too many streams", explanation: "Too many streams are defined for merge, or a selection stage has more than two streams, or a secondary stream is defined for a stage that does not use it.", response: "")
         case .hexStringNotDivisibleBy2(let string):
             return Detail(code: -335, title: "Odd number of characters in hex data: \(string)", explanation: "A prefix indicating a hexadecimal constant is found, but the remainder of the word does not contain an even number of characters.", response: "")
         case .binaryStringNotDivisibleBy8(let string):

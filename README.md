@@ -10,7 +10,7 @@ A description of this package.
 [X] Diskw.java
 [X] Count.java
 [X] Hole.java
-[ ] Fanin.java
+[X] Fanin.java
 [ ] Faninany.java
 [ ] Fanout.java
 [ ] Command.java
