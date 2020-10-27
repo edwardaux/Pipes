@@ -163,6 +163,17 @@ final class StageTests: XCTestCase {
         XCTAssertThrows(try Pipe("(end ?) literal a | a: fanin | console ? a: | console").run(), PipeError.unusedOutputStreamConnected(streamNo: 1))
     }
 
+    func testFaninany() throws {
+        try Pipe("fanin").run()
+        try Pipe("(end ?) zzzgen /a/b/c/ | f: faninany | zzzcheck /a/b/c/").run()
+        try Pipe("(end ?) zzzgen /a/b/c/ | f: faninany | zzzcheck /a/b/c/d/e/f/ ? zzzgen /d/e/f/ | f:").run()
+        try Pipe("(end ?) zzzgen /a/b/c/ | f: faninany | zzzcheck /a/b/c/d/e/f/g/h/i/ ? zzzgen /d/e/f/ | f: ? zzzgen /g/h/i/ | f:").run()
+
+        XCTAssertThrows(try Pipe("(end ?) literal a | a: faninany | console ? a: | console").run(), PipeError.unusedOutputStreamConnected(streamNo: 1))
+
+        // TODO have an example using locate or other stage that splits the input
+    }
+
     func testHole() throws {
         try Pipe("literal a|literal b| hole | literal c| zzzcheck /c/").run()
     }
