@@ -25,7 +25,10 @@ extension Hole: RegisteredStage {
     }
 
     public static var helpSummary: String? {
-        "Hole reads and discards records without writing any. It can be used to consume output from stages that would terminate prematurely if their output stream were not connected."
+        """
+        Reads and discards records without writing any. It can be used to consume output from stages
+        that would terminate prematurely if their output stream were not connected.
+        """
     }
 
     public static var helpSyntax: String? {

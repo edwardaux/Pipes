@@ -32,7 +32,10 @@ extension Literal: RegisteredStage {
     }
 
     public static var helpSummary: String? {
-        "literal writes its argument string into the pipeline and then passes records on the input to the output stream"
+        """
+        Writes its argument string into the pipeline and then passes records on the input to the
+        output stream. Invoking without a string parameter will pass an empty string.
+        """
     }
 
     public static var helpSyntax: String? {

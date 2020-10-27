@@ -27,7 +27,11 @@ extension Faninany: RegisteredStage {
     }
 
     public static var helpSummary: String? {
-        "Copies records from its input streams to the primary output stream. It reads records from whatever input stream has one ready. It is unspecified which stream is read next when two or more input streams have a record ready."
+        """
+        Copies records from its input streams to the primary output stream. It reads records from whatever
+        input stream has one ready. It is unspecified which stream is read next when two or more input
+        streams have a record ready.
+        """
     }
 
     public static var helpSyntax: String? {

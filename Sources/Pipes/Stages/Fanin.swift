@@ -49,7 +49,14 @@ extension Fanin: RegisteredStage {
     }
 
     public static var helpSummary: String? {
-        "Passes all records on the primary input stream to the primary output stream, then all records on the secondary input stream to the primary output stream, and so on."
+        """
+        Passes all records on the primary input stream to the primary output stream, then all records on
+        the secondary input stream to the primary output stream, and so on.
+
+        Options:
+            stream - An override list of blank separated stream identifiers that define the order that
+                     the streams will be read from.
+        """
     }
 
     public static var helpSyntax: String? {

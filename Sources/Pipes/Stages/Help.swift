@@ -46,7 +46,9 @@ extension Help: RegisteredStage {
     }
 
     public static var helpSummary: String? {
-        "Outputs help information for the provided stage name to the console"
+        """
+        Outputs help information for the provided stage name to the console
+        """
     }
 
     public static var helpSyntax: String? {

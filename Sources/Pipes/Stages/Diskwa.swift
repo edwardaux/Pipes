@@ -49,7 +49,9 @@ extension Diskwa: RegisteredStage {
     }
 
     public static var helpSummary: String? {
-        "Appends records to an existing file on disk. If the file doesn't exist, it will be created."
+        """
+        Appends records to an existing file on disk. If the file doesn't exist, it will be created.
+        """
     }
 
     public static var helpSyntax: String? {

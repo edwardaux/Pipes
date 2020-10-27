@@ -58,7 +58,19 @@ extension Console: RegisteredStage {
     }
 
     public static var helpSummary: String? {
-        "When console is first in a pipeline it reads lines from the terminal and writes them into the pipeline (Ctrl-D terminates input). When console is not first in a pipeline it copies lines from the pipeline to the terminal."
+        """
+        When console is first in a pipeline it reads lines from the terminal and writes them into the
+        pipeline. When console is not first in a pipeline it copies lines from the pipeline to the
+        terminal. By default, Ctrl-D triggers end of file.
+
+        Options:
+            EOF delimitedString - specifies a delimited string that will cause end of file to be
+                                  triggered when this string is entered (with leading or trailing
+                                  blanks, or both).
+            NOEOF               - specifies that input data are not inspected for an end-of-file
+                                  indication; console stops only when it finds that its output
+                                  stream is not connected
+        """
     }
 
     public static var helpSyntax: String? {

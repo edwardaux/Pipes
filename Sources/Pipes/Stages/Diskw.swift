@@ -49,7 +49,9 @@ extension Diskw: RegisteredStage {
     }
 
     public static var helpSummary: String? {
-        "Replaces a file on disk. If the file doesn't exist, it will be created."
+        """
+        Replaces a file on disk. If the file doesn't exist, it will be created.
+        """
     }
 
     public static var helpSyntax: String? {

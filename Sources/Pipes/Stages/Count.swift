@@ -101,7 +101,24 @@ extension Count: RegisteredStage {
     }
 
     public static var helpSummary: String? {
-        "Counts the number of input lines, words, characters, or any combination thereof. It can also report the length of the shortest or longest record, or both (when there are no records, the shortest and longest records are reported as -1). It writes a line with the specified counts at end-of-file."
+        """
+        Counts the number of input lines, words, characters, or any combination thereof. It can
+        also report the length of the shortest or longest record, or both (when there are no records,
+        the shortest and longest records are reported as -1). It writes a line with the specified
+        counts at end-of-file.
+
+        For example, "literal aa bb cc | count bytes lines words | console" would output a record
+        containing "9 1 3".
+
+        Options:
+            CHARACTERS - outputs the number of unicode characters
+            CHARS      - synonym for CHARACTERS
+            BYTES      - outputs the number of bytes
+            WORDS      - outputs the number of blank separated words
+            LINES      - outputs the number of records
+            MINline    - outputs the length of the shortest line (-1 if there are no input records)
+            MAXline    - outputs the length of the longest line (-1 if there are no input records)
+        """
     }
 
     public static var helpSyntax: String? {

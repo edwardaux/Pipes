@@ -34,7 +34,9 @@ extension Diskr: RegisteredStage {
     }
 
     public static var helpSummary: String? {
-        "Reads the contents of a file line by line. The file must exist."
+        """
+        Reads the contents of a file line by line. The file must exist.
+        """
     }
 
     public static var helpSyntax: String? {

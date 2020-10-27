@@ -28,6 +28,7 @@ final class StageTests: XCTestCase {
         XCTAssertThrows(try Pipe("count xxx"), PipeError.operandNotValid(keyword: "xxx"))
         XCTAssertThrows(try Pipe("count bytes aa words"), PipeError.operandNotValid(keyword: "aa"))
 
+        try Pipe("count words min max | zzzcheck /0 -1 -1/").run()
         try Pipe("literal a|count words").run()
         try Pipe("literal a|count words lines").run()
         try Pipe("literal a|count words lines lines").run()
@@ -39,17 +40,6 @@ final class StageTests: XCTestCase {
         try Pipe("literal abc|literal def|literal hello there how are you|literal | count chars words lines min max | zzzcheck /29 7 4 0 23/").run()
         try Pipe("literal abc|literal def|literal hello there how are you|literal | count max min lines words chars chars chars | zzzcheck /23 0 4 7 29 29 29/").run()
         try Pipe("(end ?) literal abc|literal def|literal hello there how are you|literal | c: count chars words lines min max | zzzcheck //hello there how are you/def/abc/ ? c: | zzzcheck /29 7 4 0 23/").run()
-        try Pipe()
-            .add(Literal("abc"))
-            .add(Literal("def"))
-            .add(Literal("hello there how are you"))
-            .add(Literal(""))
-            .add(Count(metrics: [.characters, .words, .lines, .minLine, .maxLine]), label: "c")
-            .add(ZZZTestCheckerStage(["", "hello there how are you", "def", "abc"]))
-            .end()
-            .add(label: "c")
-            .add(ZZZTestCheckerStage(["29 7 4 0 23"]))
-            .run()
     }
 
     func testDiskr() throws {
@@ -167,7 +157,7 @@ final class StageTests: XCTestCase {
     func testFaninany() throws {
         try Pipe("fanin").run()
         try Pipe("(end ?) zzzgen /a/b/c/ | f: faninany | zzzcheck /a/b/c/").run()
-        // TODO these is non-deterministic. should probably test with a sort stage
+        // TODO these are non-deterministic. should probably test with a sort stage
         // try Pipe("(end ?) zzzgen /a/b/c/ | f: faninany | zzzcheck /a/b/c/d/e/f/ ? zzzgen /d/e/f/ | f:").run()
         // try Pipe("(end ?) zzzgen /a/b/c/ | f: faninany | zzzcheck /a/b/c/d/e/f/g/h/i/ ? zzzgen /d/e/f/ | f: ? zzzgen /g/h/i/ | f:").run()
 
