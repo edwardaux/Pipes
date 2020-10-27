@@ -112,6 +112,10 @@ class StreamLock<R> {
                     return try lockedPeekto(stream: stream)
                 }
             }
+            let allSevered = streams.reduce(true) { $0 && $1.lockState == .severed }
+            if allSevered {
+                throw EndOfFile()
+            }
             condition.wait()
             continue loop
         }
@@ -134,6 +138,10 @@ class StreamLock<R> {
                 default:
                     break
                 }
+            }
+            let allSevered = streams.reduce(true) { $0 && $1.lockState == .severed }
+            if allSevered {
+                throw EndOfFile()
             }
             condition.wait()
             continue loop
