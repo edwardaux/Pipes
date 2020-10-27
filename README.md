@@ -11,7 +11,7 @@ A description of this package.
 [X] Count.java
 [X] Hole.java
 [X] Fanin.java
-[ ] Faninany.java
+[X] Faninany.java
 [ ] Fanout.java
 [ ] Command.java
 

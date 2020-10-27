@@ -92,6 +92,7 @@ final class StageTests: XCTestCase {
         try withFileContentsFor("literal  | > /tmp/foobar", filename: "/tmp/foobar") { (contents) in
             XCTAssertEqual(contents, " \n")
         }
+        // TODO uncomment once we get TAKE
 //        try withFileContentsFor("literal a| take 0 | > /tmp/foobar", filename: "/tmp/foobar") { (contents) in
 //            XCTAssertEqual(contents, "")
 //        }
@@ -166,8 +167,9 @@ final class StageTests: XCTestCase {
     func testFaninany() throws {
         try Pipe("fanin").run()
         try Pipe("(end ?) zzzgen /a/b/c/ | f: faninany | zzzcheck /a/b/c/").run()
-        try Pipe("(end ?) zzzgen /a/b/c/ | f: faninany | zzzcheck /a/b/c/d/e/f/ ? zzzgen /d/e/f/ | f:").run()
-        try Pipe("(end ?) zzzgen /a/b/c/ | f: faninany | zzzcheck /a/b/c/d/e/f/g/h/i/ ? zzzgen /d/e/f/ | f: ? zzzgen /g/h/i/ | f:").run()
+        // TODO these is non-deterministic. should probably test with a sort stage
+        // try Pipe("(end ?) zzzgen /a/b/c/ | f: faninany | zzzcheck /a/b/c/d/e/f/ ? zzzgen /d/e/f/ | f:").run()
+        // try Pipe("(end ?) zzzgen /a/b/c/ | f: faninany | zzzcheck /a/b/c/d/e/f/g/h/i/ ? zzzgen /d/e/f/ | f: ? zzzgen /g/h/i/ | f:").run()
 
         XCTAssertThrows(try Pipe("(end ?) literal a | a: faninany | console ? a: | console").run(), PipeError.unusedOutputStreamConnected(streamNo: 1))
 
