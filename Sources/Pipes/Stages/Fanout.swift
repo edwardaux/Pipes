@@ -22,8 +22,8 @@ public final class Fanout: Stage {
     }
 
     public override func commit() throws {
-        guard isPrimaryInputStreamConnected else { throw PipeError.streamNotConnected(streamNo: 0) }
-        guard !isSecondaryInputStreamConnected else { throw PipeError.unusedInputStreamConnected(streamNo: 1) }
+        try ensurePrimaryInputStreamConnected()
+        try ensureOnlyPrimaryInputStreamConnected()
     }
 
     override public func run() throws {

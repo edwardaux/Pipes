@@ -2,7 +2,7 @@ import Foundation
 
 public final class Faninany: Stage {
     public override func commit() throws {
-        guard !isSecondaryOutputStreamConnected else { throw PipeError.unusedOutputStreamConnected(streamNo: 1) }
+        try ensureOnlyPrimaryOutputStreamConnected()
     }
 
     override public func run() throws {

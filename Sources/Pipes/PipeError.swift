@@ -10,8 +10,8 @@ public struct EndOfFile: Error {
 
 // A PipeError would normally mean termination of the stage.
 public enum PipeError: Error {
-    case streamNotDefined(streamNo: Int)
-    case streamNotConnected(streamNo: Int)
+    case streamNotDefined(direction: StreamDirection, streamNo: Int)
+    case streamNotConnected(direction: StreamDirection, streamNo: Int)
     case optionNotValid(option: String)
     case valueMissingForOption(keyword: String)
     case nullStageFound
@@ -38,17 +38,16 @@ public enum PipeError: Error {
     case binaryDataMissing(prefix: String)
     case binaryStringNotBinary(string: String)
     case unableToWriteToFile(path: String, error: Error)
-    case unusedInputStreamConnected(streamNo: Int)
-    case unusedOutputStreamConnected(streamNo: Int)
+    case unusedStreamConnected(direction: StreamDirection, streamNo: Int)
     case commandNotPermitted(command: String)
 
 
     private var detail: Detail {
         switch self {
-        case .streamNotDefined(let streamNo):
-            return Detail(code: -4, title: "Stream \(streamNo) is not defined", explanation: "Stream is not defined.", response: "")
-        case .streamNotConnected(let streamNo):
-            return Detail(code: -12, title: "Stream \(streamNo) is not connected", explanation: "Stream is not connected.", response: "")
+        case .streamNotDefined(let direction, let streamNo):
+            return Detail(code: -4, title: "\(direction) stream \(streamNo) is not defined", explanation: "Stream is not defined.", response: "")
+        case .streamNotConnected(let direction, let streamNo):
+            return Detail(code: -12, title: "\(direction) stream \(streamNo) is not connected", explanation: "Stream is not connected.", response: "")
         case .optionNotValid(let word):
             return Detail(code: -14, title: "Option \(word) not valid", explanation: "The word substituted is not recognised as one of the global options supported.", response: "Defined global options are: NAME TRACE LISTRC LISTERR LISTCMD STOP SEPARATOR ENDCHAR ESCAPE MSGLEVEL.")
         case .valueMissingForOption(let keyword):
@@ -101,10 +100,8 @@ public enum PipeError: Error {
             return Detail(code: -338, title: "Not binary data: \(string)", explanation: "A prefix indicating a binary constant is found, but the remainder of the word contains a character that is neither 0 nor 1.", response: "")
         case .unableToWriteToFile(let path, let error):
             return Detail(code: -780, title: "You are not allowed to write to \(path). Reason: \(error.localizedDescription)", explanation: "The directory record for an existing file indicates that you cannot write to it.", response: "")
-        case .unusedInputStreamConnected(let streamNo):
-            return Detail(code: -1196, title: "Input stream \(streamNo) is unexpectedly connected.", explanation: "A stream is connected that the stage does not use. This is often a symptom of an incorrect placement of a label reference.", response: "")
-        case .unusedOutputStreamConnected(let streamNo):
-            return Detail(code: -1196, title: "Output stream \(streamNo) is unexpectedly connected.", explanation: "A stream is connected that the stage does not use. This is often a symptom of an incorrect placement of a label reference.", response: "")
+        case .unusedStreamConnected(let direction, let streamNo):
+            return Detail(code: -1196, title: "\(direction) stream \(streamNo) is unexpectedly connected.", explanation: "A stream is connected that the stage does not use. This is often a symptom of an incorrect placement of a label reference.", response: "")
         case .commandNotPermitted(let command):
             return Detail(code: -2000, title: "Command \(command) not permitted during commit() phase.", explanation: "Stream operations are only permitted in the run() function.", response: "")
         }

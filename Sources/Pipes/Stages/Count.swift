@@ -17,8 +17,8 @@ public final class Count: Stage {
     }
 
     public override func commit() throws {
-        guard !isSecondaryInputStreamConnected else { throw PipeError.unusedInputStreamConnected(streamNo: 1) }
-        guard !isTertiaryOutputStreamConnected else { throw PipeError.unusedOutputStreamConnected(streamNo: maxOutputStreamNo) }
+        try ensureOnlyPrimaryInputStreamConnected()
+        guard !isTertiaryOutputStreamConnected else { throw PipeError.unusedStreamConnected(direction: .output, streamNo: maxOutputStreamNo) }
     }
 
     override public func run() throws {

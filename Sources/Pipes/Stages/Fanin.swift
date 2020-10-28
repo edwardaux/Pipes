@@ -8,12 +8,12 @@ public final class Fanin: Stage {
     }
 
     public override func commit() throws {
-        guard !isSecondaryOutputStreamConnected else { throw PipeError.unusedOutputStreamConnected(streamNo: 1) }
+        try ensureOnlyPrimaryOutputStreamConnected()
 
         let streamNos = inputStreamNos.count == 0 ? Array(0...maxInputStreamNo) : inputStreamNos
         for streamNo in streamNos {
             if streamState(.input, streamNo: streamNo) == .notDefined {
-                throw PipeError.streamNotDefined(streamNo: streamNo)
+                throw PipeError.streamNotDefined(direction: .input, streamNo: streamNo)
             }
         }
     }

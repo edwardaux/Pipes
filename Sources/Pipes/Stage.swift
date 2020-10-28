@@ -1,8 +1,15 @@
 import Foundation
 
-public enum StreamDirection {
+public enum StreamDirection: CustomStringConvertible {
     case input
     case output
+
+    public var description: String {
+        switch self {
+        case .input: return "Input"
+        case .output: return "Output"
+        }
+    }
 }
 
 open class Stage: Identifiable {
@@ -93,7 +100,7 @@ extension Stage {
 
     public func output(_ record: String, streamNo: Int = 0) throws {
         guard committed else { throw PipeError.commandNotPermitted(command: "OUTPUT") }
-        guard streamNo < outputStreams.count else { throw PipeError.streamNotDefined(streamNo: streamNo) }
+        guard streamNo < outputStreams.count else { throw PipeError.streamNotDefined(direction: .output, streamNo: streamNo) }
 
         let stream = outputStreams[streamNo]
         guard let consumer = stream.consumer else { throw EndOfFile() }
@@ -108,7 +115,7 @@ extension Stage {
             let record = try lock.readtoAny(streams: inputStreams)
             return record
         } else {
-            guard streamNo < inputStreams.count else { throw PipeError.streamNotDefined(streamNo: streamNo) }
+            guard streamNo < inputStreams.count else { throw PipeError.streamNotDefined(direction: .input, streamNo: streamNo) }
 
             let stream = inputStreams[streamNo]
             guard stream.isProducerConnected else { throw EndOfFile() }
@@ -123,7 +130,7 @@ extension Stage {
         if streamNo == Stream.ANY {
             return try lock.peektoAny(streams: inputStreams)
         } else {
-            guard streamNo < inputStreams.count else { throw PipeError.streamNotDefined(streamNo: streamNo) }
+            guard streamNo < inputStreams.count else { throw PipeError.streamNotDefined(direction: .input, streamNo: streamNo) }
 
             let stream = inputStreams[streamNo]
             guard stream.isProducerConnected else { throw EndOfFile() }
@@ -137,12 +144,12 @@ extension Stage {
 
         switch direction {
         case .input:
-            guard streamNo < inputStreams.count else { throw PipeError.streamNotDefined(streamNo: streamNo) }
+            guard streamNo < inputStreams.count else { throw PipeError.streamNotDefined(direction: .input, streamNo: streamNo) }
 
             let stream = inputStreams[streamNo]
             lock.sever(stream: stream)
         case .output:
-            guard streamNo < outputStreams.count else { throw PipeError.streamNotDefined(streamNo: streamNo) }
+            guard streamNo < outputStreams.count else { throw PipeError.streamNotDefined(direction: .input, streamNo: streamNo) }
 
             let stream = outputStreams[streamNo]
             stream.consumer?.stage.lock.sever(stream: stream)
@@ -180,6 +187,22 @@ extension Stage {
             case .severed: return .notConnected
             }
         }
+    }
+
+    func ensurePrimaryInputStreamConnected() throws {
+        if !isPrimaryInputStreamConnected { throw PipeError.streamNotConnected(direction: .input, streamNo: 0) }
+    }
+
+    func ensurePrimaryOutputStreamConnected() throws {
+        if !isPrimaryOutputStreamConnected { throw PipeError.streamNotConnected(direction: .output, streamNo: 0) }
+    }
+
+    func ensureOnlyPrimaryInputStreamConnected() throws {
+        if isSecondaryInputStreamConnected { throw PipeError.unusedStreamConnected(direction: .input, streamNo: 1) }
+    }
+
+    func ensureOnlyPrimaryOutputStreamConnected() throws {
+        if isSecondaryOutputStreamConnected { throw PipeError.unusedStreamConnected(direction: .output, streamNo: 1) }
     }
 }
 

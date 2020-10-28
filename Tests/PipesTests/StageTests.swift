@@ -148,10 +148,10 @@ final class StageTests: XCTestCase {
         try Pipe("(end ?) zzzgen /a/b/c/ | f: fanin 2 | zzzcheck /g/h/i/ ? zzzgen /d/e/f/ | f: ? zzzgen /g/h/i/ | f:").run()
         try Pipe("(end ?) zzzgen /a/b/c/ | f: fanin 2 1 2 0 | zzzcheck /g/h/i/d/e/f/a/b/c/ ? zzzgen /d/e/f/ | f: ? zzzgen /g/h/i/ | f:").run()
 
-        XCTAssertThrows(try Pipe("(end ?) zzzgen /a/b/c/ | f: fanin 5 | zzzcheck /g/h/i/ ? zzzgen /d/e/f/ | f: ? zzzgen /g/h/i/ | f:").run(), PipeError.streamNotDefined(streamNo: 5))
+        XCTAssertThrows(try Pipe("(end ?) zzzgen /a/b/c/ | f: fanin 5 | zzzcheck /g/h/i/ ? zzzgen /d/e/f/ | f: ? zzzgen /g/h/i/ | f:").run(), PipeError.streamNotDefined(direction: .input, streamNo: 5))
         XCTAssertThrows(try Pipe("(end ?) zzzgen /a/b/c/ | f: fanin -1 | zzzcheck /g/h/i/ ? zzzgen /d/e/f/ | f: ? zzzgen /g/h/i/ | f:").run(), PipeError.invalidStreamIdentifier(identifier: "-1"))
         XCTAssertThrows(try Pipe("(end ?) zzzgen /a/b/c/ | f: fanin abc | zzzcheck /g/h/i/ ? zzzgen /d/e/f/ | f: ? zzzgen /g/h/i/ | f:").run(), PipeError.invalidStreamIdentifier(identifier: "abc"))
-        XCTAssertThrows(try Pipe("(end ?) literal a | a: fanin | console ? a: | console").run(), PipeError.unusedOutputStreamConnected(streamNo: 1))
+        XCTAssertThrows(try Pipe("(end ?) literal a | a: fanin | console ? a: | console").run(), PipeError.unusedStreamConnected(direction: .output, streamNo: 1))
     }
 
     func testFaninany() throws {
@@ -161,7 +161,7 @@ final class StageTests: XCTestCase {
         // try Pipe("(end ?) zzzgen /a/b/c/ | f: faninany | zzzcheck /a/b/c/d/e/f/ ? zzzgen /d/e/f/ | f:").run()
         // try Pipe("(end ?) zzzgen /a/b/c/ | f: faninany | zzzcheck /a/b/c/d/e/f/g/h/i/ ? zzzgen /d/e/f/ | f: ? zzzgen /g/h/i/ | f:").run()
 
-        XCTAssertThrows(try Pipe("(end ?) literal a | a: faninany | console ? a: | console").run(), PipeError.unusedOutputStreamConnected(streamNo: 1))
+        XCTAssertThrows(try Pipe("(end ?) literal a | a: faninany | console ? a: | console").run(), PipeError.unusedStreamConnected(direction: .output, streamNo: 1))
 
         // TODO have an example using locate or other stage that splits the input
     }
@@ -180,6 +180,7 @@ final class StageTests: XCTestCase {
 //        try Pipe("(end ?) literal d|literal c|literal b|literal a| f: fanout STOP 2      | zzzcheck /a/b/c/d/ ? f: | take 2 | zzzcheck /a/b/ ? f: | take 3 | zzzcheck /a/b/c/ ? f: | zzzcheck /a/b/c/d/").run()
 //        try Pipe("(end ?) literal d|literal c|literal b|literal a| f: fanout STOP 10     | zzzcheck /a/b/c/d/ ? f: | take 2 | zzzcheck /a/b/ ? f: | take 3 | zzzcheck /a/b/c/ ? f: | zzzcheck /a/b/c/d/").run()
 
+        XCTAssertThrows(try Pipe("fanout").run(), PipeError.streamNotConnected(direction: .input, streamNo: 0))
         XCTAssertThrows(try Pipe("(end ?) literal a| fanout blah"), PipeError.operandNotValid(keyword: "blah"))
         XCTAssertThrows(try Pipe("(end ?) literal a| fanout stop blah"), PipeError.invalidNumber(word: "blah"))
         XCTAssertThrows(try Pipe("(end ?) literal a| fanout stop anyeof blah"), PipeError.excessiveOptions(string: "blah"))
