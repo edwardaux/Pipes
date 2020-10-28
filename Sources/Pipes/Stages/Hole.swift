@@ -2,7 +2,7 @@ import Foundation
 
 public final class Hole: Stage {
     override public func run() throws {
-        for i in 0..<maxInputStreamNo {
+        for i in 0...maxInputStreamNo {
             do {
                 while true {
                     _ = try readto(streamNo: i)
