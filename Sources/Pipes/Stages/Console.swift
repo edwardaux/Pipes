@@ -2,9 +2,7 @@ import Foundation
 
 public final class Console: Stage {
     public enum EOF {
-        // Stop capturing input if the user enters a particular string
         case delimited(String)
-        // Keep reading until output stream is disconnected
         case none
     }
 
@@ -50,7 +48,7 @@ extension Console: RegisteredStage {
                 "NOEOF": { EOF.none }
             ],
             throwsOnUnsupportedKeyword: true
-            ) ?? EOF.none
+        ) ?? EOF.none
 
         try args.ensureNoRemainder()
 

@@ -1,6 +1,13 @@
 import Foundation
 
 extension String {
+    func asNumber() throws -> Int {
+        guard let number = Int(self) else {
+            throw PipeError.invalidNumber(word: self)
+        }
+        return number
+    }
+
     func asXorC() throws -> Character {
         let upper = self.uppercased()
 

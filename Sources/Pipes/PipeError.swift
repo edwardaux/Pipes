@@ -11,6 +11,7 @@ public struct EndOfFile: Error {
 // A PipeError would normally mean termination of the stage.
 public enum PipeError: Error {
     case streamNotDefined(streamNo: Int)
+    case streamNotConnected(streamNo: Int)
     case optionNotValid(option: String)
     case valueMissingForOption(keyword: String)
     case nullStageFound
@@ -18,6 +19,7 @@ public enum PipeError: Error {
     case labelNotDeclared(label: String)
     case labelAlreadyDeclared(label: String)
     case invalidCharacterRepresentation(word: String)
+    case invalidNumber(word: String)
     case delimiterMissing(delimiter: String)
     case hexDataMissing(prefix: String)
     case hexStringNotHex(string: String)
@@ -44,7 +46,9 @@ public enum PipeError: Error {
     private var detail: Detail {
         switch self {
         case .streamNotDefined(let streamNo):
-            return Detail(code: -4, title: "Stream \(streamNo) is not defined", explanation: "Stream is not defined.", response: "Defined global options are: NAME TRACE LISTRC LISTERR LISTCMD STOP SEPARATOR ENDCHAR ESCAPE MSGLEVEL.")
+            return Detail(code: -4, title: "Stream \(streamNo) is not defined", explanation: "Stream is not defined.", response: "")
+        case .streamNotConnected(let streamNo):
+            return Detail(code: -12, title: "Stream \(streamNo) is not connected", explanation: "Stream is not connected.", response: "")
         case .optionNotValid(let word):
             return Detail(code: -14, title: "Option \(word) not valid", explanation: "The word substituted is not recognised as one of the global options supported.", response: "Defined global options are: NAME TRACE LISTRC LISTERR LISTCMD STOP SEPARATOR ENDCHAR ESCAPE MSGLEVEL.")
         case .valueMissingForOption(let keyword):
@@ -59,6 +63,8 @@ public enum PipeError: Error {
             return Detail(code: -47, title: "Label \(label) already declared", explanation: "A reference is made to a label that is already defined. The label reference should be followed by a stage separator or an end character to indicate reference rather than definition.", response: "Ensure that the label is spelt correctly. If this is the case, add a stage separator after the label to indi- cate that this is a reference to a stream other than the primary one. Note that all references to a label refer to the invocation of the stage that is defined with the first usage of the label.")
         case .invalidCharacterRepresentation(let word):
             return Detail(code: -50, title: "Not a character or hexadecimal representation: \(word)", explanation: "\(word) is not a character or a two-digit hexadecimal representation of a character.", response: "")
+        case .invalidNumber(let word):
+            return Detail(code: -58, title: "Number expected, but \(word) was found", explanation: "\(word) contains a character that is not a digit.", response: "")
         case .delimiterMissing(let delimiter):
             return Detail(code: -60, title: "Delimiter missing after string \(delimiter)", explanation: "No closing delimiter found for a delimited string.", response: "")
         case .hexDataMissing(let prefix):

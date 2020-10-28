@@ -8,11 +8,17 @@ A description of this package.
 [X] Literal.java
 [X] Diskr.java
 [X] Diskw.java
+[X] Diskwa.java
 [X] Count.java
 [X] Hole.java
 [X] Fanin.java
 [X] Faninany.java
-[ ] Fanout.java
+[X] Fanout.java
+[ ] Take.java
+[ ] Chop.java
+[ ] Specs.java
+[ ] Split.java
+[ ] Locate.java
 [ ] Command.java
 
 [ ] Stall detection
@@ -29,21 +35,15 @@ A description of this package.
 [ ] Between.java
 [ ] Buffer.java
 [ ] Change.java
-[ ] Chop.java
-[ ] Diskwa.java
 [ ] Duplicate.java
 [ ] Gate.java
 [ ] Hostid.java
 [ ] Hostname.java
-[ ] Locate.java
 [ ] NLocate.java
 [ ] NoEofBack.java
 [ ] Not.java
 [ ] Query.java
 [ ] Reverse.java
-[ ] Specs.java
-[ ] Split.java
 [ ] Stem.java
 [ ] StrLiteral.java
-[ ] Take.java
 

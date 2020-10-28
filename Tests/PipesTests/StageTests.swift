@@ -166,6 +166,25 @@ final class StageTests: XCTestCase {
         // TODO have an example using locate or other stage that splits the input
     }
 
+
+    func testFanout() throws {
+        try Pipe("zzzgen /a/b/c/ | fanout | zzzcheck /a/b/c/").run()
+        try Pipe("(end ?) zzzgen /a/b/c/ | f: fanout | zzzcheck /a/b/c/").run()
+
+        try Pipe("(end ?) literal blah| f: fanout | zzzcheck /blah/ ? f: | zzzcheck /blah/ ? f: | zzzcheck /blah/ ? f: | zzzcheck /blah/").run()
+        try Pipe("(end ?) literal d|literal c|literal b|literal a| f: fanout STOP ALLEOF | zzzcheck /a/b/c/d/ ? f: | zzzcheck /a/b/c/d/      ? f: | zzzcheck /a/b/c/d/ ? f: | zzzcheck /a/b/c/d/").run()
+        // TODO need take stage
+//        try Pipe("(end ?) literal d|literal c|literal b|literal a| f: fanout STOP ALLEOF | zzzcheck /a/b/c/d/ ? f: | take 2 | zzzcheck /a/b/ ? f: | zzzcheck /a/b/c/d/ ? f: | zzzcheck /a/b/c/d/").run()
+//        try Pipe("(end ?) literal d|literal c|literal b|literal a| f: fanout STOP ANYEOF | zzzcheck /a/b/c/   ? f: | take 2 | zzzcheck /a/b/ ? f: | zzzcheck /a/b/c/   ? f: | zzzcheck /a/b/c/").run()
+//        try Pipe("(end ?) literal d|literal c|literal b|literal a| f: fanout STOP 1      | zzzcheck /a/b/c/   ? f: | take 2 | zzzcheck /a/b/ ? f: | zzzcheck /a/b/c/   ? f: | zzzcheck /a/b/c/").run()
+//        try Pipe("(end ?) literal d|literal c|literal b|literal a| f: fanout STOP 2      | zzzcheck /a/b/c/d/ ? f: | take 2 | zzzcheck /a/b/ ? f: | take 3 | zzzcheck /a/b/c/ ? f: | zzzcheck /a/b/c/d/").run()
+//        try Pipe("(end ?) literal d|literal c|literal b|literal a| f: fanout STOP 10     | zzzcheck /a/b/c/d/ ? f: | take 2 | zzzcheck /a/b/ ? f: | take 3 | zzzcheck /a/b/c/ ? f: | zzzcheck /a/b/c/d/").run()
+
+        XCTAssertThrows(try Pipe("(end ?) literal a| fanout blah"), PipeError.operandNotValid(keyword: "blah"))
+        XCTAssertThrows(try Pipe("(end ?) literal a| fanout stop blah"), PipeError.invalidNumber(word: "blah"))
+        XCTAssertThrows(try Pipe("(end ?) literal a| fanout stop anyeof blah"), PipeError.excessiveOptions(string: "blah"))
+    }
+
     func testHole() throws {
         try Pipe("literal a|literal b| hole | literal c| zzzcheck /c/").run()
     }
