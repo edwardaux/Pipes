@@ -33,6 +33,7 @@ public enum PipeError: Error {
     case fileDoesNotExist(filename: String)
     case missingEndingParenthesis
     case noPipelineSpecified
+    case numberCannotBeNegative(number: Int)
     case hexStringNotDivisibleBy2(string: String)
     case binaryStringNotDivisibleBy8(string: String)
     case binaryDataMissing(prefix: String)
@@ -90,6 +91,8 @@ public enum PipeError: Error {
             return Detail(code: -200, title: "Missing ending parenthesis in expression", explanation: "More left parentheses are met than can be paired with right parentheses in the expression.", response: "")
         case .noPipelineSpecified:
             return Detail(code: -256, title: "No pipeline specified on pipe command", explanation: "The PIPE command is issued without arguments.", response: "")
+        case .numberCannotBeNegative(let number):
+            return Detail(code: -287, title: "Number \(number) cannot be ngative", explanation: "A negative number is specified for an operand to a stage that only supports zero or positive numbers.", response: "")
         case .hexStringNotDivisibleBy2(let string):
             return Detail(code: -335, title: "Odd number of characters in hex data: \(string)", explanation: "A prefix indicating a hexadecimal constant is found, but the remainder of the word does not contain an even number of characters.", response: "")
         case .binaryStringNotDivisibleBy8(let string):

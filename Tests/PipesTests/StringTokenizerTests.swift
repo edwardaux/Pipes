@@ -285,4 +285,23 @@ final class StringTokenizerTests: XCTestCase {
         XCTAssertThrows(try Pipe("gsdfgsdfgsd"), PipeError.stageNotFound(stageName: "gsdfgsdfgsd"))
         XCTAssertThrows(try Pipe("(end ?) literal a f: fanout | cons ? f: | cons"), PipeError.labelNotDeclared(label: "f:"))
     }
+
+    func testSyntaxKeywordMatching() {
+        XCTAssertEqual("TAB".matchesKeyword("TAB"), true)
+        XCTAssertEqual("TAB".matchesKeyword("TAB", minLength: 0), true)
+        XCTAssertEqual("TAB".matchesKeyword("TAB", minLength: 3), true)
+        XCTAssertEqual("TAB".matchesKeyword("TAB", minLength: 4), false)
+        XCTAssertEqual("TAB".matchesKeyword("TABULATE"), false)
+        XCTAssertEqual("TAB".matchesKeyword("TABULATE", minLength: 0), true)
+        XCTAssertEqual("TAB".matchesKeyword("TABULATE", minLength: 3), true)
+        XCTAssertEqual("TAB".matchesKeyword("TABULATE", minLength: 4), false)
+        XCTAssertEqual("TABUL".matchesKeyword("TABULATE"), false)
+        XCTAssertEqual("TABUL".matchesKeyword("TABULATE", minLength: 0), true)
+        XCTAssertEqual("TABUL".matchesKeyword("TABULATE", minLength: 3), true)
+        XCTAssertEqual("TABUL".matchesKeyword("TABULATE", minLength: 4), true)
+        XCTAssertEqual("TABUX".matchesKeyword("TABULATE"), false)
+        XCTAssertEqual("TABUX".matchesKeyword("TABULATE", minLength: 0), false)
+        XCTAssertEqual("TABUX".matchesKeyword("TABULATE", minLength: 3), false)
+        XCTAssertEqual("TABUX".matchesKeyword("TABULATE", minLength: 4), false)
+    }
 }

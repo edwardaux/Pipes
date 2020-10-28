@@ -47,26 +47,25 @@ class Parser {
 
         let optionsTokenizer = StringTokenizer(pipeOptions)
         while let keyword = optionsTokenizer.scanWord() {
-            switch keyword.uppercased() {
-            case "SEP", "SEPARATOR", "STAGESEP":
+            if keyword.matchesKeyword("SEPARATOR", minLength: 3) || keyword.matchesKeyword("STAGESEP") {
                 if let word = optionsTokenizer.scanWord() {
                     stageSep = try word.asXorC()
                 } else {
                     throw PipeError.valueMissingForOption(keyword: keyword)
                 }
-            case "END", "ENDCHAR":
+            } else if keyword.matchesKeyword("ENDCHAR", minLength: 3) {
                 if let word = optionsTokenizer.scanWord() {
                     endChar = try word.asXorC()
                 } else {
                     throw PipeError.valueMissingForOption(keyword: keyword)
                 }
-            case "ESC", "ESCAPE":
+            } else if keyword.matchesKeyword("ESCAPE", minLength: 3) {
                 if let word = optionsTokenizer.scanWord() {
                     escape = try word.asXorC()
                 } else {
                     throw PipeError.valueMissingForOption(keyword: keyword)
                 }
-            default:
+            } else {
                 throw PipeError.optionNotValid(option: keyword)
             }
         }

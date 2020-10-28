@@ -58,9 +58,9 @@ extension Fanout: RegisteredStage {
             [
                 "STOP": {
                     let word = try args.scanWord()
-                    if word.lowercased() == "alleof" {
+                    if word.matchesKeyword("ALLEOF") {
                         return .allEOF
-                    } else if word.lowercased() == "anyeof" {
+                    } else if word.matchesKeyword("ANYEOF") {
                         return .anyEOF
                     } else {
                         return .streamCount(try word.asNumber())
