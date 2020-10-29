@@ -12,8 +12,12 @@ class StreamLock<R> {
         // debug(stream.producer!.stage, "About to output: \(record)")
         // debug(stream.producer!.stage, "Waiting for lock")
         condition.lock()
-        defer { condition.unlock() }
         // debug(stream.producer!.stage, "Acquired lock")
+        defer {
+            condition.unlock()
+            // debug(stream.producer!.stage, "Released lock")
+            // debug(stream.producer!.stage, "Finished output")
+        }
 
         loop: do {
             // debug(stream.producer!.stage, "State check: \(stream.lockState)")
@@ -58,8 +62,12 @@ class StreamLock<R> {
         // debug(stream.consumer!.stage, "About to peekto")
         // debug(stream.consumer!.stage, "Waiting for lock")
         condition.lock()
-        defer { condition.unlock() }
         // debug(stream.consumer!.stage, "Acquired lock")
+        defer {
+            condition.unlock()
+            // debug(stream.consumer!.stage, "Released lock")
+            // debug(stream.consumer!.stage, "Finished peekto")
+        }
 
         return try lockedPeekto(stream: stream)
     }
@@ -97,8 +105,12 @@ class StreamLock<R> {
         // debug(stream.consumer!.stage, "About to readto")
         // debug(stream.consumer!.stage, "Waiting for lock")
         condition.lock()
-        defer { condition.unlock() }
         // debug(stream.consumer!.stage, "Acquired lock")
+        defer {
+            condition.unlock()
+            // debug(stream.consumer!.stage, "Released lock")
+            // debug(stream.consumer!.stage, "Finished readto")
+        }
 
         return try lockedReadto(stream: stream)
     }
@@ -137,12 +149,16 @@ class StreamLock<R> {
     }
 
     func peektoAny(streams: [Stream]) throws -> String {
-        // debug(streams.first?.consumer!.stage, "About to readto (any)")
+        // debug(streams.first?.consumer!.stage, "About to peekto (any)")
         // debug(streams.first?.consumer!.stage, "Waiting for lock (any)")
         condition.lock()
-        defer { condition.unlock() }
-
         // debug(streams.first?.consumer!.stage, "Acquired lock (any)")
+        defer {
+            condition.unlock()
+            // debug(streams.first?.consumer!.stage, "Released lock")
+            // debug(streams.first?.consumer!.stage, "Finished peekto (any)")
+        }
+
         if let index = lastPeekedStreamIndex {
             return try lockedPeekto(stream: streams[index])
         }
@@ -178,8 +194,12 @@ class StreamLock<R> {
         // debug(streams.first?.consumer!.stage, "About to readto (any)")
         // debug(streams.first?.consumer!.stage, "Waiting for lock (any)")
         condition.lock()
-        defer { condition.unlock() }
         // debug(streams.first?.consumer!.stage, "Acquired lock (any)")
+        defer {
+            condition.unlock()
+            // debug(streams.first?.consumer!.stage, "Released lock")
+            // debug(streams.first?.consumer!.stage, "Finished readto (any)")
+        }
 
         if let index = lastPeekedStreamIndex {
             lastPeekedStreamIndex = nil
@@ -212,32 +232,43 @@ class StreamLock<R> {
         // debug(stream.consumer!.stage, "About to sever")
         // debug(stream.consumer!.stage, "Waiting for lock")
         condition.lock()
-        defer { condition.unlock() }
         // debug(stream.consumer!.stage, "Acquired lock")
+        defer {
+            condition.unlock()
+            // debug(stream.consumer!.stage, "Released lock")
+            // debug(stream.consumer!.stage, "Finished sever")
+        }
 
         loop: do {
+            // debug(stream.consumer!.stage, "State check: \(stream.lockState)")
             switch stream.lockState {
             case .full:
                 // If we're in full state, it means that the producer has made the
-                // record available and its stage has ended (and this severing its
+                // record available and its stage has ended (and thus severing its
                 // streams) before the consumer has had a chance to grab the record.
                 // So we give the consumer a chance to read the record before we
                 // totally sever the producer's streams.
+                // debug(stream.consumer!.stage, "Signalling...")
                 condition.signal()
+                // debug(stream.consumer!.stage, "Waiting...")
                 condition.wait()
+                // debug(stream.consumer!.stage, "Returned from wait")
                 continue loop
+            case .severed:
+                // debug(stream.consumer!.stage, "Already severed")
+                // debug(stream.consumer!.stage, "Signalling...")
+                condition.signal()
             default:
                 // debug(stream.consumer!.stage, "Changing state to: severed")
                 stream.lockState = .severed
-                condition.signal()
                 // debug(stream.consumer!.stage, "Signalling...")
+                condition.signal()
             }
         }
     }
 
     private func debug(_ stage: Stage?, _ message: String) {
         guard let stage = stage else { return }
-        let indent = String(repeating: "   ", count: stage.stageNumber)
-        print(indent+message)
+        stage.debug(message)
     }
 }

@@ -46,19 +46,29 @@ open class Stage: Identifiable {
 extension Stage {
     internal func dispatch() throws {
         defer {
+            // debug("About to sever all streams")
             for (streamNo, stream) in inputStreams.enumerated() {
                 try? sever(.input, streamNo: streamNo)
             }
             for (streamNo, stream) in outputStreams.enumerated() {
                 try? sever(.output, streamNo: streamNo)
             }
+            // debug("Finished severing all streams")
         }
 
         do {
+            // debug("Starting stage")
             try run()
+            // debug("Ended stage")
         } catch _ as EndOfFile {
             // These types of errors don't constitute an error
+            // debug("Ended stage with EOF")
         }
+    }
+
+    func debug(_ message: String) {
+        let indent = String(repeating: "        ", count: stageNumber - 1)
+        print(indent+message)
     }
 }
 
