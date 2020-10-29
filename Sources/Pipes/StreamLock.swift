@@ -228,7 +228,7 @@ class StreamLock<R> {
         }
     }
 
-    func sever(stream: Stream) {
+    func sever(stream: Stream, force: Bool) {
         // debug(stream.consumer!.stage, "About to sever")
         // debug(stream.consumer!.stage, "Waiting for lock")
         condition.lock()
@@ -239,30 +239,50 @@ class StreamLock<R> {
             // debug(stream.consumer!.stage, "Finished sever")
         }
 
-        loop: do {
-            // debug(stream.consumer!.stage, "State check: \(stream.lockState)")
-            switch stream.lockState {
-            case .full:
-                // If we're in full state, it means that the producer has made the
-                // record available and its stage has ended (and thus severing its
-                // streams) before the consumer has had a chance to grab the record.
-                // So we give the consumer a chance to read the record before we
-                // totally sever the producer's streams.
-                // debug(stream.consumer!.stage, "Signalling...")
-                condition.signal()
-                // debug(stream.consumer!.stage, "Waiting...")
-                condition.wait()
-                // debug(stream.consumer!.stage, "Returned from wait")
-                continue loop
-            case .severed:
-                // debug(stream.consumer!.stage, "Already severed")
-                // debug(stream.consumer!.stage, "Signalling...")
-                condition.signal()
-            default:
-                // debug(stream.consumer!.stage, "Changing state to: severed")
-                stream.lockState = .severed
-                // debug(stream.consumer!.stage, "Signalling...")
-                condition.signal()
+        // There's a possible race condition that we need to deal with here... in the
+        // case where the producer is writing its last record, there may be a consumer
+        // resdy to consume it and the state will be changed to full. However, depending
+        // on the timing, the producer could exit its output() function, leave the stage
+        // execution and sever its streams before the consumer has had a chance to read
+        // the record. In this case, we want to delay severing the streams until the
+        // consumer has read it.
+        //
+        // However, a consumer should be able to sever its stream anytime it likes, as
+        // it can't get exit readto() or peekto() without changing the state.
+
+        // debug(stream.consumer!.stage, "Forcing sever: \(force)")
+        if force {
+            // debug(stream.consumer!.stage, "Changing state to: severed")
+            stream.lockState = .severed
+            // debug(stream.consumer!.stage, "Signalling...")
+            condition.signal()
+            return
+        } else {
+            loop: do {
+                // debug(stream.consumer!.stage, "State check: \(stream.lockState)")
+                switch stream.lockState {
+                case .full:
+                    // If we're in full state, it means that the producer has made the
+                    // record available and its stage has ended (and thus severing its
+                    // streams) before the consumer has had a chance to grab the record.
+                    // So we give the consumer a chance to read the record before we
+                    // totally sever the producer's streams.
+                    // debug(stream.consumer!.stage, "Signalling...")
+                    condition.signal()
+                    // debug(stream.consumer!.stage, "Waiting...")
+                    condition.wait()
+                    // debug(stream.consumer!.stage, "Returned from wait")
+                    continue loop
+                case .severed:
+                    // debug(stream.consumer!.stage, "Already severed")
+                    // debug(stream.consumer!.stage, "Signalling...")
+                    condition.signal()
+                default:
+                    // debug(stream.consumer!.stage, "Changing state to: severed")
+                    stream.lockState = .severed
+                    // debug(stream.consumer!.stage, "Signalling...")
+                    condition.signal()
+                }
             }
         }
     }

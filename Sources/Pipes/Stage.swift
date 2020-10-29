@@ -157,12 +157,12 @@ extension Stage {
             guard streamNo < inputStreams.count else { throw PipeError.streamNotDefined(direction: .input, streamNo: streamNo) }
 
             let stream = inputStreams[streamNo]
-            lock.sever(stream: stream)
+            lock.sever(stream: stream, force: true)
         case .output:
             guard streamNo < outputStreams.count else { throw PipeError.streamNotDefined(direction: .input, streamNo: streamNo) }
 
             let stream = outputStreams[streamNo]
-            stream.consumer?.stage.lock.sever(stream: stream)
+            stream.consumer?.stage.lock.sever(stream: stream, force: false)
         }
     }
 
