@@ -28,7 +28,7 @@ final class ZZZTestGeneratorStage: Stage, RegisteredStage {
     }
 
     static var allowedStageNames: [String] { ["zzzgen" ] }
-    static func createStage(args: Args) -> Stage { return ZZZTestGeneratorStage(try! args.scanWord().split(separator: "/", omittingEmptySubsequences: false).dropFirst().dropLast().map { String($0) }) }
+    static func createStage(args: Args) -> Stage { return ZZZTestGeneratorStage(args.scanRemainder().split(separator: "/", omittingEmptySubsequences: false).dropFirst().dropLast().map { String($0) }) }
     static var helpSummary: String? { "Takes a slash-separated list of 'n' values and creates 'n' records"}
     static var helpSyntax: String? { "──ZZZGEN──/a/b/c/──" }
 }
