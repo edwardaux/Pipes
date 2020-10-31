@@ -199,6 +199,14 @@ extension Stage {
         }
     }
 
+    public func short(inputStreamNo: Int, outputStreamNo: Int) throws {
+        while true {
+            let record = try peekto(streamNo: inputStreamNo)
+            try output(record, streamNo: outputStreamNo)
+            _ = try readto(streamNo: inputStreamNo)
+        }
+    }
+
     func ensurePrimaryInputStreamConnected() throws {
         if !isPrimaryInputStreamConnected { throw PipeError.streamNotConnected(direction: .input, streamNo: 0) }
     }
