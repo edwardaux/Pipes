@@ -14,7 +14,7 @@ A description of this package.
 [X] Fanin.java
 [X] Faninany.java
 [X] Fanout.java
-[ ] Take.java
+[X] Take.java
 [ ] Chop.java
 [ ] Specs.java
 [ ] Split.java

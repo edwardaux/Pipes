@@ -41,7 +41,7 @@ public enum PipeError: Error {
     case unableToWriteToFile(path: String, error: Error)
     case unusedStreamConnected(direction: StreamDirection, streamNo: Int)
     case commandNotPermitted(command: String)
-
+    case invalidString
 
     private var detail: Detail {
         switch self {
@@ -107,6 +107,8 @@ public enum PipeError: Error {
             return Detail(code: -1196, title: "\(direction) stream \(streamNo) is unexpectedly connected.", explanation: "A stream is connected that the stage does not use. This is often a symptom of an incorrect placement of a label reference.", response: "")
         case .commandNotPermitted(let command):
             return Detail(code: -2000, title: "Command \(command) not permitted during commit() phase.", explanation: "Stream operations are only permitted in the run() function.", response: "")
+        case .invalidString:
+            return Detail(code: -2001, title: "Splitting on byte boundary results in invalid UTF-8 string", explanation: "Choose a different length that does not split in the middle of a Unicode character.", response: "")
         }
     }
 
