@@ -1,9 +1,9 @@
 import Pipes
 import XCTest
 
-func XCTAssertThrows<T>(_ expression: @autoclosure () throws -> T, _ expectedError: PipeError) {
-    XCTAssertThrowsError(try expression()) { (error) in
-        XCTAssertEqual(error as? PipeError, expectedError)
+func XCTAssertThrows<T>(_ expression: @autoclosure () throws -> T, _ expectedError: PipeError, file: StaticString = #file, line: UInt = #line) {
+    XCTAssertThrowsError(try expression(), file: file, line: line) { (error) in
+        XCTAssertEqual(error as? PipeError, expectedError, file: file, line: line)
     }
 }
 
