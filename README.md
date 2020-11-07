@@ -15,11 +15,12 @@ A description of this package.
 [X] Faninany.java
 [X] Fanout.java
 [X] Take.java
-[ ] Chop.java
-[ ] Specs.java
-[ ] Split.java
 [ ] Locate.java
+[ ] Regex.java
+[ ] Specs.java
 [ ] Command.java
+[ ] Chop.java
+[ ] Split.java
 
 [ ] Stall detection
 [ ] Addpipe
@@ -27,6 +28,10 @@ A description of this package.
 [ ] Parse input string
 [ ] Command line
 [ ] Homebrew
+
+[ ] Url
+[ ] CSV
+[ ] json
 
 [ ] Abbrev.java
 [ ] Addrdw.java

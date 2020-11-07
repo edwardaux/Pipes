@@ -19,6 +19,7 @@ public enum PipeError: Error {
     case labelNotDeclared(label: String)
     case labelAlreadyDeclared(label: String)
     case invalidCharacterRepresentation(word: String)
+    case invalidRange(range: String)
     case invalidNumber(word: String)
     case delimiterMissing(delimiter: String)
     case hexDataMissing(prefix: String)
@@ -63,6 +64,8 @@ public enum PipeError: Error {
             return Detail(code: -47, title: "Label \(label) already declared", explanation: "A reference is made to a label that is already defined. The label reference should be followed by a stage separator or an end character to indicate reference rather than definition.", response: "Ensure that the label is spelt correctly. If this is the case, add a stage separator after the label to indi- cate that this is a reference to a stream other than the primary one. Note that all references to a label refer to the invocation of the stage that is defined with the first usage of the label.")
         case .invalidCharacterRepresentation(let word):
             return Detail(code: -50, title: "Not a character or hexadecimal representation: \(word)", explanation: "\(word) is not a character or a two-digit hexadecimal representation of a character.", response: "")
+        case .invalidRange(let range):
+            return Detail(code: -54, title: "Range \"\(range) not valid", explanation: "The specific range values are invalid.", response: "")
         case .invalidNumber(let word):
             return Detail(code: -58, title: "Number expected, but \(word) was found", explanation: "\(word) contains a character that is not a digit.", response: "")
         case .delimiterMissing(let delimiter):
