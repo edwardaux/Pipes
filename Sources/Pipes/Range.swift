@@ -61,8 +61,6 @@ extension String {
             return String(self[startIndex..<endIndex])
         case .word(let originalStart, let originalEnd, let separator):
             var wordBoundaries = [(Int, Int)]()
-
-            // Are we in the middle of processing a word?
             var inWord = false
             var wordStart = 0
             for (index, char) in self.enumerated() {
@@ -94,8 +92,28 @@ extension String {
             let endIndex = self.index(self.startIndex, offsetBy: wordBoundaries[end].1)
 
             return String(self[startIndex..<endIndex])
-        default:
-            return self
+        case .field(let originalStart, let originalEnd, let separator):
+            var fieldBoundaries = [(Int, Int)]()
+            var fieldStart = 0
+            for (index, char) in self.enumerated() {
+                if char == separator {
+                    fieldBoundaries.append((fieldStart, index))
+                    fieldStart = index + 1
+                }
+            }
+            fieldBoundaries.append((fieldStart, count))
+
+            guard let (start, end) = try PipeRange.resolve(start: originalStart, end: originalEnd, length: fieldBoundaries.count) else {
+                // When resolve() returns a nil, it means the start value
+                // is beyond the end of the input, so we can just return an
+                // empty string in this case.
+                return ""
+            }
+
+            let startIndex = self.index(self.startIndex, offsetBy: fieldBoundaries[start].0)
+            let endIndex = self.index(self.startIndex, offsetBy: fieldBoundaries[end].1)
+
+            return String(self[startIndex..<endIndex])
         }
     }
 

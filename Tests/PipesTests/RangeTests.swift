@@ -65,21 +65,31 @@ final class RangeTests: XCTestCase {
     }
 
     func testRangeExtractFields() {
-        /*
-        s = ",b,,d,eeee,fff,ggg,";
-        assertEquals("", scanRange(new PipeArgs("fieldsep , fields 1"), true).extractRange(s));
-        assertEquals("b", scanRange(new PipeArgs("fieldsep , fields 2"), true).extractRange(s));
-        assertEquals("d,eeee,fff", scanRange(new PipeArgs("fieldsep , fields 4-6"), true).extractRange(s));
-        assertEquals(",b,,d,eeee,fff,ggg", scanRange(new PipeArgs("fieldsep , fields 1-7"), true).extractRange(s));
-        assertEquals(",b,,d,eeee,fff,ggg,", scanRange(new PipeArgs("fieldsep , fields 1-*"), true).extractRange(s));
-        assertEquals(",b,,d,eeee,fff,ggg,", scanRange(new PipeArgs("fieldsep , fields 1-8"), true).extractRange(s));
-        assertEquals("", scanRange(new PipeArgs("fieldsep , fields -1"), true).extractRange(s));
-        assertEquals("ggg,", scanRange(new PipeArgs("fieldsep , fields -2;-1"), true).extractRange(s));
-        assertEquals("ggg,", scanRange(new PipeArgs("fieldsep , fields 7-8"), true).extractRange(s));
-        assertEquals("ggg,", scanRange(new PipeArgs("fieldsep , fields 7;-1"), true).extractRange(s));
-        */
+        let s = ",b,,d,eeee,fff,ggg,";
+        XCTAssertEqual(try s.extract(fromRange: PipeRange.field(start: 1, end: 1, separator: ",")), "")
+        XCTAssertEqual(try s.extract(fromRange: PipeRange.field(start: 2, end: 2, separator: ",")), "b")
+        XCTAssertEqual(try s.extract(fromRange: PipeRange.field(start: 4, end: 6, separator: ",")), "d,eeee,fff")
+        XCTAssertEqual(try s.extract(fromRange: PipeRange.field(start: 1, end: 7, separator: ",")), ",b,,d,eeee,fff,ggg")
+        XCTAssertEqual(try s.extract(fromRange: PipeRange.field(start: 1, end: .end, separator: ",")), ",b,,d,eeee,fff,ggg,")
+        XCTAssertEqual(try s.extract(fromRange: PipeRange.field(start: 1, end: 8, separator: ",")), ",b,,d,eeee,fff,ggg,")
+        XCTAssertEqual(try s.extract(fromRange: PipeRange.field(start: -1, end: -1, separator: ",")), "")
+        XCTAssertEqual(try s.extract(fromRange: PipeRange.field(start: -2, end: -1, separator: ",")), "ggg,")
+        XCTAssertEqual(try s.extract(fromRange: PipeRange.field(start: 7, end: 8, separator: ",")), "ggg,")
+        XCTAssertEqual(try s.extract(fromRange: PipeRange.field(start: 7, end: -1, separator: ",")), "ggg,")
 
+        let t = "xbxxdxeeeexfffxgggx";
+        XCTAssertEqual(try t.extract(fromRange: PipeRange.field(start: 1, end: 1, separator: "x")), "")
+        XCTAssertEqual(try t.extract(fromRange: PipeRange.field(start: 2, end: 2, separator: "x")), "b")
+        XCTAssertEqual(try t.extract(fromRange: PipeRange.field(start: 4, end: 6, separator: "x")), "dxeeeexfff")
+        XCTAssertEqual(try t.extract(fromRange: PipeRange.field(start: 1, end: 7, separator: "x")), "xbxxdxeeeexfffxggg")
+        XCTAssertEqual(try t.extract(fromRange: PipeRange.field(start: 1, end: .end, separator: "x")), "xbxxdxeeeexfffxgggx")
+        XCTAssertEqual(try t.extract(fromRange: PipeRange.field(start: 1, end: 8, separator: "x")), "xbxxdxeeeexfffxgggx")
+        XCTAssertEqual(try t.extract(fromRange: PipeRange.field(start: -1, end: -1, separator: "x")), "")
+        XCTAssertEqual(try t.extract(fromRange: PipeRange.field(start: -2, end: -1, separator: "x")), "gggx")
+        XCTAssertEqual(try t.extract(fromRange: PipeRange.field(start: 7, end: 8, separator: "x")), "gggx")
+        XCTAssertEqual(try t.extract(fromRange: PipeRange.field(start: 7, end: -1, separator: "x")), "gggx")
     }
+
     func testSimpleMatches() throws {
         XCTAssertEqual(try "".matches(), true)
         XCTAssertEqual(try "xxx".matches(), true)
@@ -119,10 +129,16 @@ final class RangeTests: XCTestCase {
     }
 
     func testWordMatches() throws {
-
+        XCTAssertEqual(try "aa bb cc dd ee ff".matches("cc", inRange: .word(start: 3, end: 3)), true)
+        XCTAssertEqual(try "aa bb cc dd ee ff".matches("cc", inRange: .word(start: 1, end: 3)), true)
+        XCTAssertEqual(try "aa bb cc dd ee ff".matches("cc", inRange: .word(start: 4, end: .end)), false)
+        XCTAssertEqual(try "aa bb cc dd ee ff".matches("cc", inRange: .word(start: .end, end: .end)), true)
     }
 
     func testFieldMatches() throws {
-
+        XCTAssertEqual(try "aa\tbb\tcc\tdd\tee\tff".matches("cc", inRange: .field(start: 3, end: 3)), true)
+        XCTAssertEqual(try "aa\tbb\tcc\tdd\tee\tff".matches("cc", inRange: .field(start: 1, end: 3)), true)
+        XCTAssertEqual(try "aa\tbb\tcc\tdd\tee\tff".matches("cc", inRange: .field(start: 4, end: .end)), false)
+        XCTAssertEqual(try "aa\tbb\tcc\tdd\tee\tff".matches("cc", inRange: .field(start: .end, end: .end)), true)
     }
 }
