@@ -199,6 +199,54 @@ final class StageTests: XCTestCase {
         try Pipe("literal b | literal a | zzzcheck /a /b /").run()
     }
 
+    func testLocate() throws {
+        try Pipe("literal a | locate /a/").run()
+        try Pipe("literal a | locate anycase /a/").run()
+        try Pipe("literal a | locate 1.* /a/").run()
+        try Pipe("literal a | locate 3-10 /a/").run()
+        try Pipe("literal a | locate (1-5 3-10) /a/").run()
+        try Pipe("literal a | locate caseignore (1-5 3-10) /a/").run()
+        try Pipe("literal a | locate caseignore (1-5 3-10) anyof /a/").run()
+        try Pipe("literal a | locate caseignore (1-5 3-10) anyof").run()
+        try Pipe("literal a | locate caseany (1-5 3-10 10-*) anyof x323232").run()
+        try Pipe("literal a | locate b11110000").run()
+
+        try Pipe("zzzgen 3 | locate /a/ | zzzcheck /a/").run()
+        try Pipe("zzzgen 3 | locate /A/ | literal x| zzzcheck /x/").run()
+        try Pipe("zzzgen 3 | locate anycase /A/ | zzzcheck /a/").run()
+        try Pipe("literal 4444|literal 333|literal 22|literal 1| locate 2| zzzcheck /22/333/4444/").run()
+        try Pipe("literal 4444|literal 333|literal 22|literal 1| locate w1| zzzcheck /1/22/333/4444/").run()
+        try Pipe("literal 444 4|literal 333|literal 22|literal 1| locate w2| zzzcheck /444 4/").run()
+        try Pipe("literal a|literal|literal b| locate | zzzcheck /b/a/").run()
+
+        try Pipe("literal hello there|literal I am here| locate /here/ | zzzcheck /I am here/hello there/").run()
+        try Pipe("literal hello there|literal I am here| locate anycase /HE/ | zzzcheck /I am here/hello there/").run()
+        try Pipe("literal hello there|literal I am here| locate anycase 2-5 /HE/ | literal x|zzzcheck /x/").run()
+        try Pipe("literal hello there|literal I am here| locate (1.2 2-5) /he/ | literal x|zzzcheck /x/hello there/").run()
+        try Pipe("literal hello there|literal I am here| locate anycase (1.2 2-5 6-7) /HE/ | literal x|zzzcheck /x/I am here/hello there/").run()
+        try Pipe("literal hello there|literal I am here| locate anycase (1.2 2-5 7-8) /HE/ | literal x|zzzcheck /x/hello there/").run()
+
+        try Pipe("literal a-b-c|literal d-e-f| locate wordsep - w3 /c/ | zzzcheck /a-b-c/").run()
+        try Pipe("literal a?b?|literal e??f| locate fieldsep ? f2-3 /f/ | zzzcheck /e??f/").run()
+        try Pipe("literal ?ab?c??a|literal ab?c?a| locate (ws ? w1 w3) /a/ | zzzcheck /ab?c?a/?ab?c??a/").run()
+        try Pipe("literal afbc|literal adef|literal ghfi|literal fjkl| locate -2;-1 /f/ | zzzcheck /ghfi/adef/").run()
+
+        let colours = "/red apples/white flag/roses are red/grass is green/barry white/white christmas/blue bayou/helen reddy/"
+        try Pipe("zzzgen \(colours) | locate /red/ |zzzcheck /red apples/roses are red/helen reddy/").run()
+        try Pipe("(end ?) zzzgen \(colours) | l: locate /red/ | f: faninany | zzzcheck /red apples/white flag/roses are red/barry white/white christmas/helen reddy/ ? l: | locate /white/ | f:").run()
+
+        try Pipe("literal aaa|literal bbb|literal ccc|literal ddd| locate anyof /a/ | zzzcheck /aaa/").run()
+        try Pipe("literal aaa|literal bbb|literal ccc|literal ddd| locate anyof /ac/ | zzzcheck /ccc/aaa/").run()
+        try Pipe("literal aaa|literal bbb|literal ccc|literal ddd| locate anyof /abc/ | zzzcheck /ccc/bbb/aaa/").run()
+        try Pipe("literal aaa|literal bbb|literal ccc|literal ddd| locate anyof /zyxabc/ | zzzcheck /ccc/bbb/aaa/").run()
+        try Pipe("literal aaa|literal bbb|literal ccc|literal ddd| locate anyof | zzzcheck /ddd/ccc/bbb/aaa/").run()
+
+        try Pipe("literal one|literal two|literal three|literal four|literal five| locate 4 | nlocate 5| zzzcheck /five/four/").run()
+
+        try Pipe("(end ?) zzzgen /aaa/bbb/ccc/ddd/a/aa/c/dd/ee/ | l: locate a | zzzcheck /aaa/a/aa/ ? l: | zzzcheck /bbb/ccc/ddd/c/dd/ee/").run()
+        try Pipe("(end ?) zzzgen /aaa/bbb/ccc/ddd/a/aa/c/dd/ee/ | l: locate a | zzzcheck /aaa/a/aa/ ? l: | take 1 | zzzcheck /bbb/").run()
+    }
+
     func testTakeFirst() throws {
         XCTAssertThrows(try Pipe("take 2").run(), PipeError.streamNotConnected(direction: .input, streamNo: 0))
         XCTAssertThrows(try Pipe("literal a|take -50").run(), PipeError.numberCannotBeNegative(number: -50))

@@ -110,6 +110,7 @@ extension Pipe {
         register(Help.self)
         register(Hole.self)
         register(Literal.self)
+        register(Locate.self)
         register(Take.self)
     }
 }
