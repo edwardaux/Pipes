@@ -31,6 +31,55 @@ final class RangeTests: XCTestCase {
         // assertEquals("defg", scanRange(new PipeArgs("SUBSTR 2-5 OF SUBSTR 3.8 OF 1-13 "), true).extractRange(s));
     }
 
+    func testRangeExtractWords() throws {
+        let s = "  hello there   how   are   you today? I am well thanks  ";
+        XCTAssertEqual(try s.extract(fromRange: PipeRange.word(start: 1, end: 1)), "hello")
+        XCTAssertEqual(try s.extract(fromRange: PipeRange.word(start: 3, end: 3)), "how")
+        XCTAssertEqual(try s.extract(fromRange: PipeRange.word(start: 1, end: 3)), "hello there   how")
+        XCTAssertEqual(try s.extract(fromRange: PipeRange.word(start: 1, end: 6)), "hello there   how   are   you today?")
+        XCTAssertEqual(try s.extract(fromRange: PipeRange.word(start: 1, end: .end)), "hello there   how   are   you today? I am well thanks")
+        XCTAssertEqual(try s.extract(fromRange: PipeRange.word(start: 1, end: 10)), "hello there   how   are   you today? I am well thanks")
+        XCTAssertEqual(try s.extract(fromRange: PipeRange.word(start: -1, end: -1)), "thanks")
+        XCTAssertEqual(try s.extract(fromRange: PipeRange.word(start: -2, end: -1)), "well thanks")
+        XCTAssertEqual(try s.extract(fromRange: PipeRange.word(start: 9, end: 10)), "well thanks")
+        XCTAssertEqual(try s.extract(fromRange: PipeRange.word(start: 9, end: -1)), "well thanks")
+        XCTAssertEqual(try s.extract(fromRange: PipeRange.word(start: 7, end: 7)), "I")
+
+        let t = "xxhelloxtherexxxhowxxxarexxxyouxtoday?xIxamxwellxthanksxx";
+        XCTAssertEqual(try t.extract(fromRange: PipeRange.word(start: 1, end: 1, separator: "x")), "hello")
+        XCTAssertEqual(try t.extract(fromRange: PipeRange.word(start: 3, end: 3, separator: "x")), "how")
+        XCTAssertEqual(try t.extract(fromRange: PipeRange.word(start: 1, end: 3, separator: "x")), "helloxtherexxxhow")
+        XCTAssertEqual(try t.extract(fromRange: PipeRange.word(start: 1, end: 6, separator: "x")), "helloxtherexxxhowxxxarexxxyouxtoday?")
+        XCTAssertEqual(try t.extract(fromRange: PipeRange.word(start: 1, end: .end, separator: "x")), "helloxtherexxxhowxxxarexxxyouxtoday?xIxamxwellxthanks")
+        XCTAssertEqual(try t.extract(fromRange: PipeRange.word(start: 1, end: 10, separator: "x")), "helloxtherexxxhowxxxarexxxyouxtoday?xIxamxwellxthanks")
+        XCTAssertEqual(try t.extract(fromRange: PipeRange.word(start: -1, end: -1, separator: "x")), "thanks")
+        XCTAssertEqual(try t.extract(fromRange: PipeRange.word(start: -2, end: -1, separator: "x")), "wellxthanks")
+        XCTAssertEqual(try t.extract(fromRange: PipeRange.word(start: 9, end: 10, separator: "x")), "wellxthanks")
+        XCTAssertEqual(try t.extract(fromRange: PipeRange.word(start: 9, end: -1, separator: "x")), "wellxthanks")
+        XCTAssertEqual(try t.extract(fromRange: PipeRange.word(start: 7, end: 7, separator: "x")), "I")
+
+        XCTAssertEqual(try "".extract(fromRange: PipeRange.word(start: 2, end: 2)), "")
+        XCTAssertEqual(try "hello".extract(fromRange: PipeRange.word(start: 1, end: 1)), "hello")
+        XCTAssertEqual(try "hello".extract(fromRange: PipeRange.word(start: 2, end: 2)), "")
+        XCTAssertEqual(try "hello".extract(fromRange: PipeRange.word(start: -2, end: -1)), "hello")
+    }
+
+    func testRangeExtractFields() {
+        /*
+        s = ",b,,d,eeee,fff,ggg,";
+        assertEquals("", scanRange(new PipeArgs("fieldsep , fields 1"), true).extractRange(s));
+        assertEquals("b", scanRange(new PipeArgs("fieldsep , fields 2"), true).extractRange(s));
+        assertEquals("d,eeee,fff", scanRange(new PipeArgs("fieldsep , fields 4-6"), true).extractRange(s));
+        assertEquals(",b,,d,eeee,fff,ggg", scanRange(new PipeArgs("fieldsep , fields 1-7"), true).extractRange(s));
+        assertEquals(",b,,d,eeee,fff,ggg,", scanRange(new PipeArgs("fieldsep , fields 1-*"), true).extractRange(s));
+        assertEquals(",b,,d,eeee,fff,ggg,", scanRange(new PipeArgs("fieldsep , fields 1-8"), true).extractRange(s));
+        assertEquals("", scanRange(new PipeArgs("fieldsep , fields -1"), true).extractRange(s));
+        assertEquals("ggg,", scanRange(new PipeArgs("fieldsep , fields -2;-1"), true).extractRange(s));
+        assertEquals("ggg,", scanRange(new PipeArgs("fieldsep , fields 7-8"), true).extractRange(s));
+        assertEquals("ggg,", scanRange(new PipeArgs("fieldsep , fields 7;-1"), true).extractRange(s));
+        */
+
+    }
     func testSimpleMatches() throws {
         XCTAssertEqual(try "".matches(), true)
         XCTAssertEqual(try "xxx".matches(), true)
