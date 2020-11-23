@@ -162,7 +162,8 @@ final class StageTests: XCTestCase {
 
         XCTAssertThrows(try Pipe("(end ?) literal a | a: faninany | console ? a: | console").run(), PipeError.unusedStreamConnected(direction: .output, streamNo: 1))
 
-        // TODO have an example using locate or other stage that splits the input
+        try Pipe("(end ?) zzzgen /aa/ab/xc/ad/xe/af/xg/xh/ai/ | l: locate 1.1 /a/ | f: faninany | zzzcheck /aa/ab/xc/ad/xe/af/xg/xh/ai/ ? l: | f:").run()
+        try Pipe("(end ?) zzzgen /aa/ab/xc/ad/xe/af/xg/xh/ai/ | l: locate 1.1 /a/ | f: faninany | zzzcheck /aa/ab/xc/ad/af/ai/ ? l: | locate 2.1 /c/ | f:").run()
     }
 
 
@@ -241,11 +242,47 @@ final class StageTests: XCTestCase {
         try Pipe("literal aaa|literal bbb|literal ccc|literal ddd| locate anyof /zyxabc/ | zzzcheck /ccc/bbb/aaa/").run()
         try Pipe("literal aaa|literal bbb|literal ccc|literal ddd| locate anyof | zzzcheck /ddd/ccc/bbb/aaa/").run()
 
-        // TODO nlocate
-//        try Pipe("literal one|literal two|literal three|literal four|literal five| locate 4 | nlocate 5| zzzcheck /five/four/").run()
-
         try Pipe("(end ?) zzzgen /aaa/bbb/ccc/ddd/a/aa/c/dd/ee/ | l: locate /a/ | zzzcheck /aaa/a/aa/ ? l: | zzzcheck /bbb/ccc/ddd/c/dd/ee/").run()
         try Pipe("(end ?) zzzgen /aaa/bbb/ccc/ddd/a/aa/c/dd/ee/ | l: locate /a/ | zzzcheck /aaa/a/aa/ ? l: | take 1 | zzzcheck /bbb/").run()
+    }
+
+
+    func testNLocate() throws {
+        try Pipe("zzzgen /a/b/c/ | nlocate /a/ | zzzcheck /b/c/").run()
+        try Pipe("zzzgen /a/b/c/ | nlocate /A/ | literal x| zzzcheck /x/a/b/c/").run()
+        try Pipe("zzzgen /a/b/c/ | nlocate anycase /A/ | zzzcheck /b/c/").run()
+        try Pipe("literal 4444|literal 333|literal 22|literal 1| nlocate 2| zzzcheck /1/").run()
+        try Pipe("literal 4444|literal 333|literal 22|literal 1| nlocate w1| literal x| zzzcheck /x/").run()
+        try Pipe("literal 444 4|literal 333|literal 22|literal 1| nlocate w2| zzzcheck /1/22/333/").run()
+        try Pipe("literal a|literal|literal b| nlocate | zzzcheck //").run()
+
+        try Pipe("literal hello there|literal I am here| nlocate /here/ | literal x| zzzcheck /x/").run()
+        try Pipe("literal hello there|literal I am here| nlocate anycase /HE/ | literal x| zzzcheck /x/").run()
+        try Pipe("literal hello there|literal I am here| nlocate anycase 2-5 /HE/ | literal x|zzzcheck /x/I am here/hello there/").run()
+        try Pipe("literal hello there|literal I am here| nlocate (1.2 2-5) /he/ | literal x|zzzcheck /x/I am here/").run()
+        try Pipe("literal hello there|literal I am here| nlocate anycase (1.2 2-5 6-7) /HE/ | literal x|zzzcheck /x/").run()
+        try Pipe("literal hello there|literal I am here| nlocate anycase (1.2 2-5 7-8) /HE/ | literal x|zzzcheck /x/I am here/").run()
+
+        try Pipe("literal a-b-c|literal d-e-f| nlocate wordsep - w3 /c/ | zzzcheck /d-e-f/").run()
+        try Pipe("literal a?b?|literal e??f| nlocate fieldsep ? f2-3 /f/ | zzzcheck /a?b?/").run()
+        try Pipe("literal ?ab?c??a|literal ab?c?a| nlocate (ws ? w1 w3) /a/ | literal x| zzzcheck /x/").run()
+        try Pipe("literal afbc|literal adef|literal ghfi|literal fjkl| nlocate -2;-1 /f/ | zzzcheck /fjkl/afbc/").run()
+
+        let colours = "/red apples/white flag/roses are red/grass is green/barry white/white christmas/blue bayou/helen reddy/"
+        try Pipe("zzzgen \(colours) | nlocate /red/ |zzzcheck /white flag/grass is green/barry white/white christmas/blue bayou/").run()
+        try Pipe("(end ?) zzzgen \(colours) | l: nlocate /red/ | f: faninany | zzzcheck /white flag/grass is green/barry white/white christmas/blue bayou/helen reddy/ ? l: | locate /helen/ | f:").run()
+        try Pipe("(end ?) zzzgen \(colours) | l: nlocate /red/ | nlocate /white/ | zzzcheck /grass is green/blue bayou/").run()
+
+        try Pipe("literal aaa|literal bbb|literal ccc|literal ddd| nlocate anyof /a/ | zzzcheck /ddd/ccc/bbb/").run()
+        try Pipe("literal aaa|literal bbb|literal ccc|literal ddd| nlocate anyof /ac/ | zzzcheck /ddd/bbb/").run()
+        try Pipe("literal aaa|literal bbb|literal ccc|literal ddd| nlocate anyof /abc/ | zzzcheck /ddd/").run()
+        try Pipe("literal aaa|literal bbb|literal ccc|literal ddd| nlocate anyof /zyxabc/ | zzzcheck /ddd/").run()
+        try Pipe("literal aaa|literal bbb|literal ccc|literal ddd| nlocate anyof | literal x| zzzcheck /x/").run()
+
+        try Pipe("(end ?) zzzgen /aaa/bbb/ccc/ddd/a/aa/c/dd/ee/ | l: nlocate /a/ | zzzcheck /bbb/ccc/ddd/c/dd/ee/ ? l: | zzzcheck /aaa/a/aa/").run()
+        try Pipe("(end ?) zzzgen /aaa/bbb/ccc/ddd/a/aa/c/dd/ee/ | l: nlocate /a/ | zzzcheck /bbb/ccc/ddd/c/dd/ee/ ? l: | take 1 | zzzcheck /aaa/").run()
+
+        try Pipe("literal one|literal two|literal three|literal four|literal five| locate 4 | nlocate 5| zzzcheck /five/four/").run()
     }
 
     func testTakeFirst() throws {

@@ -15,10 +15,10 @@ A description of this package.
 [X] Faninany.java
 [X] Fanout.java
 [X] Take.java
-[ ] Locate.java
-[ ] Regex.java
+[X] Locate.java
 [ ] Specs.java
 [ ] Command.java
+[ ] Regex.java
 [ ] Chop.java
 [ ] Split.java
 
