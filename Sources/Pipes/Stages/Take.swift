@@ -124,7 +124,7 @@ extension Take: RegisteredStage {
 
     public static func createStage(args: Args) throws -> Stage {
         var first = true
-        if let word = try args.peekWord() {
+        if let word = args.peekWord() {
             if word.matchesKeyword("FIRST") {
                 _ = try args.scanWord()
             } else if word.matchesKeyword("LAST") {
@@ -134,7 +134,7 @@ extension Take: RegisteredStage {
         }
 
         var limit = 1
-        if let word = try args.peekWord() {
+        if let word = args.peekWord() {
             if !word.matchesKeyword("LINES") && !word.matchesKeyword("CHARACTERS") && !word.matchesKeyword("CHARS", minLength: 4) && !word.matchesKeyword("BYTES", minLength: 4) {
                 limit = try word.asNumberOrAsterisk()
                 _ = try args.scanWord()
@@ -142,7 +142,7 @@ extension Take: RegisteredStage {
         }
 
         var unit = Unit.lines
-        if let word = try args.peekWord() {
+        if let word = args.peekWord() {
             if word.matchesKeyword("LINES") {
                 _ = try args.scanWord()
                 unit = .lines

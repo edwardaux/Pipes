@@ -9,6 +9,24 @@ public indirect enum PipeRange {
     case word(start: Int, end: Int, separator: Character = " ")
     case field(start: Int, end: Int, separator: Character = "\t")
 
+    var start: Int {
+        switch self {
+        case .full: return .end
+        case .column(let start, _): return start
+        case .word(let start, _, _): return start
+        case .field(let start, _, _): return start
+        }
+    }
+
+    var end: Int {
+        switch self {
+        case .full: return .end
+        case .column(_, let end): return end
+        case .word(_, let end, _): return end
+        case .field(_, let end, _): return end
+        }
+    }
+
     // Converts a 1-based start/end indexes into 0-based indexes, bearing in mind the length
     // of the possible input. Note that the both input and output values are deemed to be
     // inclusive. For example, if we get passed 2 and 6 as an input (with an input length of
@@ -39,6 +57,9 @@ public indirect enum PipeRange {
             return (start: max(1, min(length, resolvedStart)) - 1, end: max(1, min(length, resolvedEnd)) - 1)
         }
     }
+}
+
+extension PipeRange: Equatable {
 }
 
 extension String {
@@ -117,7 +138,20 @@ extension String {
         }
     }
 
-    public func matches(_ searchString: String? = nil, inRange range: PipeRange? = nil, anyCase: Bool = false, anyOf: Bool = false) throws -> Bool {
+    public func matches(_ searchString: String? = nil, inRanges ranges: [PipeRange]? = nil, anyCase: Bool = false, anyOf: Bool = false) throws -> Bool {
+        if let ranges = ranges {
+            for range in ranges {
+                if try matches(searchString, inRange: range, anyCase: anyCase, anyOf: anyOf) {
+                    return true
+                }
+            }
+            return false
+        } else {
+            return try matches(searchString, inRange: nil, anyCase: anyCase, anyOf: anyOf)
+        }
+    }
+
+    private func matches(_ searchString: String? = nil, inRange range: PipeRange? = nil, anyCase: Bool = false, anyOf: Bool = false) throws -> Bool {
         let source = anyCase ? self.lowercased() : self
         let target = (anyCase ? searchString?.lowercased() : searchString) ?? ""
 
@@ -125,11 +159,15 @@ extension String {
         let extractedSource = try source.extract(fromRange: range)
 
         if anyOf {
-            let allowedChars = CharacterSet(charactersIn: target)
-            return extractedSource.rangeOfCharacter(from: allowedChars) != nil
+            if target.isEmpty {
+                return extractedSource.count > 0
+            } else {
+                let allowedChars = CharacterSet(charactersIn: target)
+                return extractedSource.rangeOfCharacter(from: allowedChars) != nil
+            }
         } else {
             if target.isEmpty {
-                return true
+                return extractedSource.count > 0
             } else {
                 return extractedSource.contains(target)
             }

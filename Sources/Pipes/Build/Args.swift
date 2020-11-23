@@ -24,7 +24,7 @@ public class Args {
         }
     }
 
-    public func peekWord() throws -> String? {
+    public func peekWord() -> String? {
         return tokenizer.peekWord()
     }
 
@@ -37,6 +37,7 @@ public class Args {
         tokenizer.mark()
 
         guard let firstChar = tokenizer.peekChar() else {
+            // TODO do I really need to do this?
             tokenizer.resetMark()
             throw PipeError.requiredOperandMissing
         }
@@ -99,6 +100,126 @@ public class Args {
         }
     }
 
+    public func peekRange() -> PipeRange? {
+        tokenizer.mark()
+        defer { tokenizer.resetMark() }
+
+        return try? scanRange()
+    }
+    
+    public func scanRange() throws -> PipeRange {
+        enum ParsedRangeType { case full, column, word, field }
+
+        var start: Int = .end
+        var end: Int = .end
+        var fieldSep: Character?
+        var wordSep: Character?
+        var type: ParsedRangeType = .column
+
+        guard var word = try? scanWord() else {
+            throw PipeError.invalidRange(range: "")
+        }
+
+        while word.matchesKeyword("FIELDSEPARATOR", minLength: 8) || word.matchesKeyword("FS") || word.matchesKeyword("WORDSEPARATOR", minLength: 7) || word.matchesKeyword("WS") {
+            if word.matchesKeyword("FIELDSEPARATOR", minLength: 8) || word.matchesKeyword("FS") {
+                fieldSep = try scanWord().asXorC()
+                word = try scanWord()
+            }
+            if word.matchesKeyword("WORDSEPARATOR", minLength: 7) || word.matchesKeyword("WS") {
+                wordSep = try scanWord().asXorC()
+                word = try scanWord()
+            }
+        }
+
+        if word.matchesKeyword("WORDS", minLength: 1) {
+            type = .word
+            word = try scanWord()
+        } else if word.matchesKeyword("FIELDS", minLength: 1) {
+            type = .field
+            word = try scanWord()
+        }
+
+        // TODO syntax check for range
+        if word.uppercased().starts(with: "W") && word.count >= 2 {
+            type = .word
+            word = String(word.dropFirst())
+        } else if word.uppercased().starts(with: "F") && word.count >= 2 {
+            type = .field
+            word = String(word.dropFirst())
+        }
+
+        if word.contains(";") {
+            let components = word.split(separator: ";", escape: nil)
+            guard components.count == 2 else {
+                throw PipeError.invalidRange(range: word)
+            }
+            start = try components[0].asNumberOrAsterisk(allowNegative: true)
+            end = try components[1].asNumberOrAsterisk(allowNegative: true)
+        } else if word.contains("-") {
+            let components = word.split(separator: "-", escape: nil)
+            guard components.count == 2 else {
+                throw PipeError.invalidRange(range: word)
+            }
+            start = try components[0].asNumberOrAsterisk(allowNegative: true)
+            end = try components[1].asNumberOrAsterisk(allowNegative: true)
+        } else if word.contains(".") {
+            let components = word.split(separator: ".", escape: nil)
+            guard components.count == 2 else {
+                throw PipeError.invalidRange(range: word)
+            }
+            start = try components[0].asNumberOrAsterisk(allowNegative: true)
+            end = try components[1].asNumberOrAsterisk(allowNegative: true)
+            if end != Int.end {
+                end = start + end - 1
+            }
+        } else {
+            do {
+                start = try word.asNumberOrAsterisk(allowNegative: true)
+                end = start
+            } catch {
+                throw PipeError.invalidRange(range: word)
+            }
+        }
+
+        switch type {
+        case .full:
+            return .full
+        case .column:
+            return .column(start: start, end: end)
+        case .word:
+            return .word(start: start, end: end, separator: wordSep ?? " ")
+        case .field:
+            return .field(start: start, end: end, separator: fieldSep ?? "\t")
+        }
+    }
+
+    public func peekRanges() -> [PipeRange]? {
+        tokenizer.mark()
+        defer { tokenizer.resetMark() }
+
+        return try? scanRanges()
+    }
+
+    public func scanRanges() throws -> [PipeRange] {
+        guard let char = tokenizer.peekChar() else {
+            throw PipeError.invalidRange(range: "")
+        }
+
+        if char == "(" {
+            guard let rangesText = tokenizer.scan(between: "(", and: ")") else { throw PipeError.missingEndingParenthesis }
+            guard rangesText.trimmingCharacters(in: .whitespaces).count > 0 else { throw PipeError.noInputRanges }
+
+            let tmpArgs = try Args("dummy \(rangesText)")
+            var ranges = [PipeRange]()
+            while tmpArgs.peekWord() != nil {
+                ranges.append(try tmpArgs.scanRange())
+            }
+            return ranges
+        } else {
+            return try [scanRange()]
+        }
+    }
+
     public func scanExpression() throws -> String {
         guard tokenizer.peekChar() == "(" else { throw PipeError.requiredOperandMissing }
         guard let expression = tokenizer.scan(between: "(", and: ")") else { throw PipeError.missingEndingParenthesis }
@@ -107,7 +228,7 @@ public class Args {
     }
 
     public func scanStreamIdentifier() throws -> Int? {
-        guard let word = try peekWord() else { return nil }
+        guard let word = peekWord() else { return nil }
 
         _ = try scanWord()
         return try word.asStreamIdentifier()

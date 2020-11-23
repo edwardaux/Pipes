@@ -2,13 +2,13 @@ import Foundation
 
 public final class Locate: Stage {
     private let searchString: String?
-    private let inputRange: PipeRange?
+    private let inputRanges: [PipeRange]?
     private let anyCase: Bool
     private let anyOf: Bool
 
-    init(_ searchString: String? = nil, inputRange: PipeRange? = nil, anyCase: Bool = false, anyOf: Bool = false) {
+    init(_ searchString: String? = nil, inputRanges: [PipeRange]? = nil, anyCase: Bool = false, anyOf: Bool = false) {
         self.searchString = searchString
-        self.inputRange = inputRange
+        self.inputRanges = inputRanges
         self.anyCase = anyCase
         self.anyOf = anyOf
     }
@@ -20,7 +20,7 @@ public final class Locate: Stage {
     override public func run() throws {
         while true {
             let record = try peekto()
-            let matched = try record.matches(searchString)
+            let matched = try record.matches(searchString, inRanges: inputRanges, anyCase: anyCase, anyOf: anyOf)
             if matched {
                 try output(record)
             } else {
@@ -39,11 +39,32 @@ extension Locate: RegisteredStage {
     }
 
     public static func createStage(args: Args) throws -> Stage {
-        let searchString = try args.scanWord()
+        var anyCase = false
+        if let word = args.peekWord() {
+            if word.matchesKeyword("ANYCASE", minLength: 3) {
+                anyCase = true
+                _ = try args.scanWord()
+            }
+        }
+
+        let inputRanges = args.peekRanges()
+        if inputRanges != nil {
+            _ = try? args.scanRanges()
+        }
+
+        var anyOf = false
+        if let word = args.peekWord() {
+            if word.matchesKeyword("ANYOF", minLength: 3) {
+                anyOf = true
+                _ = try args.scanWord()
+            }
+        }
+
+        let searchString = try? args.scanDelimitedString()
 
         try args.ensureNoRemainder()
 
-        return Locate(searchString)
+        return Locate(searchString, inputRanges: inputRanges, anyCase: anyCase, anyOf: anyOf)
     }
 
     public static var helpSummary: String? {
