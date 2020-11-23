@@ -78,9 +78,7 @@ extension Count: RegisteredStage {
             "BYTES": { Metric.bytes },
             "WORDS": { Metric.words },
             "LINES": { Metric.lines },
-            "MIN": { Metric.minLine },
             "MINline": { Metric.minLine },
-            "MAX": { Metric.maxLine },
             "MAXline": { Metric.maxLine },
         ]
         while true {

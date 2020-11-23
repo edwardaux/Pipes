@@ -135,7 +135,7 @@ extension Take: RegisteredStage {
 
         var limit = 1
         if let word = args.peekWord() {
-            if !word.matchesKeyword("LINES") && !word.matchesKeyword("CHARACTERS") && !word.matchesKeyword("CHARS", minLength: 4) && !word.matchesKeyword("BYTES", minLength: 4) {
+            if !word.matchesKeyword("LINEs", "CHARACTERs", "CHARs", "BYTEs") {
                 limit = try word.asNumberOrAsterisk()
                 _ = try args.scanWord()
             }
@@ -143,13 +143,13 @@ extension Take: RegisteredStage {
 
         var unit = Unit.lines
         if let word = args.peekWord() {
-            if word.matchesKeyword("LINES") {
+            if word.matchesKeyword("LINEs") {
                 _ = try args.scanWord()
                 unit = .lines
-            } else if word.matchesKeyword("CHARACTERS") || word.matchesKeyword("CHARS", minLength: 4) {
+            } else if word.matchesKeyword("CHARACTERs", "CHARs") {
                 _ = try args.scanWord()
                 unit = .characters
-            } else if word.matchesKeyword("BYTES", minLength: 4) {
+            } else if word.matchesKeyword("BYTEs") {
                 _ = try args.scanWord()
                 unit = .bytes
             }

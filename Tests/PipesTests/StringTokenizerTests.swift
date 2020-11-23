@@ -287,21 +287,19 @@ final class StringTokenizerTests: XCTestCase {
     }
 
     func testSyntaxKeywordMatching() {
-        XCTAssertEqual("TAB".matchesKeyword("TAB"), true)
-        XCTAssertEqual("TAB".matchesKeyword("TAB", minLength: 0), true)
-        XCTAssertEqual("TAB".matchesKeyword("TAB", minLength: 3), true)
-        XCTAssertEqual("TAB".matchesKeyword("TAB", minLength: 4), false)
-        XCTAssertEqual("TAB".matchesKeyword("TABULATE"), false)
-        XCTAssertEqual("TAB".matchesKeyword("TABULATE", minLength: 0), true)
-        XCTAssertEqual("TAB".matchesKeyword("TABULATE", minLength: 3), true)
-        XCTAssertEqual("TAB".matchesKeyword("TABULATE", minLength: 4), false)
-        XCTAssertEqual("TABUL".matchesKeyword("TABULATE"), false)
-        XCTAssertEqual("TABUL".matchesKeyword("TABULATE", minLength: 0), true)
-        XCTAssertEqual("TABUL".matchesKeyword("TABULATE", minLength: 3), true)
-        XCTAssertEqual("TABUL".matchesKeyword("TABULATE", minLength: 4), true)
-        XCTAssertEqual("TABUX".matchesKeyword("TABULATE"), false)
-        XCTAssertEqual("TABUX".matchesKeyword("TABULATE", minLength: 0), false)
-        XCTAssertEqual("TABUX".matchesKeyword("TABULATE", minLength: 3), false)
-        XCTAssertEqual("TABUX".matchesKeyword("TABULATE", minLength: 4), false)
+//        XCTAssertEqual("TAB".matchesKeyword("TAB"), true)
+//        XCTAssertEqual("TA".matchesKeyword("TABulate"), false)
+        XCTAssertEqual("TAB".matchesKeyword("TABulate"), true)
+        XCTAssertEqual("TABUL".matchesKeyword("TABulate"), true)
+        XCTAssertEqual("TABUX".matchesKeyword("TABulate"), false)
+
+        XCTAssertEqual("tab".matchesKeyword("TAB"), true)
+        XCTAssertEqual("ta".matchesKeyword("TABulate"), false)
+        XCTAssertEqual("tab".matchesKeyword("TABulate"), true)
+        XCTAssertEqual("tabul".matchesKeyword("TABulate"), true)
+        XCTAssertEqual("tabux".matchesKeyword("TABulate"), false)
+
+        XCTAssertEqual("tabulate".matchesKeyword("TABulate"), true)
+        XCTAssertEqual("tabulatex".matchesKeyword("TABulate"), false)
     }
 }

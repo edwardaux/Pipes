@@ -120,21 +120,21 @@ public class Args {
             throw PipeError.invalidRange(range: "")
         }
 
-        while word.matchesKeyword("FIELDSEPARATOR", minLength: 8) || word.matchesKeyword("FS") || word.matchesKeyword("WORDSEPARATOR", minLength: 7) || word.matchesKeyword("WS") {
-            if word.matchesKeyword("FIELDSEPARATOR", minLength: 8) || word.matchesKeyword("FS") {
+        while word.matchesKeyword("FIELDSEParator", "FS", "WORDSEParator", "WS") {
+            if word.matchesKeyword("FIELDSEParator", "FS") {
                 fieldSep = try scanWord().asXorC()
                 word = try scanWord()
             }
-            if word.matchesKeyword("WORDSEPARATOR", minLength: 7) || word.matchesKeyword("WS") {
+            if word.matchesKeyword("WORDSEParator", "WS") {
                 wordSep = try scanWord().asXorC()
                 word = try scanWord()
             }
         }
 
-        if word.matchesKeyword("WORDS", minLength: 1) {
+        if word.matchesKeyword("Words") {
             type = .word
             word = try scanWord()
-        } else if word.matchesKeyword("FIELDS", minLength: 1) {
+        } else if word.matchesKeyword("Fields") {
             type = .field
             word = try scanWord()
         }
@@ -254,15 +254,17 @@ public class Args {
             throw PipeError.requiredKeywordsMissing(keywords: keywords.keys.sorted())
         }
 
-        // TODO mixed case input. also, deal with keys of different lengths. eg. STR vs STRing
-        guard let closure = keywords[keyword.uppercased()] else {
-            throw PipeError.operandNotValid(keyword: keyword)
+        for key in keywords.keys {
+            if keyword.matchesKeyword(key) {
+                guard let closure = keywords[key] else { throw PipeError.operandNotValid(keyword: keyword) }
+
+                // We have a closure that can handle this keyword, so we can safely consume the keyword
+                _ = tokenizer.scanWord()
+
+                return try closure()
+            }
         }
-
-        // We have a closure that can handle this keyword, so we can safely consume the keyword
-        _ = tokenizer.scanWord()
-
-        return try closure()
+        throw PipeError.operandNotValid(keyword: keyword)
     }
 
     public func onOptionalKeyword<T>(_ keywords: [String: () throws -> T], throwsOnUnsupportedKeyword: Bool) throws -> T? {
@@ -270,18 +272,22 @@ public class Args {
             return nil
         }
 
-        guard let closure = keywords[keyword.uppercased()] else {
-            if throwsOnUnsupportedKeyword {
-                throw PipeError.operandNotValid(keyword: keyword)
-            } else {
-                return nil
+        for key in keywords.keys {
+            if keyword.matchesKeyword(key) {
+                guard let closure = keywords[key] else { throw PipeError.operandNotValid(keyword: keyword) }
+
+                // We have a closure that can handle this keyword, so we can safely consume the keyword
+                _ = tokenizer.scanWord()
+
+                return try closure()
             }
         }
 
-        // We have a closure that can handle this keyword, so we can safely consume the keyword
-        _ = tokenizer.scanWord()
-
-        return try closure()
+        if throwsOnUnsupportedKeyword {
+            throw PipeError.operandNotValid(keyword: keyword)
+        } else {
+            return nil
+        }
     }
 }
 

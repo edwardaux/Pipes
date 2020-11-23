@@ -47,19 +47,19 @@ class Parser {
 
         let optionsTokenizer = StringTokenizer(pipeOptions)
         while let keyword = optionsTokenizer.scanWord() {
-            if keyword.matchesKeyword("SEPARATOR", minLength: 3) || keyword.matchesKeyword("STAGESEP") {
+            if keyword.matchesKeyword("SEParator", "STAGESEP") {
                 if let word = optionsTokenizer.scanWord() {
                     stageSep = try word.asXorC()
                 } else {
                     throw PipeError.valueMissingForOption(keyword: keyword)
                 }
-            } else if keyword.matchesKeyword("ENDCHAR", minLength: 3) {
+            } else if keyword.matchesKeyword("ENDchar") {
                 if let word = optionsTokenizer.scanWord() {
                     endChar = try word.asXorC()
                 } else {
                     throw PipeError.valueMissingForOption(keyword: keyword)
                 }
-            } else if keyword.matchesKeyword("ESCAPE", minLength: 3) {
+            } else if keyword.matchesKeyword("ESCape") {
                 if let word = optionsTokenizer.scanWord() {
                     escape = try word.asXorC()
                 } else {

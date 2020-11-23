@@ -41,7 +41,7 @@ extension Locate: RegisteredStage {
     public static func createStage(args: Args) throws -> Stage {
         var anyCase = false
         if let word = args.peekWord() {
-            if word.matchesKeyword("ANYCASE", minLength: 3) {
+            if word.matchesKeyword("ANYcase") {
                 anyCase = true
                 _ = try args.scanWord()
             }
@@ -54,7 +54,7 @@ extension Locate: RegisteredStage {
 
         var anyOf = false
         if let word = args.peekWord() {
-            if word.matchesKeyword("ANYOF", minLength: 3) {
+            if word.matchesKeyword("ANYof") {
                 anyOf = true
                 _ = try args.scanWord()
             }
