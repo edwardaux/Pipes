@@ -287,8 +287,6 @@ final class StringTokenizerTests: XCTestCase {
     }
 
     func testSyntaxKeywordMatching() {
-//        XCTAssertEqual("TAB".matchesKeyword("TAB"), true)
-//        XCTAssertEqual("TA".matchesKeyword("TABulate"), false)
         XCTAssertEqual("TAB".matchesKeyword("TABulate"), true)
         XCTAssertEqual("TABUL".matchesKeyword("TABulate"), true)
         XCTAssertEqual("TABUX".matchesKeyword("TABulate"), false)
@@ -301,5 +299,33 @@ final class StringTokenizerTests: XCTestCase {
 
         XCTAssertEqual("tabulate".matchesKeyword("TABulate"), true)
         XCTAssertEqual("tabulatex".matchesKeyword("TABulate"), false)
+    }
+
+    func testSyntaxAlignment() {
+        XCTAssertEqual("abc".aligned(alignment: .left, length: 1, pad: "_"), "abc")
+        XCTAssertEqual("abc".aligned(alignment: .left, length: 3, pad: "_"), "abc")
+        XCTAssertEqual("abc".aligned(alignment: .left, length: 4, pad: "_"), "abc_")
+        XCTAssertEqual("abc".aligned(alignment: .left, length: 6, pad: "_"), "abc___")
+
+        XCTAssertEqual("abc".aligned(alignment: .right, length: 1, pad: "_"), "abc")
+        XCTAssertEqual("abc".aligned(alignment: .right, length: 3, pad: "_"), "abc")
+        XCTAssertEqual("abc".aligned(alignment: .right, length: 4, pad: "_"), "_abc")
+        XCTAssertEqual("abc".aligned(alignment: .right, length: 6, pad: "_"), "___abc")
+
+        XCTAssertEqual("abc".aligned(alignment: .center, length: 1, pad: "_"), "abc")
+        XCTAssertEqual("abc".aligned(alignment: .center, length: 3, pad: "_"), "abc")
+        XCTAssertEqual("abc".aligned(alignment: .center, length: 4, pad: "_"), "abc_")
+        XCTAssertEqual("abc".aligned(alignment: .center, length: 6, pad: "_"), "_abc__")
+        XCTAssertEqual("abc".aligned(alignment: .center, length: 7, pad: "_"), "__abc__")
+        XCTAssertEqual("abc".aligned(alignment: .center, length: 8, pad: "_"), "__abc___")
+    }
+
+    func testSyntaxInsertString() {
+        XCTAssertEqual("abcdefgh".insertString(string: "___", start: 1), "___defgh")
+        XCTAssertEqual("abcdefgh".insertString(string: "___", start: 2), "a___efgh")
+        XCTAssertEqual("abcdefgh".insertString(string: "___", start: 5), "abcd___h")
+        XCTAssertEqual("abcdefgh".insertString(string: "___", start: 6), "abcde___")
+        XCTAssertEqual("abcdefgh".insertString(string: "___", start: 10), "abcdefgh ___")
+        XCTAssertEqual("abcdefgh".insertString(string: "___", start: 15), "abcdefgh      ___")
     }
 }
