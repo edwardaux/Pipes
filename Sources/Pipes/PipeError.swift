@@ -40,6 +40,7 @@ public enum PipeError: Error {
     case binaryStringNotDivisibleBy8(string: String)
     case binaryDataMissing(prefix: String)
     case binaryStringNotBinary(string: String)
+    case outputRangeEndInvalid
     case unableToWriteToFile(path: String, error: Error)
     case unusedStreamConnected(direction: StreamDirection, streamNo: Int)
     case commandNotPermitted(command: String)
@@ -107,6 +108,8 @@ public enum PipeError: Error {
             return Detail(code: -337, title: "Binary data missing after \(prefix)", explanation: "A prefix indicating a binary constant is found, but there are no more characters in the argument string or the next character is blank.", response: "")
         case .binaryStringNotBinary(let string):
             return Detail(code: -338, title: "Not binary data: \(string)", explanation: "A prefix indicating a binary constant is found, but the remainder of the word contains a character that is neither 0 nor 1.", response: "")
+        case .outputRangeEndInvalid:
+            return Detail(code: -556, title: "Asterisk cannot end output column range", explanation: "Write a single column to put a field at a particular position, extending as far as required. Use a range to put the field into a particular range of columns, padding or truncating as necessary", response: "")
         case .unableToWriteToFile(let path, let error):
             return Detail(code: -780, title: "You are not allowed to write to \(path). Reason: \(error.localizedDescription)", explanation: "The directory record for an existing file indicates that you cannot write to it.", response: "")
         case .unusedStreamConnected(let direction, let streamNo):

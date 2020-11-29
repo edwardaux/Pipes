@@ -74,4 +74,64 @@ extension String {
 
         return keyword.uppercased().hasPrefix(self.uppercased())
     }
+
+    // Takes a given string and inserts it into the current string. Note that start
+    // is 1-indexed.
+    public func insertString(string: String, start: Int) -> String {
+        assert(start > 0, "start is expected to be greater than 0")
+
+        let length = string.count
+
+        // If the starting position is at the end of the string, we can simply catenate
+        if start == count {
+            return self + string
+        }
+        // If the starting position is beyond the end of the string, we need to add some
+        // leading spaces
+        if start > count {
+            return self + string.aligned(alignment: .right, length: start - 1 - count + length, pad: " ")
+        }
+
+        // If the inserted string will be longer than the current string, we can just chop
+        // and append
+        if start - 1 + length >= count {
+            return prefix(start - 1) + string
+
+        }
+
+        // All we've got left here is an overlay
+        let r1 = index(startIndex, offsetBy: start - 1);
+        let r2 = index(startIndex, offsetBy: start - 1 + length);
+        return replacingCharacters(in: r1..<r2, with: string)
+    }
+
+    func aligned(alignment: Alignment, length: Int, pad: Character) -> String {
+        switch alignment {
+        case .left:
+            return padRight(length: length, pad: pad)
+        case .right:
+            return padLeft(length: length, pad: pad)
+        case .center:
+            if count >= length {
+                return self
+            }
+            let leftPadLength = Int((length - count) / 2)
+            return padLeft(length: leftPadLength + count, pad: pad).padRight(length: length, pad: pad)
+        }
+    }
+
+    private func padLeft(length: Int, pad: Character, truncate: Bool = false) -> String {
+        guard length > count else {
+            return truncate ? String(suffix(length)) : self
+        }
+        return String(repeating: pad, count: length - count) + self
+    }
+
+    private func padRight(length: Int, pad: Character, truncate: Bool = false) -> String {
+        guard length > count else {
+            return truncate ? String(prefix(length)) : self
+        }
+        return self + String(repeating: pad, count: length - count)
+    }
+
 }

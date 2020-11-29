@@ -285,6 +285,105 @@ final class StageTests: XCTestCase {
         try Pipe("literal one|literal two|literal three|literal four|literal five| locate 4 | nlocate 5| zzzcheck /five/four/").run()
     }
 
+    func testSpec() throws {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+        formatter.timeZone = TimeZone.current
+
+        try Pipe()
+            .add(Literal("foobar"))
+            .add(Literal("foobar"))
+            .add(Literal("foobar"))
+            .add(Spec(
+                .field(input: .range(PipeRange.column(start: 2, end: 4)), output: .next()),
+                .field(input: .literal("hi the"), output: .next()),
+                .pad("X"),
+                .field(input: .literal("re"), output: .next(length: 4)),
+                .field(input: .number(), output: .nextWord()),
+                .field(input: .number(), output: .offset(18)),
+                .field(input: .timestamp(formatter: formatter), output: .nextWord())
+                )
+            )
+            .add(ZZZTestCheckerStage(["hi there", "hi there", "hi there"]))
+            .run()
+
+
+//        try Pipe("zzzgen /a/b/ | literal abcdefgh| literal mnopqrstuvwxyz| spec recno 1 1-* n /blah/ nw | zzzcheck /         1mnopqrstuvwxyz blah/         2abcdefgh blah/         3a blah/         4b blah/").run()
+//        try Pipe("literal | spec number 1 | zzzcheck /         1/").run()
+//        try Pipe("literal | spec recno 1 | zzzcheck /         1/").run()
+//        try Pipe("literal | spec recno 1 l /a/ n | zzzcheck /1         a/").run()
+//        try Pipe("literal | spec recno 1 r /a/ n | zzzcheck /         1a/").run()
+//        try Pipe("literal | spec recno 1 c /a/ n | zzzcheck /    1     a/").run()
+//        try Pipe("literal | spec recno 1 recno n | zzzcheck /         1         1/").run()
+//        try Pipe("literal | spec recno 1 l recno n | zzzcheck /1                  1/").run()
+//        try Pipe("zzzgen /a/b/c/d/ | spec number 1 from 1 by -1 | zzzcheck /1/0/-1/-2/").run()
+//        try Pipe("zzzgen /a/b/c/d/ | spec number 1 from -5 by -3 | zzzcheck /-5/-8/-11/-14/").run()
+//        try Pipe("zzzgen /a/b/c/d/ | spec number 1 from 10 by 1 | zzzcheck /10/11/12/13/").run()
+//        try Pipe("zzzgen /a/b/c/d/ | spec number 1 from 2 by 0 | zzzcheck /2/2/2/2/").run()
+//
+//        try Pipe("zzzgen /a/b/c/d/ | spec time yyyy-MM-dd 1 | zzzcheck /?/?/?/?/").run() // TODO how to check this
+//
+//        try Pipe("literal | spec /abc/ 1 | zzzcheck /abc/").run()
+//        try Pipe("literal | spec /abc/ 1 l /a/ n | zzzcheck /abca/").run()
+//        try Pipe("literal | spec /abc/ 1 r /a/ n | zzzcheck /abca/").run()
+//        try Pipe("literal | spec /abc/ 1 c /a/ n | zzzcheck /abca/").run()
+//        try Pipe("literal | spec /abc/ 1 l /abc/ n | zzzcheck /abcabc/").run()
+//
+//        try Pipe("literal abcdefgh| spec 2-5 1 | zzzcheck /bcde/").run()
+//        try Pipe("literal abcdefgh| spec 2-5 1 l /a/ n | zzzcheck /bcdea/").run()
+//        try Pipe("literal abcdefgh| spec 2-5 1 r /a/ n | zzzcheck /bcdea/").run()
+//        try Pipe("literal abcdefgh| spec 2-5 1 c /a/ n | zzzcheck /bcdea/").run()
+//        try Pipe("literal abcdefgh| spec 2-5 1 l 2-5 n | zzzcheck /bcdebcde/").run()
+//
+//        try Pipe("literal abcdefgh| spec 2-5 3.4 | zzzcheck /  bcde/").run()
+//        try Pipe("literal abcdefgh| spec 2-3 3.4 | zzzcheck /  bc  /").run()
+//        try Pipe("literal abcdefgh| spec 2-5 3.2 | zzzcheck /  bc/").run()
+//        try Pipe("literal abcdefgh| spec 2-5 3.4 left | zzzcheck /  bcde/").run()
+//        try Pipe("literal abcdefgh| spec 2-3 3.4 left | zzzcheck /  bc  /").run()
+//        try Pipe("literal abcdefgh| spec 2-5 3.2 left | zzzcheck /  bc/").run()
+//        try Pipe("literal abcdefgh| spec 2-5 3.4 right | zzzcheck /  bcde/").run()
+//        try Pipe("literal abcdefgh| spec 2-3 3.4 right | zzzcheck /    bc/").run()
+//        try Pipe("literal abcdefgh| spec 2-5 3.2 right | zzzcheck /  de/").run()
+//        try Pipe("literal abcdefgh| spec 2-5 3.4 center | zzzcheck /  bcde/").run()
+//        try Pipe("literal abcdefgh| spec 2-3 3.4 center | zzzcheck /   bc /").run()
+//        try Pipe("literal abcdefgh| spec 2-5 3.2 center | zzzcheck /  cd/").run()
+//
+//        try Pipe("literal abcdefgh| spec 1.3 n 4.3 n 1.3 n | zzzcheck /abcdefabc/").run()
+//        try Pipe("literal abcdefgh| spec 1.3 nw 4.3 nw 1.3 nw | zzzcheck /abc def abc/").run()
+//        try Pipe("literal abcdefgh| spec 1.3 nf 4.3 nf 1.3 nf | zzzcheck /abc\tdef\tabc/").run()
+//
+//        try Pipe("literal abcdefgh| spec 1.3 n.3  4.3 n.3  1.3 n.3 | zzzcheck /abcdefabc/").run()
+//        try Pipe("literal abcdefgh| spec 1.3 nw.3 4.3 nw.3 1.3 nw.3 | zzzcheck /abc def abc/").run()
+//        try Pipe("literal abcdefgh| spec 1.3 nf.3 4.3 nf.3 1.3 nf.3 | zzzcheck /abc\tdef\tabc/").run()
+//        try Pipe("literal abcdefgh| spec 1.3 n.5  4.3 n.5  1.3 n.5 | zzzcheck /abc  def  abc  /").run()
+//        try Pipe("literal abcdefgh| spec 1.3 nw.5 4.3 nw.5 1.3 nw.5 | zzzcheck /abc   def   abc  /").run()
+//        try Pipe("literal abcdefgh| spec 1.3 nf.5 4.3 nf.5 1.3 nf.5 | zzzcheck /abc  \tdef  \tabc  /").run()
+//        try Pipe("literal abcdefgh| spec 1.3 n.2  4.3 n.2  1.3 n.2 | zzzcheck /abdeab/").run()
+//        try Pipe("literal abcdefgh| spec 1.3 nw.2 4.3 nw.2 1.3 nw.2 | zzzcheck /ab de ab/").run()
+//        try Pipe("literal abcdefgh| spec 1.3 nf.2 4.3 nf.2 1.3 nf.2 | zzzcheck /ab\tde\tab/").run()
+//
+//        try Pipe("literal abcdefgh| spec 1.3 nw.5 right 4.3 nw.5 c 1.3 nw.5 ri | zzzcheck /  abc  def    abc/").run()
+//
+//        try Pipe("literal   abc  | spec 1-* 1 | zzzcheck /  abc  /").run()
+//        try Pipe("literal   abc  | spec 1-* strip 1 | zzzcheck /abc/").run()
+//        try Pipe("literal   abc  def| spec 1-7 strip 1 8.3 n | zzzcheck /abcdef/").run()
+//
+//        try Pipe("literal a b c d e f | spec w1 1 | zzzcheck /a/").run()
+//        try Pipe("literal a b c d e f | spec w1 n w2 n w3 n w4-6 nw | zzzcheck /abc d e f/").run()
+//
+//        try Pipe("literal a | spec pad _ 1.1 1.5 | zzzcheck /a____/").run()
+//        try Pipe("literal a b | spec pad _ w1 1.5 pad + w2 n.4 right | zzzcheck /a____+++b/").run()
+//
+//        try Pipe("literal blah| spec 1-* c2x 1 | spec 1-* x2c 1 | zzzcheck /blah/").run()
+//        try Pipe("literal 123| spec 1-* d2c 1 | spec 1-* c2d 1 | zzzcheck /        123/").run()
+//        try Pipe("literal blah| spec 1-* c2b 1 | spec 1-* b2c 1 | zzzcheck /blah/").run()
+//        try Pipe("literal 123.45| spec 1-* f2c 1 | spec 1-* c2f 1 | zzzcheck /123.45/").run()
+//        try Pipe("literal 20070727| spec 1-* i2c 1 | spec 1-* c2i 1 | zzzcheck /20070727000000/").run()
+//        try Pipe("literal blah| spec 1-* v2c 1 | spec 1-* c2v 1 | zzzcheck /blah/").run()
+
+//        XCTAssertThrows(try Pipe("literal x | spec w1 1-*").run(), PipeError.outputRangeEndInvalid)
+    }
+
     func testTakeFirst() throws {
         XCTAssertThrows(try Pipe("take 2").run(), PipeError.streamNotConnected(direction: .input, streamNo: 0))
         XCTAssertThrows(try Pipe("literal a|take -50").run(), PipeError.numberCannotBeNegative(number: -50))
