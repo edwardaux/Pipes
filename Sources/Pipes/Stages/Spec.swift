@@ -7,7 +7,11 @@ public final class Spec: Stage {
     private var recno: Int = 0
     private var timestamp: Date = Date()
 
-    init(_ items: Item...) {
+    convenience init(_ items: Item...) {
+        self.init(items)
+    }
+
+    init(_ items: [Item]) {
         self.items = items
     }
 
@@ -51,7 +55,7 @@ public final class Spec: Stage {
             inputString = inputString.trimmingCharacters(in: .whitespaces)
         }
         if let conversion = conversion {
-            inputString = conversion.convert(inputString)
+            inputString = try conversion.convert(inputString)
         }
         return try output.place(inputString, outputSoFar: outputSoFar, alignment: alignment, pad: pad)
     }
@@ -77,33 +81,35 @@ public final class Spec: Stage {
             }
         }
         public enum Output {
-            case next(length: Int? = nil)
-            case nextWord(length: Int? = nil)
-            case offset(Int)
+            case next(width: Int? = nil)
+            case nextWord(width: Int? = nil)
+            case offset(Int, width: Int? = nil)
             case range(PipeRange)
 
             func place(_ string: String, outputSoFar: String, alignment: Alignment, pad: Character) throws -> String {
-                let length = try calculateLength(string: string)
+                let width = try calculateWidth(string: string)
 
-                var adjusted = string.aligned(alignment: alignment, length: length, pad: pad)
+                var adjusted = string.aligned(alignment: alignment, length: width, pad: pad, truncate: true)
                 var metrics = try calculateMetrics(outputSoFar: outputSoFar, string: adjusted)
 
                 if case .nextWord = self {
-                    adjusted = adjusted.isEmpty ? adjusted : " \(adjusted)"
-                    metrics = (start: metrics.start, length: metrics.length + 1)
+                    // We only prepend a blank if the new string is non-blank, and also if there's
+                    // already some content in the output buffer
+                    adjusted = !adjusted.isEmpty && !outputSoFar.isEmpty ? " \(adjusted)" : adjusted
+                    metrics = (start: metrics.start, width: metrics.width + 1)
                 }
 
                 return outputSoFar.insertString(string: adjusted, start: metrics.start)
             }
 
-            func calculateLength(string: String) throws -> Int {
+            func calculateWidth(string: String) throws -> Int {
                 switch self {
-                case .next(let length):
-                    return length ?? string.count
-                case .nextWord(let length):
-                    return length ?? string.count
-                case .offset:
-                    return string.count
+                case .next(let width):
+                    return width ?? string.count
+                case .nextWord(let width):
+                    return width ?? string.count
+                case .offset(_, let width):
+                    return width ?? string.count
                 case .range(let range):
                     if range.end == .end {
                         throw PipeError.outputRangeEndInvalid
@@ -112,18 +118,18 @@ public final class Spec: Stage {
                 }
             }
 
-            func calculateMetrics(outputSoFar: String, string: String) throws -> (start: Int, length: Int) {
-                let length = try calculateLength(string: string)
+            func calculateMetrics(outputSoFar: String, string: String) throws -> (start: Int, width: Int) {
+                let width = try calculateWidth(string: string)
 
                 switch self {
                 case .next:
-                    return (start: outputSoFar.count + 1, length: length)
+                    return (start: outputSoFar.count + 1, width: width)
                 case .nextWord:
-                    return (start: outputSoFar.count + 1, length: length)
-                case .offset(let offset):
-                    return (start: offset, length: length)
+                    return (start: outputSoFar.count + 1, width: width)
+                case .offset(let offset, _):
+                    return (start: offset, width: width)
                 case .range(let range):
-                    return (start: range.start, length: length)
+                    return (start: range.start, width: width)
                 }
             }
         }
@@ -139,7 +145,158 @@ extension Spec: RegisteredStage {
     }
 
     public static func createStage(args: Args) throws -> Stage {
-        return Spec()
+        var items: [Item] = []
+
+        while true {
+            if args.nextKeywordMatches("PAD") {
+                _ = try args.scanWord()
+                let padChar = try args.scanWord().asXorC()
+                items.append(.pad(padChar))
+            } else {
+                var input: Item.Input
+                if let range = args.peekRange() {
+                    _ = try args.scanRange()
+                    input = .range(range)
+                } else if args.nextKeywordMatches("TIMEstamp") {
+                    _ = try args.scanWord()
+                    var pattern = "yyyy-MM-dd'T'HH:mm:ssZ"
+                    if args.nextKeywordMatches("PATTERN") {
+                        _ = try args.scanWord()
+                        if let patternOverride = try? args.scanDelimitedString() {
+                            pattern = patternOverride
+                        } else {
+                            // TODO invalid date pattern
+                            throw PipeError.cannotBeFirstStage
+                        }
+                    }
+                    let formatter = DateFormatter()
+                    formatter.dateFormat = pattern
+                    formatter.timeZone = TimeZone.current
+                    input = .timestamp(formatter: formatter)
+                } else if args.nextKeywordMatches("NUMBER") || args.nextKeywordMatches("RECNO") {
+                    _ = try args.scanWord()
+                    var start = 1
+                    var by = 1
+                    if args.nextKeywordMatches("FROM") {
+                        _ = try args.scanWord()
+                        start = try args.scanWord().asNumber(allowNegative: true)
+                    }
+                    if args.nextKeywordMatches("BY") {
+                        _ = try args.scanWord()
+                        by = try args.scanWord().asNumber(allowNegative: true)
+                    }
+                    input = .number(start: start, by: by)
+                } else if let string = args.peekDelimitedString() {
+                    _ = try args.scanDelimitedString()
+                    input = .literal(string)
+                } else {
+                    // No more input, let's break out of the loop
+                    break
+                }
+
+                var inputIsRecno = false
+                if case .number = input {
+                    inputIsRecno = true
+                }
+
+                var strip = false
+                if args.nextKeywordMatches("STRIP") {
+                    _ = try args.scanWord()
+                    strip = true
+                }
+
+                var conversion: Conversion?
+                if let word = args.peekWord(), let conv = Conversion.from(word) {
+                    _ = try args.scanWord()
+                    conversion = conv
+                }
+
+                let output: Item.Output
+                if let word = args.peekWord() {
+                    let pieces = word.components(separatedBy: ".")
+                    if pieces[0].matchesKeyword("Next") {
+                        _ = try args.scanWord()
+                        if pieces.count == 1 {
+                            if inputIsRecno && !strip {
+                                output = .next(width: 10)
+                            } else {
+                                output = .next()
+                            }
+                        } else if pieces.count == 2 {
+                            if let width = try? pieces[1].asNumber(allowNegative: false) {
+                                output = .next(width: width)
+                            } else {
+                                // TODO invalid NEXT
+                                throw PipeError.cannotBeFirstStage
+                            }
+                        } else {
+                            // TODO invalid NEXT
+                            throw PipeError.cannotBeFirstStage
+                        }
+                    } else if pieces[0].matchesKeyword("NEXTW", "NW") {
+                        _ = try args.scanWord()
+                        if pieces.count == 1 {
+                            if inputIsRecno && !strip {
+                                output = .nextWord(width: 10)
+                            } else {
+                                output = .nextWord()
+                            }
+                        } else if pieces.count == 2 {
+                            if let width = try? pieces[1].asNumber(allowNegative: false) {
+                                output = .nextWord(width: width)
+                            } else {
+                                // TODO invalid NEXTW
+                                throw PipeError.cannotBeFirstStage
+                            }
+                        } else {
+                            // TODO invalid NEXTW
+                            throw PipeError.cannotBeFirstStage
+                        }
+                    } else if pieces.count == 1, let offset = try? pieces[0].asNumber(allowNegative: false) {
+                        _ = try args.scanWord()
+                        if inputIsRecno && !strip {
+                            output = .offset(offset, width: 10)
+                        } else {
+                            output = .offset(offset)
+                        }
+                    } else {
+                        if let range = args.peekRange() {
+                            _ = try args.scanRange()
+                            output = .range(range)
+                        } else {
+                            // TODO Invalid output spec
+                            throw PipeError.cannotBeFirstStage
+                        }
+                    }
+                } else {
+                    // TODO No output spec
+                    throw PipeError.cannotBeFirstStage
+                }
+
+                var alignment: Alignment = .left
+                if inputIsRecno {
+                    alignment = .right
+                }
+                if let word = args.peekWord() {
+                    if word.matchesKeyword("Left") {
+                        _ = try args.scanWord()
+                        alignment = .left
+                    } else if word.matchesKeyword("Center", "Centre") {
+                        _ = try args.scanWord()
+                        alignment = .center
+                    } else if word.matchesKeyword("Right") {
+                        _ = try args.scanWord()
+                        alignment = .right
+                    }
+                }
+
+                let item = Item.field(input: input, strip: strip, conversion: conversion, output: output, alignment: alignment)
+                items.append(item)
+             }
+        }
+
+        // TODO what if there are no items?
+        return Spec(items)
     }
 
     public static var helpSummary: String? {
@@ -160,8 +317,8 @@ extension Spec: RegisteredStage {
         ├──┬─inputRange─────────────────────────────────────┬──┬───────┬──►
            ├─┬─NUMBER─┬──┬───────────────┬──┬─────────────┬─┤  └─STRIP─┘
            │ └─RECNO──┘  └─FROM──snumber─┘  └─BY──snumber─┘ │
-           ├─TIMEstamp───┬────────┬─────────────────────────┤
-           │             └─format─┘                         │
+           ├─TIMEstamp───┬──────────────────────────┬───────┤
+           │             └─PATTERN──delimitedString─┘       │
            └─delimitedString────────────────────────────────┘
 
         ►──┬────────────────┬──┬─┬─Next─────┬──┬───────────┬─┬──┬────────┬──┤

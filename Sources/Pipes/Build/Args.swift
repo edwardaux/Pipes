@@ -33,12 +33,20 @@ public class Args {
         return word
     }
 
-    public func scanDelimitedString() throws -> String {
-        tokenizer.mark()
+    // TODO apply this to other stages
+    public func nextKeywordMatches(_ keyword: String) -> Bool {
+        return peekWord()?.matchesKeyword(keyword) == true
+    }
 
+    public func peekDelimitedString() -> String? {
+        tokenizer.mark()
+        defer { tokenizer.resetMark() }
+
+        return try? scanDelimitedString()
+    }
+
+    public func scanDelimitedString() throws -> String {
         guard let firstChar = tokenizer.peekChar() else {
-            // TODO do I really need to do this?
-            tokenizer.resetMark()
             throw PipeError.requiredOperandMissing
         }
 
@@ -46,15 +54,12 @@ public class Args {
         case "b", "B":
             _ = tokenizer.scanChar()
             guard let binary = tokenizer.scanWord() else {
-                tokenizer.resetMark()
                 throw PipeError.binaryDataMissing(prefix: firstChar)
             }
             guard binary.count % 8 == 0 else {
-                tokenizer.resetMark()
                 throw PipeError.binaryStringNotDivisibleBy8(string: binary)
             }
             guard binary.isBinaryString else {
-                tokenizer.resetMark()
                 throw PipeError.binaryStringNotBinary(string: binary)
             }
 
@@ -70,15 +75,12 @@ public class Args {
         case "h", "H", "x", "X":
             _ = tokenizer.scanChar()
             guard let hex = tokenizer.scanWord() else {
-                tokenizer.resetMark()
                 throw PipeError.hexDataMissing(prefix: firstChar)
             }
             guard hex.count % 2 == 0 else {
-                tokenizer.resetMark()
                 throw PipeError.hexStringNotDivisibleBy2(string: hex)
             }
             guard hex.isHexString else {
-                tokenizer.resetMark()
                 throw PipeError.hexStringNotHex(string: hex)
             }
 
@@ -93,7 +95,6 @@ public class Args {
             return string
         default:
             guard let string = tokenizer.scan(between: firstChar.first!, and: firstChar.first!) else {
-                tokenizer.resetMark()
                 throw PipeError.delimiterMissing(delimiter: firstChar)
             }
             return string
