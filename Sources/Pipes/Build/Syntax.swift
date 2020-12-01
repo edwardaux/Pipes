@@ -89,7 +89,7 @@ extension String {
         // If the starting position is beyond the end of the string, we need to add some
         // leading spaces
         if start > count {
-            return self + string.aligned(alignment: .right, length: start - 1 - count + length, pad: " ")
+            return self + string.aligned(alignment: .right, length: start - 1 - count + length, pad: " ", truncate: true)
         }
 
         // If the inserted string will be longer than the current string, we can just chop
@@ -105,16 +105,24 @@ extension String {
         return replacingCharacters(in: r1..<r2, with: string)
     }
 
-    func aligned(alignment: Alignment, length: Int, pad: Character) -> String {
+    func aligned(alignment: Alignment, length: Int, pad: Character, truncate: Bool) -> String {
         switch alignment {
         case .left:
-            return padRight(length: length, pad: pad)
+            return padRight(length: length, pad: pad, truncate: truncate)
         case .right:
-            return padLeft(length: length, pad: pad)
+            return padLeft(length: length, pad: pad, truncate: truncate)
         case .center:
             if count >= length {
-                return self
+                if truncate {
+                    let start = Int((count - length) / 2)
+                    let r1 = index(startIndex, offsetBy: start);
+                    let r2 = index(startIndex, offsetBy: start + length);
+                    return String(self[r1..<r2])
+                } else {
+                    return self
+                }
             }
+
             let leftPadLength = Int((length - count) / 2)
             return padLeft(length: leftPadLength + count, pad: pad).padRight(length: length, pad: pad)
         }
