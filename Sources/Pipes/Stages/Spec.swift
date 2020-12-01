@@ -83,6 +83,7 @@ public final class Spec: Stage {
         public enum Output {
             case next(width: Int? = nil)
             case nextWord(width: Int? = nil)
+            case nextField(width: Int? = nil)
             case offset(Int, width: Int? = nil)
             case range(PipeRange)
 
@@ -97,7 +98,13 @@ public final class Spec: Stage {
                     // already some content in the output buffer
                     adjusted = !adjusted.isEmpty && !outputSoFar.isEmpty ? " \(adjusted)" : adjusted
                     metrics = (start: metrics.start, width: metrics.width + 1)
+                } else if case .nextField = self {
+                    // We only prepend a tab if the new string is non-blank, and also if there's
+                    // already some content in the output buffer
+                    adjusted = !adjusted.isEmpty && !outputSoFar.isEmpty ? "\t\(adjusted)" : adjusted
+                    metrics = (start: metrics.start, width: metrics.width + 1)
                 }
+
 
                 return outputSoFar.insertString(string: adjusted, start: metrics.start)
             }
@@ -107,6 +114,8 @@ public final class Spec: Stage {
                 case .next(let width):
                     return width ?? string.count
                 case .nextWord(let width):
+                    return width ?? string.count
+                case .nextField(let width):
                     return width ?? string.count
                 case .offset(_, let width):
                     return width ?? string.count
@@ -122,9 +131,7 @@ public final class Spec: Stage {
                 let width = try calculateWidth(string: string)
 
                 switch self {
-                case .next:
-                    return (start: outputSoFar.count + 1, width: width)
-                case .nextWord:
+                case .next, .nextWord, .nextField:
                     return (start: outputSoFar.count + 1, width: width)
                 case .offset(let offset, _):
                     return (start: offset, width: width)
@@ -233,7 +240,7 @@ extension Spec: RegisteredStage {
                             // TODO invalid NEXT
                             throw PipeError.cannotBeFirstStage
                         }
-                    } else if pieces[0].matchesKeyword("NEXTW", "NW") {
+                    } else if pieces[0].matchesKeyword("NEXTWord", "NW") {
                         _ = try args.scanWord()
                         if pieces.count == 1 {
                             if inputIsRecno && !strip {
@@ -244,6 +251,25 @@ extension Spec: RegisteredStage {
                         } else if pieces.count == 2 {
                             if let width = try? pieces[1].asNumber(allowNegative: false) {
                                 output = .nextWord(width: width)
+                            } else {
+                                // TODO invalid NEXTW
+                                throw PipeError.cannotBeFirstStage
+                            }
+                        } else {
+                            // TODO invalid NEXTW
+                            throw PipeError.cannotBeFirstStage
+                        }
+                    } else if pieces[0].matchesKeyword("NEXTField", "NF") {
+                        _ = try args.scanWord()
+                        if pieces.count == 1 {
+                            if inputIsRecno && !strip {
+                                output = .nextField(width: 10)
+                            } else {
+                                output = .nextField()
+                            }
+                        } else if pieces.count == 2 {
+                            if let width = try? pieces[1].asNumber(allowNegative: false) {
+                                output = .nextField(width: width)
                             } else {
                                 // TODO invalid NEXTW
                                 throw PipeError.cannotBeFirstStage
@@ -321,10 +347,11 @@ extension Spec: RegisteredStage {
            │             └─PATTERN──delimitedString─┘       │
            └─delimitedString────────────────────────────────┘
 
-        ►──┬────────────────┬──┬─┬─Next─────┬──┬───────────┬─┬──┬────────┬──┤
-           └─┤ conversion ├─┘  │ └─NEXTWord─┘  └─.──number─┘ │  ├─Left───┤
-                               ├─number──────────────────────┤  ├─Center─┤
-                               └─range───────────────────────┘  └─Right──┘
+        ►──┬────────────────┬──┬─┬─Next──────┬──┬───────────┬─┬──┬────────┬──┤
+           └─┤ conversion ├─┘  │ ├─NEXTWord──┤  └─.──number─┘ │  ├─Left───┤
+                               │ └─NEXTField─┘                │  ├─Center─┤
+                               ├─number───────────────────────┤  └─Right──┘
+                               └─range────────────────────────┘
         """
     }
 }

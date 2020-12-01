@@ -328,17 +328,17 @@ final class StageTests: XCTestCase {
 
         try Pipe("literal abcdefgh| spec 1.3 n 4.3 n 1.3 n | zzzcheck /abcdefabc/").run()
         try Pipe("literal abcdefgh| spec 1.3 nw 4.3 nw 1.3 nw | zzzcheck /abc def abc/").run()
-//        try Pipe("literal abcdefgh| spec 1.3 nf 4.3 nf 1.3 nf | zzzcheck /abc\tdef\tabc/").run()  // TODO next field
+        try Pipe("literal abcdefgh| spec 1.3 nf 4.3 nf 1.3 nf | zzzcheck /abc\tdef\tabc/").run()  // TODO next field
 
         try Pipe("literal abcdefgh| spec 1.3 n.3  4.3 n.3  1.3 n.3 | zzzcheck /abcdefabc/").run()
         try Pipe("literal abcdefgh| spec 1.3 nw.3 4.3 nw.3 1.3 nw.3 | zzzcheck /abc def abc/").run()
-//        try Pipe("literal abcdefgh| spec 1.3 nf.3 4.3 nf.3 1.3 nf.3 | zzzcheck /abc\tdef\tabc/").run()
+        try Pipe("literal abcdefgh| spec 1.3 nf.3 4.3 nf.3 1.3 nf.3 | zzzcheck /abc\tdef\tabc/").run()
         try Pipe("literal abcdefgh| spec 1.3 n.5  4.3 n.5  1.3 n.5 | zzzcheck /abc  def  abc  /").run()
         try Pipe("literal abcdefgh| spec 1.3 nw.5 4.3 nw.5 1.3 nw.5 | zzzcheck /abc   def   abc  /").run()
-//        try Pipe("literal abcdefgh| spec 1.3 nf.5 4.3 nf.5 1.3 nf.5 | zzzcheck /abc  \tdef  \tabc  /").run()
+        try Pipe("literal abcdefgh| spec 1.3 nf.5 4.3 nf.5 1.3 nf.5 | zzzcheck /abc  \tdef  \tabc  /").run()
         try Pipe("literal abcdefgh| spec 1.3 n.2  4.3 n.2  1.3 n.2 | zzzcheck /abdeab/").run()
         try Pipe("literal abcdefgh| spec 1.3 nw.2 4.3 nw.2 1.3 nw.2 | zzzcheck /ab de ab/").run()
-//        try Pipe("literal abcdefgh| spec 1.3 nf.2 4.3 nf.2 1.3 nf.2 | zzzcheck /ab\tde\tab/").run()
+        try Pipe("literal abcdefgh| spec 1.3 nf.2 4.3 nf.2 1.3 nf.2 | zzzcheck /ab\tde\tab/").run()
 
         try Pipe("literal abcdefgh| spec 1.3 nw.5 right 4.3 nw.5 c 1.3 nw.5 ri | zzzcheck /  abc  def    abc/").run()
 
