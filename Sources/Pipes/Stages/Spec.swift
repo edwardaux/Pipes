@@ -148,7 +148,7 @@ public final class Spec: Stage {
 
 extension Spec: RegisteredStage {
     public static var allowedStageNames: [String] {
-        [ "spec" ]
+        [ "spec", "specs" ]
     }
 
     public static func createStage(args: Args) throws -> Stage {
@@ -334,9 +334,9 @@ extension Spec: RegisteredStage {
 
     public static var helpSyntax: String? {
         """
-                  ┌──────────────┐
-        ►►──SPEC──▼─┬─┤ field ├┬─┴──►◄
-                    └─PAD xorc─┘
+                   ┌──────────────┐
+        ►►──SPECs──▼─┬─┤ field ├┬─┴──►◄
+                     └─PAD xorc─┘
 
         field:
 

@@ -351,13 +351,10 @@ final class StageTests: XCTestCase {
         try Pipe("literal a | spec pad _ 1.1 1.5 | zzzcheck /a____/").run()
         try Pipe("literal a b | spec pad _ w1 1.5 pad + w2 n.4 right | zzzcheck /a____+++b/").run()
 
-        // TODO conversions
-//        try Pipe("literal blah| spec 1-* c2x 1 | spec 1-* x2c 1 | zzzcheck /blah/").run()
-//        try Pipe("literal 123| spec 1-* d2c 1 | spec 1-* c2d 1 | zzzcheck /        123/").run()
-//        try Pipe("literal blah| spec 1-* c2b 1 | spec 1-* b2c 1 | zzzcheck /blah/").run()
-//        try Pipe("literal 123.45| spec 1-* f2c 1 | spec 1-* c2f 1 | zzzcheck /123.45/").run()
-//        try Pipe("literal 20070727| spec 1-* i2c 1 | spec 1-* c2i 1 | zzzcheck /20070727000000/").run()
-//        try Pipe("literal blah| spec 1-* v2c 1 | spec 1-* c2v 1 | zzzcheck /blah/").run()
+        try Pipe("literal blah| spec 1-* c2x 1 | spec 1-* x2c 1 | zzzcheck /blah/").run()
+        try Pipe("literal blah| spec 1-* c2b 1 | spec 1-* b2c 1 | zzzcheck /blah/").run()
+
+        try Pipe("zzzgen /First record/Second record/Short/ | spec 1.4 c2x 1 5.4 c2x nextword /*/ 19 1.8 next.8 /*/ next | zzzcheck /46697273 74207265 *First re*/5365636F 6E642072 *Second r*/53686F72 74       *Short   */").run()
 
         XCTAssertThrows(try Pipe("literal x | spec w1 1-*").run(), PipeError.outputRangeEndInvalid)
     }

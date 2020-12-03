@@ -16,7 +16,7 @@ A description of this package.
 [X] Fanout.java
 [X] Take.java
 [X] Locate.java
-[ ] Specs.java
+[X] Specs.java
 [ ] Command.java
 [ ] Regex.java
 [ ] Chop.java
