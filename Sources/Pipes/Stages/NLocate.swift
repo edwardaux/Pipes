@@ -40,11 +40,9 @@ extension NLocate: RegisteredStage {
 
     public static func createStage(args: Args) throws -> Stage {
         var anyCase = false
-        if let word = args.peekWord() {
-            if word.matchesKeyword("ANYcase") {
-                anyCase = true
-                _ = try args.scanWord()
-            }
+        if args.nextKeywordMatches("ANYcase") {
+            _ = try args.scanWord()
+            anyCase = true
         }
 
         let inputRanges = args.peekRanges()
@@ -53,11 +51,9 @@ extension NLocate: RegisteredStage {
         }
 
         var anyOf = false
-        if let word = args.peekWord() {
-            if word.matchesKeyword("ANYof") {
-                anyOf = true
-                _ = try args.scanWord()
-            }
+        if args.nextKeywordMatches("ANYof") {
+            _ = try args.scanWord()
+            anyOf = true
         }
 
         let searchString = try? args.scanDelimitedString()

@@ -124,13 +124,12 @@ extension Take: RegisteredStage {
 
     public static func createStage(args: Args) throws -> Stage {
         var first = true
-        if let word = args.peekWord() {
-            if word.matchesKeyword("FIRST") {
-                _ = try args.scanWord()
-            } else if word.matchesKeyword("LAST") {
-                _ = try args.scanWord()
-                first = false
-            }
+        if args.nextKeywordMatches("FIRST") {
+            _ = try args.scanWord()
+            first = true
+        } else if args.nextKeywordMatches("LAST") {
+            _ = try args.scanWord()
+            first = false
         }
 
         var limit = 1

@@ -309,6 +309,8 @@ extension Spec: RegisteredStage {
              }
         }
 
+        try args.ensureNoRemainder()
+
         return Spec(items)
     }
 

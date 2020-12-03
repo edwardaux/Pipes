@@ -33,9 +33,8 @@ public class Args {
         return word
     }
 
-    // TODO apply this to other stages
-    public func nextKeywordMatches(_ keyword: String) -> Bool {
-        return peekWord()?.matchesKeyword(keyword) == true
+    public func nextKeywordMatches(_ keywords: String...) -> Bool {
+        return peekWord()?.matchesKeyword(keywords) == true
     }
 
     public func peekDelimitedString() -> String? {

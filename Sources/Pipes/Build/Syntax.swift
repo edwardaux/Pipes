@@ -52,6 +52,10 @@ extension String {
      "CHARactTERS", but will not match "CHA", "cha", "charx", or "charactersx".
      */
     func matchesKeyword(_ keywords: String...) -> Bool {
+        return matchesKeyword(keywords)
+    }
+
+    func matchesKeyword(_ keywords: [String]) -> Bool {
         for keyword in keywords {
             var minLength = 0
             for char in keyword {
