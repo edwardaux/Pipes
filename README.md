@@ -18,37 +18,54 @@ A description of this package.
 [X] Locate.java
 [X] Specs.java
 [ ] Command.java
-[ ] Regex.java
-[ ] Chop.java
-[ ] Split.java
 
-[ ] Stall detection
-[ ] Addpipe
-[ ] Callpipe
 [ ] Parse input string
 [ ] Command line
 [ ] Homebrew
 
-[ ] Url
 [ ] CSV
 [ ] json
+[ ] URLEncode / URLDecode
+[ ] 64Encode / 63Decode
+[ ] Sort
+[ ] Regex.java
+[ ] Lookup
+[ ] Pad
+[ ] Split.java
+[ ] Change.java
+[ ] DateConvert
+[ ] Drop
+[ ] FrLabel / ToLabel
+[ ] Inside / NotInside (see Outside)
+[ ] Url
 
-[ ] Abbrev.java
-[ ] Addrdw.java
-[ ] Aggrc.java
+
+2.0
+[ ] Stall detection
+[ ] Addpipe
+[ ] Callpipe
+
 [ ] Beat.java
 [ ] Between.java
 [ ] Buffer.java
-[ ] Change.java
+[ ] Chop.java
+[ ] Cipher
+[ ] Collate
+[ ] Copy
+[ ] Deal
+[ ] Diskback
 [ ] Duplicate.java
 [ ] Gate.java
+[ ] GetFiles
 [ ] Hostid.java
 [ ] Hostname.java
-[ ] NLocate.java
-[ ] NoEofBack.java
-[ ] Not.java
-[ ] Query.java
+[ ] Join
+[ ] Overlay
 [ ] Reverse.java
 [ ] Stem.java
+[ ] Strip
 [ ] StrLiteral.java
-
+[ ] Timestamp
+[ ] Tokenise
+[ ] Unique
+[ ] Xlate
