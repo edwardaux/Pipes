@@ -142,4 +142,8 @@ extension String {
         return self + String(repeating: pad, count: length - count)
     }
 
+    func split(length: Int) -> [Substring] {
+        return stride(from: 0, to: self.count, by: length)
+            .map { self[self.index(self.startIndex, offsetBy: $0)..<self.index(self.startIndex, offsetBy: min($0 + length, self.count))] }
+    }
 }

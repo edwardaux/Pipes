@@ -351,4 +351,38 @@ final class StringTokenizerTests: XCTestCase {
         XCTAssertEqual("abcdefgh".insertString(string: "___", start: 10), "abcdefgh ___")
         XCTAssertEqual("abcdefgh".insertString(string: "___", start: 15), "abcdefgh      ___")
     }
+
+    func testConversion() {
+        XCTAssertEqual(try Conversion.c2b.convert("a"), "01100001")
+        XCTAssertEqual(try Conversion.c2b.convert("ab"), "0110000101100010")
+        XCTAssertEqual(try Conversion.c2b.convert("abc"), "011000010110001001100011")
+        XCTAssertEqual(try Conversion.b2c.convert("01100001"), "a")
+        XCTAssertEqual(try Conversion.b2c.convert("0110000101100010"), "ab")
+        XCTAssertEqual(try Conversion.b2c.convert("011000010110001001100011"), "abc")
+        XCTAssertEqual(try Conversion.c2b.convert("🤦🏼‍♂️🌍🦜"), "11110000100111111010010010100110111100001001111110001111101111001110001010000000100011011110001010011001100000101110111110111000100011111111000010011111100011001000110111110000100111111010011010011100")
+        XCTAssertEqual(try Conversion.b2c.convert("11110000100111111010010010100110111100001001111110001111101111001110001010000000100011011110001010011001100000101110111110111000100011111111000010011111100011001000110111110000100111111010011010011100"), "🤦🏼‍♂️🌍🦜")
+        XCTAssertThrows(try Conversion.b2c.convert("a"), PipeError.conversionError(type: "B2C", reason: "The number of characters in a bit field is not divisible by 8", input: "a"))
+        XCTAssertThrows(try Conversion.b2c.convert("0100"), PipeError.conversionError(type: "B2C", reason: "The number of characters in a bit field is not divisible by 8", input: "0100"))
+        XCTAssertThrows(try Conversion.b2c.convert("aaaabbbb"), PipeError.conversionError(type: "B2C", reason: "Invalid binary value", input: "aaaabbbb"))
+
+        XCTAssertEqual(try Conversion.c2x.convert("a"), "61")
+        XCTAssertEqual(try Conversion.c2x.convert("ab"), "6162")
+        XCTAssertEqual(try Conversion.c2x.convert("abc"), "616263")
+        XCTAssertEqual(try Conversion.x2c.convert("61"), "a")
+        XCTAssertEqual(try Conversion.x2c.convert("6162"), "ab")
+        XCTAssertEqual(try Conversion.x2c.convert("616263"), "abc")
+        XCTAssertEqual(try Conversion.c2x.convert("🤦🏼‍♂️🌍🦜"), "F09FA4A6F09F8FBCE2808DE29982EFB88FF09F8C8DF09FA69C")
+        XCTAssertEqual(try Conversion.x2c.convert("F09FA4A6F09F8FBCE2808DE29982EFB88FF09F8C8DF09FA69C"), "🤦🏼‍♂️🌍🦜")
+        XCTAssertThrows(try Conversion.x2c.convert("a"), PipeError.conversionError(type: "X2C", reason: "Odd number of characters in a hexadecimal field", input: "a"))
+        XCTAssertThrows(try Conversion.x2c.convert("MM"), PipeError.conversionError(type: "X2C", reason: "Invalid hex value", input: "MM"))
+
+        XCTAssertEqual(try Conversion.x2b.convert("61"), "01100001")
+        XCTAssertEqual(try Conversion.x2b.convert("6162"), "0110000101100010")
+        XCTAssertEqual(try Conversion.x2b.convert("616263"), "011000010110001001100011")
+        XCTAssertEqual(try Conversion.b2x.convert("01100001"), "61")
+        XCTAssertEqual(try Conversion.b2x.convert("0110000101100010"), "6162")
+        XCTAssertEqual(try Conversion.b2x.convert("011000010110001001100011"), "616263")
+        XCTAssertEqual(try Conversion.x2b.convert("F09FA4A6F09F8FBCE2808DE29982EFB88FF09F8C8DF09FA69C"), "11110000100111111010010010100110111100001001111110001111101111001110001010000000100011011110001010011001100000101110111110111000100011111111000010011111100011001000110111110000100111111010011010011100")
+        XCTAssertEqual(try Conversion.b2x.convert("11110000100111111010010010100110111100001001111110001111101111001110001010000000100011011110001010011001100000101110111110111000100011111111000010011111100011001000110111110000100111111010011010011100"), "F09FA4A6F09F8FBCE2808DE29982EFB88FF09F8C8DF09FA69C")
+    }
 }
