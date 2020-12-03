@@ -70,11 +70,10 @@ final class StageTests: XCTestCase {
     }
 
     func testDiskw() throws {
-        class IgnoredError: Error {}
         XCTAssertThrows(try Pipe("diskw").run(), PipeError.requiredOperandMissing)
         XCTAssertThrows(try Pipe("diskw ").run(), PipeError.requiredOperandMissing)
         XCTAssertThrows(try Pipe("diskw foobar").run(), PipeError.cannotBeFirstStage)
-        XCTAssertThrows(try Pipe("literal abc | diskw /cantWriteToRoot").run(), PipeError.unableToWriteToFile(path: "/cantWriteToRoot", error: IgnoredError()))
+        XCTAssertThrows(try Pipe("literal abc | diskw /__nonexistentdir__/cantWriteToFile").run(), PipeError.unableToWriteToFile(path: "/__nonexistentdir__/cantWriteToFile", error: "The file “cantWriteToFile” doesn’t exist."))
 
         try withFileContentsFor("literal | > /tmp/foobar", filename: "/tmp/foobar") { (contents) in
             XCTAssertEqual(contents, "\n")

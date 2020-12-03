@@ -57,7 +57,7 @@ class LineWriter {
                 self.tmpHandle = try FileHandle(forWritingTo: tmpURL)
             }
         } catch let error {
-            throw PipeError.unableToWriteToFile(path: path, error: error)
+            throw PipeError.unableToWriteToFile(path: path, error: error.localizedDescription)
         }
 
     }
@@ -74,7 +74,7 @@ class LineWriter {
             let url = URL(fileURLWithPath: path)
             _ = try FileManager.default.replaceItemAt(url, withItemAt: tmpURL)
         } catch let error {
-            throw PipeError.unableToWriteToFile(path: path, error: error)
+            throw PipeError.unableToWriteToFile(path: path, error: error.localizedDescription)
         }
     }
 }

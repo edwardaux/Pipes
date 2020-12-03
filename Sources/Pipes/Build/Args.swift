@@ -57,10 +57,10 @@ public class Args {
                 throw PipeError.binaryDataMissing(prefix: firstChar)
             }
             guard binary.count % 8 == 0 else {
-                throw PipeError.binaryStringNotDivisibleBy8(string: binary)
+                throw PipeError.binaryStringNotDivisibleBy8(string: firstChar + binary)
             }
             guard binary.isBinaryString else {
-                throw PipeError.binaryStringNotBinary(string: binary)
+                throw PipeError.binaryStringNotBinary(string: firstChar + binary)
             }
 
             var index = binary.startIndex
@@ -78,10 +78,10 @@ public class Args {
                 throw PipeError.hexDataMissing(prefix: firstChar)
             }
             guard hex.count % 2 == 0 else {
-                throw PipeError.hexStringNotDivisibleBy2(string: hex)
+                throw PipeError.hexStringNotDivisibleBy2(string: firstChar + hex)
             }
             guard hex.isHexString else {
-                throw PipeError.hexStringNotHex(string: hex)
+                throw PipeError.hexStringNotHex(string: firstChar + hex)
             }
 
             var index = hex.startIndex

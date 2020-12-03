@@ -9,7 +9,7 @@ public struct EndOfFile: Error {
 }
 
 // A PipeError would normally mean termination of the stage.
-public enum PipeError: Error {
+public enum PipeError: Error, Equatable {
     case streamNotDefined(direction: StreamDirection, streamNo: Int)
     case streamNotConnected(direction: StreamDirection, streamNo: Int)
     case optionNotValid(option: String)
@@ -40,9 +40,9 @@ public enum PipeError: Error {
     case binaryStringNotDivisibleBy8(string: String)
     case binaryDataMissing(prefix: String)
     case binaryStringNotBinary(string: String)
-    case conversionError(type: String, code: Int, input: String)
+    case conversionError(type: String, reason: String, input: String)
     case outputRangeEndInvalid
-    case unableToWriteToFile(path: String, error: Error)
+    case unableToWriteToFile(path: String, error: String)
     case unusedStreamConnected(direction: StreamDirection, streamNo: Int)
     case commandNotPermitted(command: String)
     case invalidString
@@ -109,12 +109,12 @@ public enum PipeError: Error {
             return Detail(code: -337, title: "Binary data missing after \(prefix)", explanation: "A prefix indicating a binary constant is found, but there are no more characters in the argument string or the next character is blank.", response: "")
         case .binaryStringNotBinary(let string):
             return Detail(code: -338, title: "Not binary data: \(string)", explanation: "A prefix indicating a binary constant is found, but the remainder of the word contains a character that is neither 0 nor 1.", response: "")
-        case .conversionError(let type, let code, let input):
-            return Detail(code: -392, title: "Conversion error in routine \(type), code: \(code), input: \(input)", explanation: "The string shown has a value that is not valid for the conversion requested.", response: "")
+        case .conversionError(let type, let reason, let input):
+            return Detail(code: -392, title: "Conversion error in routine \(type), reason: \(reason), input: \(input)", explanation: "The string shown has a value that is not valid for the conversion requested.", response: "")
         case .outputRangeEndInvalid:
             return Detail(code: -556, title: "Asterisk cannot end output column range", explanation: "Write a single column to put a field at a particular position, extending as far as required. Use a range to put the field into a particular range of columns, padding or truncating as necessary", response: "")
         case .unableToWriteToFile(let path, let error):
-            return Detail(code: -780, title: "You are not allowed to write to \(path). Reason: \(error.localizedDescription)", explanation: "The directory record for an existing file indicates that you cannot write to it.", response: "")
+            return Detail(code: -780, title: "You are not allowed to write to \(path). Reason: \(error)", explanation: "The directory record for an existing file indicates that you cannot write to it.", response: "")
         case .unusedStreamConnected(let direction, let streamNo):
             return Detail(code: -1196, title: "\(direction) stream \(streamNo) is unexpectedly connected.", explanation: "A stream is connected that the stage does not use. This is often a symptom of an incorrect placement of a label reference.", response: "")
         case .commandNotPermitted(let command):
@@ -138,10 +138,4 @@ extension PipeError: LocalizedError {
     public var errorDescription: String? { return detail.title }
     public var failureReason: String? { return detail.explanation }
     public var recoverySuggestion: String? { return detail.response }
-}
-
-extension PipeError: Equatable {
-    public static func == (lhs: Self, rhs: Self) -> Bool {
-        return lhs.code == rhs.code
-    }
 }

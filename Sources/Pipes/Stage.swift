@@ -1,6 +1,6 @@
 import Foundation
 
-public enum StreamDirection: CustomStringConvertible {
+public enum StreamDirection: CustomStringConvertible, Equatable {
     case input
     case output
 
