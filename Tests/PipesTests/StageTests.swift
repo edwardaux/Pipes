@@ -285,6 +285,15 @@ final class StageTests: XCTestCase {
     }
 
     func testSpec() throws {
+        XCTAssertThrows(try Pipe("literal x | spec").run(), PipeError.emptyParameterList)
+        XCTAssertThrows(try Pipe("literal x | spec | hole").run(), PipeError.emptyParameterList)
+        XCTAssertThrows(try Pipe("literal x | spec reno | hole").run(), PipeError.invalidRange(range: "reno"))
+        XCTAssertThrows(try Pipe("literal x | spec recno nb | hole").run(), PipeError.outputSpecificationInvalid(word: "nb"))
+        XCTAssertThrows(try Pipe("literal x | spec w1").run(), PipeError.outputSpecificationMissing)
+        XCTAssertThrows(try Pipe("literal x | spec w1 1-").run(), PipeError.outputSpecificationInvalid(word: "1-"))
+        XCTAssertThrows(try Pipe("literal x | spec w1 1.X").run(), PipeError.outputSpecificationInvalid(word: "1.X"))
+        XCTAssertThrows(try Pipe("literal x | spec w1 1-*").run(), PipeError.outputRangeEndInvalid)
+
         try Pipe("zzzgen /a/b/ | literal abcdefgh| literal mnopqrstuvwxyz| spec recno 1 1-* n /blah/ nw | zzzcheck /         1mnopqrstuvwxyz blah/         2abcdefgh blah/         3a blah/         4b blah/").run()
         try Pipe("literal | spec number 1 | zzzcheck /         1/").run()
         try Pipe("literal | spec recno 1 | zzzcheck /         1/").run()
@@ -327,7 +336,7 @@ final class StageTests: XCTestCase {
 
         try Pipe("literal abcdefgh| spec 1.3 n 4.3 n 1.3 n | zzzcheck /abcdefabc/").run()
         try Pipe("literal abcdefgh| spec 1.3 nw 4.3 nw 1.3 nw | zzzcheck /abc def abc/").run()
-        try Pipe("literal abcdefgh| spec 1.3 nf 4.3 nf 1.3 nf | zzzcheck /abc\tdef\tabc/").run()  // TODO next field
+        try Pipe("literal abcdefgh| spec 1.3 nf 4.3 nf 1.3 nf | zzzcheck /abc\tdef\tabc/").run()
 
         try Pipe("literal abcdefgh| spec 1.3 n.3  4.3 n.3  1.3 n.3 | zzzcheck /abcdefabc/").run()
         try Pipe("literal abcdefgh| spec 1.3 nw.3 4.3 nw.3 1.3 nw.3 | zzzcheck /abc def abc/").run()
@@ -355,8 +364,6 @@ final class StageTests: XCTestCase {
         try Pipe("literal blah| spec 1-* c2b 1 | spec 1-* b2c 1 | zzzcheck /blah/").run()
 
         try Pipe("zzzgen /First record/Second record/Short/ | spec 1.4 c2x 1 5.4 c2x nextword /*/ 19 1.8 next.8 /*/ next | zzzcheck /46697273 74207265 *First re*/5365636F 6E642072 *Second r*/53686F72 74       *Short   */").run()
-
-        XCTAssertThrows(try Pipe("literal x | spec w1 1-*").run(), PipeError.outputRangeEndInvalid)
     }
 
     func testTakeFirst() throws {

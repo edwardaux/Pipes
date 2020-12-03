@@ -12,6 +12,7 @@ public struct EndOfFile: Error {
 public enum PipeError: Error, Equatable {
     case streamNotDefined(direction: StreamDirection, streamNo: Int)
     case streamNotConnected(direction: StreamDirection, streamNo: Int)
+    case emptyParameterList
     case optionNotValid(option: String)
     case valueMissingForOption(keyword: String)
     case nullStageFound
@@ -23,6 +24,8 @@ public enum PipeError: Error, Equatable {
     case noInputRanges
     case invalidNumber(word: String)
     case delimiterMissing(delimiter: String)
+    case outputSpecificationMissing
+    case outputSpecificationInvalid(word: String)
     case hexDataMissing(prefix: String)
     case hexStringNotHex(string: String)
     case mustBeFirstStage
@@ -53,6 +56,8 @@ public enum PipeError: Error, Equatable {
             return Detail(code: -4, title: "\(direction) stream \(streamNo) is not defined", explanation: "Stream is not defined.", response: "")
         case .streamNotConnected(let direction, let streamNo):
             return Detail(code: -12, title: "\(direction) stream \(streamNo) is not connected", explanation: "Stream is not connected.", response: "")
+        case .emptyParameterList:
+            return Detail(code: -11, title: "Blank parameter list", explanation: "A null parameter list is found by the pipeline command processor or a stage needing parameters.", response: "")
         case .optionNotValid(let word):
             return Detail(code: -14, title: "Option \(word) not valid", explanation: "The word substituted is not recognised as one of the global options supported.", response: "Defined global options are: NAME TRACE LISTRC LISTERR LISTCMD STOP SEPARATOR ENDCHAR ESCAPE MSGLEVEL.")
         case .valueMissingForOption(let keyword):
@@ -75,6 +80,10 @@ public enum PipeError: Error, Equatable {
             return Detail(code: -58, title: "Number expected, but \(word) was found", explanation: "\(word) contains a character that is not a digit.", response: "")
         case .delimiterMissing(let delimiter):
             return Detail(code: -60, title: "Delimiter missing after string \(delimiter)", explanation: "No closing delimiter found for a delimited string.", response: "")
+        case .outputSpecificationMissing:
+            return Detail(code: -61, title: "Output specification missing", explanation: "The output column is not specified for the last item.", response: "")
+        case .outputSpecificationInvalid(let word):
+            return Detail(code: -63, title: "Output specification \(word) is not valid", explanation: "The word specifies where to put a field in the output record; it is not a positive number or a column range.", response: "")
         case .hexDataMissing(let prefix):
             return Detail(code: -64, title: "Hexadecimal data missing after \(prefix)", explanation: "A prefix is found, indicating that a hexadecimal constant should follow, but the next character is blank or the end of the argument string.", response: "Do not use letters as delimiters for a delimited string.")
         case .hexStringNotHex(let string):

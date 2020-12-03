@@ -16,6 +16,8 @@ public final class Spec: Stage {
     }
 
     public override func commit() throws {
+        guard items.count > 0 else { throw PipeError.emptyParameterList }
+
         try ensureOnlyPrimaryOutputStreamConnected()
     }
 
@@ -172,8 +174,7 @@ extension Spec: RegisteredStage {
                         if let patternOverride = try? args.scanDelimitedString() {
                             pattern = patternOverride
                         } else {
-                            // TODO invalid date pattern
-                            throw PipeError.cannotBeFirstStage
+                            throw PipeError.valueMissingForOption(keyword: "PATTERN")
                         }
                     }
                     let formatter = DateFormatter()
@@ -197,8 +198,12 @@ extension Spec: RegisteredStage {
                     _ = try args.scanDelimitedString()
                     input = .literal(string)
                 } else {
-                    // No more input, let's break out of the loop
-                    break
+                    if let word = args.peekWord() {
+                        throw PipeError.invalidRange(range: word)
+                    } else {
+                        // No more input, let's break out of the loop
+                        break
+                    }
                 }
 
                 var inputIsRecno = false
@@ -230,15 +235,10 @@ extension Spec: RegisteredStage {
                                 output = .next()
                             }
                         } else if pieces.count == 2 {
-                            if let width = try? pieces[1].asNumber(allowNegative: false) {
-                                output = .next(width: width)
-                            } else {
-                                // TODO invalid NEXT
-                                throw PipeError.cannotBeFirstStage
-                            }
+                            let width = try pieces[1].asNumber(allowNegative: false)
+                            output = .next(width: width)
                         } else {
-                            // TODO invalid NEXT
-                            throw PipeError.cannotBeFirstStage
+                            throw PipeError.invalidNumber(word: word)
                         }
                     } else if pieces[0].matchesKeyword("NEXTWord", "NW") {
                         _ = try args.scanWord()
@@ -249,15 +249,10 @@ extension Spec: RegisteredStage {
                                 output = .nextWord()
                             }
                         } else if pieces.count == 2 {
-                            if let width = try? pieces[1].asNumber(allowNegative: false) {
-                                output = .nextWord(width: width)
-                            } else {
-                                // TODO invalid NEXTW
-                                throw PipeError.cannotBeFirstStage
-                            }
+                            let width = try pieces[1].asNumber(allowNegative: false)
+                            output = .nextWord(width: width)
                         } else {
-                            // TODO invalid NEXTW
-                            throw PipeError.cannotBeFirstStage
+                            throw PipeError.invalidNumber(word: word)
                         }
                     } else if pieces[0].matchesKeyword("NEXTField", "NF") {
                         _ = try args.scanWord()
@@ -268,15 +263,10 @@ extension Spec: RegisteredStage {
                                 output = .nextField()
                             }
                         } else if pieces.count == 2 {
-                            if let width = try? pieces[1].asNumber(allowNegative: false) {
-                                output = .nextField(width: width)
-                            } else {
-                                // TODO invalid NEXTW
-                                throw PipeError.cannotBeFirstStage
-                            }
+                            let width = try pieces[1].asNumber(allowNegative: false)
+                            output = .nextField(width: width)
                         } else {
-                            // TODO invalid NEXTW
-                            throw PipeError.cannotBeFirstStage
+                            throw PipeError.invalidNumber(word: word)
                         }
                     } else if pieces.count == 1, let offset = try? pieces[0].asNumber(allowNegative: false) {
                         _ = try args.scanWord()
@@ -290,13 +280,11 @@ extension Spec: RegisteredStage {
                             _ = try args.scanRange()
                             output = .range(range)
                         } else {
-                            // TODO Invalid output spec
-                            throw PipeError.cannotBeFirstStage
+                            throw PipeError.outputSpecificationInvalid(word: word)
                         }
                     }
                 } else {
-                    // TODO No output spec
-                    throw PipeError.cannotBeFirstStage
+                    throw PipeError.outputSpecificationMissing
                 }
 
                 var alignment: Alignment = .left
@@ -321,7 +309,6 @@ extension Spec: RegisteredStage {
              }
         }
 
-        // TODO what if there are no items?
         return Spec(items)
     }
 
