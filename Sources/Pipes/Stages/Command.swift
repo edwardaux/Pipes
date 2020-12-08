@@ -114,8 +114,7 @@ extension Command: RegisteredStage {
         """
         ►►──┬─COMMAND─┬─program─┬──────┬──►◄
             ├─CMD─────┤         └─args─┘
-            ├─SHELL───┤
-            └─SH──────┘
+            └─SHell───┘
         """
     }
 }

@@ -74,9 +74,9 @@ extension NLocate: RegisteredStage {
         second-last, and so on).
 
         Options:
-            ANYcase     - ignore case when comparing
-            inputRanges - one or more input ranges to search within
-            ANYof       - the delimited string contains an enumeration of characters and locate selects
+            ANYcase     - Ignore case when comparing
+            inputRanges - One or more input ranges to search within
+            ANYof       - The delimited string contains an enumeration of characters and locate selects
                           records that contain at least one of the enumerated characters within the
                           specified input ranges
         """

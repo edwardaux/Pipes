@@ -109,13 +109,13 @@ extension Count: RegisteredStage {
         containing "9 1 3".
 
         Options:
-            CHARACTERS - outputs the number of unicode characters
-            CHARS      - synonym for CHARACTERS
-            BYTES      - outputs the number of bytes
-            WORDS      - outputs the number of blank separated words
-            LINES      - outputs the number of records
-            MINline    - outputs the length of the shortest line (-1 if there are no input records)
-            MAXline    - outputs the length of the longest line (-1 if there are no input records)
+            CHARACTERS - Outputs the number of unicode characters
+            CHARS      - Synonym for CHARACTERS
+            BYTES      - Outputs the number of bytes
+            WORDS      - Outputs the number of blank separated words
+            LINES      - Outputs the number of records
+            MINline    - Outputs the length of the shortest line (-1 if there are no input records)
+            MAXline    - Outputs the length of the longest line (-1 if there are no input records)
         """
     }
 

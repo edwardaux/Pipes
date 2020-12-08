@@ -185,13 +185,13 @@ extension Take: RegisteredStage {
         boundary may result in an invalid string. This will result in a runtime error.
 
         Options:
-            FIRST      - takes the first 'n' records (or characters or bytes)
-            LAST       - takes the last 'n' records (or characters or bytes)
-            number     - the number of records to take. Defaults to 1. An asterisk signifies all records.
-            LINES      - count is based on records
-            CHARACTERS - count is based on unicode graphemes
-            CHARS      - synonym for CHARACTERS
-            BYTES      - count is based on the UTF-8 encoded bytes
+            FIRST      - Takes the first 'n' records (or characters or bytes)
+            LAST       - Takes the last 'n' records (or characters or bytes)
+            number     - The number of records to take. Defaults to 1. An asterisk signifies all records.
+            LINES      - Count is based on records
+            CHARACTERS - Count is based on unicode graphemes
+            CHARS      - Synonym for CHARACTERS
+            BYTES      - Count is based on the UTF-8 encoded bytes
         """
     }
 

@@ -30,18 +30,19 @@ A description of this package.
 [ ] 64Encode / 63Decode
 [ ] Regex.java
 [ ] Lookup
+[ ] Drop
+
+2.0
 [ ] Pad
 [ ] Split.java
 [ ] Change.java
 [ ] DateConvert
-[ ] Drop
 [ ] FrLabel / ToLabel
 [ ] Inside / NotInside (see Outside)
 [ ] ListFiles (use delims ie. fields)
-[ ] Url
+[ ] curl
 
-
-2.0
+3.0
 [ ] Stall detection
 [ ] Addpipe
 [ ] Callpipe

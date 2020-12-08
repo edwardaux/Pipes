@@ -81,11 +81,11 @@ extension Fanout: RegisteredStage {
         stream, and so on.
 
         Options:
-            STOP ALLEOF - specifies that fanout should continue as long as at least one output stream
+            STOP ALLEOF - Specifies that fanout should continue as long as at least one output stream
                           is connected. (default)
-            STOP ANYEOF - specifies that fanout should stop as soon as it determines that an output
+            STOP ANYEOF - Specifies that fanout should stop as soon as it determines that an output
                           stream is no longer connected.
-            STOP number - specifies the number of unconnected streams that will cause fanout to terminate.
+            STOP number - Specifies the number of unconnected streams that will cause fanout to terminate.
                           The number 1 is equivalent to ANYEOF.
         """
     }

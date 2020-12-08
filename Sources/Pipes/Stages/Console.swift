@@ -62,10 +62,10 @@ extension Console: RegisteredStage {
         terminal. By default, Ctrl-D triggers end of file.
 
         Options:
-            EOF delimitedString - specifies a delimited string that will cause end of file to be
+            EOF delimitedString - Specifies a delimited string that will cause end of file to be
                                   triggered when this string is entered (with leading or trailing
                                   blanks, or both).
-            NOEOF               - specifies that input data are not inspected for an end-of-file
+            NOEOF               - Specifies that input data are not inspected for an end-of-file
                                   indication; console stops only when it finds that its output
                                   stream is not connected
         """
