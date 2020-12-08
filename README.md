@@ -19,8 +19,8 @@ A description of this package.
 [X] Specs.java
 [X] Command.java
 
-[ ] Parse input string
-[ ] Command line
+[X] Parse input string
+[X] Command line
 [ ] Homebrew
 
 [ ] Sort

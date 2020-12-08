@@ -2,5 +2,18 @@ import Foundation
 import Pipes
 
 let argv = CommandLine.arguments
-let spec = argv.dropFirst().joined(separator: " ")
-try Pipe("literal | literal  | literal there | console").run()
+
+let spec: String
+if argv.count == 0 {
+    spec = "help"
+} else {
+    spec = argv.dropFirst().joined(separator: " ")
+}
+
+do {
+    try Pipe(spec).run()
+} catch let error as PipeError {
+    print(error.localizedDescription)
+} catch let error {
+    print("Unexpected error: \(error)")
+}
