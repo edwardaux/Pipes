@@ -17,17 +17,17 @@ A description of this package.
 [X] Take.java
 [X] Locate.java
 [X] Specs.java
-[ ] Command.java
+[X] Command.java
 
 [ ] Parse input string
 [ ] Command line
 [ ] Homebrew
 
+[ ] Sort
 [ ] CSV
 [ ] json
 [ ] URLEncode / URLDecode
 [ ] 64Encode / 63Decode
-[ ] Sort
 [ ] Regex.java
 [ ] Lookup
 [ ] Pad
