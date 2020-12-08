@@ -17,6 +17,7 @@ public enum PipeError: Error, Equatable {
     case valueMissingForOption(keyword: String)
     case nullStageFound
     case stageNotFound(stageName: String)
+    case programUnableToExecute(program: String, reason: String)
     case labelNotDeclared(label: String)
     case labelAlreadyDeclared(label: String)
     case invalidCharacterRepresentation(word: String)
@@ -66,6 +67,8 @@ public enum PipeError: Error, Equatable {
             return Detail(code: -17, title: "Null stage found", explanation: "There is a stage separator at the end of a pipeline specification; a stage separator is adjacent to an end character; or there are two stage separators with only blank characters between them.", response: "Ensure that the pipeline specification is complete")
         case .stageNotFound(let stageName):
             return Detail(code: -27, title: "Stage \(stageName) not found", explanation: "The named stage is not a built-in or registered stage.", response: "Verify the spelling of the name of the stage to run, or ensure that your custom stage has been registered prior to running the pipeline.")
+        case .programUnableToExecute(let program, let reason):
+            return Detail(code: -40, title: "Program \"\(program)\" unable to executed: \(reason)", explanation: "No specification for a stage is found the first time the label is used. The first usage of a label defines the stage to run, and any operands it may have. Subsequent references are to the label by itself.", response: "")
         case .labelNotDeclared(let label):
             return Detail(code: -46, title: "Label \(label) not declared", explanation: "No specification for a stage is found the first time the label is used. The first usage of a label defines the stage to run, and any operands it may have. Subsequent references are to the label by itself.", response: "Ensure that the label is spelt correctly. If this is the case, inspect the pipeline specification to see if a stage separator is erroneously put between the label and the verb for the stage.")
         case .labelAlreadyDeclared(let label):

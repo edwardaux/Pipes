@@ -99,6 +99,7 @@ extension Pipe {
     }
 
     static func registerBuiltInStages() {
+        register(Command.self)
         register(Console.self)
         register(Count.self)
         register(Diskr.self)

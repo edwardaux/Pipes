@@ -23,6 +23,49 @@ final class StageTests: XCTestCase {
         XCTAssertThrows(try Pipe("cons noeof broken"), PipeError.excessiveOptions(string: "broken"))
     }
 
+    func testCommand() throws {
+        try Pipe("command /bin/echo hello there how are you | zzzcheck /hello there how are you/").run()
+        try Pipe("zzzgen /aaa/bbb/ccc/ | command /bin/cat | zzzcheck /aaa/bbb/ccc/").run()
+
+        let tmpDirectory = NSTemporaryDirectory() + UUID().uuidString
+        defer { try? FileManager.default.removeItem(atPath: tmpDirectory) }
+
+        try FileManager.default.createDirectory(atPath: tmpDirectory, withIntermediateDirectories: true, attributes: nil)
+        FileManager.default.createFile(atPath: tmpDirectory + "/a.txt", contents: "a".data(using: .utf8), attributes: nil)
+        FileManager.default.createFile(atPath: tmpDirectory + "/b.txt", contents: "b".data(using: .utf8), attributes: nil)
+        FileManager.default.createFile(atPath: tmpDirectory + "/c.txt", contents: "c".data(using: .utf8), attributes: nil)
+        FileManager.default.createFile(atPath: tmpDirectory + "/d.txt", contents: "d".data(using: .utf8), attributes: nil)
+        try Pipe("command /bin/ls \(tmpDirectory) | zzzcheck /a.txt/b.txt/c.txt/d.txt/").run()
+
+        var file = tmpDirectory + "/z.txt"
+        XCTAssertThrows(try Pipe("command \(file) | zzzcheck /aaa/bbb/ccc/").run(), PipeError.programUnableToExecute(program: file, reason: "Not found"))
+
+        file = tmpDirectory + "/a.txt"
+        XCTAssertThrows(try Pipe("command \(file) | zzzcheck /aaa/bbb/ccc/").run(), PipeError.programUnableToExecute(program: file, reason: "Not executable"))
+
+        file = tmpDirectory + "/file with spaces.sh"
+        FileManager.default.createFile(atPath: file, contents: "#!/bin/bash\necho hello\necho there\n".data(using: .utf8), attributes: nil)
+        var attributes = [FileAttributeKey : Any]()
+        attributes[.posixPermissions] = 0o777
+        try FileManager.default.setAttributes(attributes, ofItemAtPath: file)
+        try Pipe("(esc ?) command \(tmpDirectory)/file? with? spaces.sh | zzzcheck /hello/there/").run()
+
+        let script = """
+        #!/bin/bash
+        echo hello
+        echo hi >&2
+        echo there
+        echo again >&2
+        """
+        file = tmpDirectory + "/error.sh"
+        FileManager.default.createFile(atPath: file, contents: script.data(using: .utf8), attributes: nil)
+        attributes[.posixPermissions] = 0o777
+        try FileManager.default.setAttributes(attributes, ofItemAtPath: file)
+        try Pipe("(end ?)    command \(file) | zzzcheck /hello/there/").run()
+        try Pipe("(end ?) c: command \(file) | zzzcheck /hello/there/").run()
+        try Pipe("(end ?) c: command \(file) | zzzcheck /hello/there/ ? c: | zzzcheck /hi/again/").run()
+    }
+
     func testCount() throws {
         XCTAssertThrows(try Pipe("count"), PipeError.requiredOperandMissing)
         XCTAssertThrows(try Pipe("count xxx"), PipeError.operandNotValid(keyword: "xxx"))

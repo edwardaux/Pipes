@@ -5,6 +5,9 @@ import PackageDescription
 
 let package = Package(
     name: "Pipes",
+    platforms: [
+        .macOS(.v10_13)
+    ],
     products: [
         .library(name: "Pipes", targets: [ "Pipes" ]),
     ],

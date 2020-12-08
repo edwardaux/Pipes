@@ -83,7 +83,7 @@ class Parser {
 
     func parsePipeline(pipelineSpec: String, options: Options) throws -> [Args] {
         let stageSpecs = pipelineSpec.split(separator: options.stageSep).map { String($0) }
-        let argsList = try stageSpecs.map { try Args($0) }
+        let argsList = try stageSpecs.map { try Args($0, escape: options.escape) }
         return argsList
     }
 }

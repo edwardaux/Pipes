@@ -8,8 +8,8 @@ public class Args {
     let tokenizer: StringTokenizer
     let type: ArgsType
 
-    init(_ stageSpec: String) throws {
-        tokenizer = StringTokenizer(stageSpec)
+    init(_ stageSpec: String, escape: Character? = nil) throws {
+        tokenizer = StringTokenizer(stageSpec, escape: escape)
         guard let word = tokenizer.scanWord() else {
             throw PipeError.nullStageFound
         }
