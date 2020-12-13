@@ -327,6 +327,15 @@ final class StageTests: XCTestCase {
         try Pipe("literal one|literal two|literal three|literal four|literal five| locate 4 | nlocate 5| zzzcheck /five/four/").run()
     }
 
+    func testSort() throws {
+        try Pipe("zzzgen /b/c/a/d/ | sort | zzzcheck /a/b/c/d/").run()
+        try Pipe("zzzgen /b/c/a/d/ | sort asc | zzzcheck /a/b/c/d/").run()
+        try Pipe("zzzgen /b/c/a/d/ | sort desc | zzzcheck /d/c/b/a/").run()
+
+        try Pipe("zzzgen /b/D/c/c/C/a/A/d/ | sort asc | zzzcheck /A/C/D/a/b/c/c/d/").run()
+        try Pipe("zzzgen /b/D/c/c/C/a/A/d/ | sort anycase asc | zzzcheck /a/A/b/c/c/C/D/d/").run()
+    }
+
     func testSpec() throws {
         XCTAssertThrows(try Pipe("literal x | spec").run(), PipeError.emptyParameterList)
         XCTAssertThrows(try Pipe("literal x | spec | hole").run(), PipeError.emptyParameterList)
