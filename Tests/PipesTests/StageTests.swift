@@ -334,6 +334,42 @@ final class StageTests: XCTestCase {
 
         try Pipe("zzzgen /b/D/c/c/C/a/A/d/ | sort asc | zzzcheck /A/C/D/a/b/c/c/d/").run()
         try Pipe("zzzgen /b/D/c/c/C/a/A/d/ | sort anycase asc | zzzcheck /a/A/b/c/c/C/D/d/").run()
+
+        let s1 = "John Alice    Bo"
+        let s2 = "John Alice    Charlie"
+        let s3 = "John Alic     Bob"
+        let s4 = "John Alice    Dean"
+        let s5 = "John Alice    Deap"
+        let s6 = "Peter Alice   Dean"
+        let s7 = "Peter Allison Deap"
+        let s8 = "Peter Allison Dean"
+        let s9 = "Andy Alice    Bo"
+        let input = "/\(s1)/\(s2)/\(s3)/\(s4)/\(s5)/\(s6)/\(s7)/\(s8)/\(s9)/"
+
+        // Sort by whole record
+        try Pipe("zzzgen \(input) | sort             | zzzcheck /\(s9)/\(s3)/\(s1)/\(s2)/\(s4)/\(s5)/\(s6)/\(s8)/\(s7)/").run()
+
+        // Sort ascending by one range (stable sort for matching keys)
+        try Pipe("zzzgen \(input) | sort 1.4 asc     | zzzcheck /\(s9)/\(s1)/\(s2)/\(s3)/\(s4)/\(s5)/\(s6)/\(s7)/\(s8)/").run()
+        // Sort decending by one range (stable sort for matching keys)
+        try Pipe("zzzgen \(input) | sort 1.4 desc    | zzzcheck /\(s6)/\(s7)/\(s8)/\(s1)/\(s2)/\(s3)/\(s4)/\(s5)/\(s9)/").run()
+
+        // Check that pad works
+        try Pipe("zzzgen \(input) | sort w2          | zzzcheck /\(s3)/\(s1)/\(s2)/\(s4)/\(s5)/\(s6)/\(s9)/\(s7)/\(s8)/").run()
+        try Pipe("zzzgen \(input) | sort w2 pad e    | zzzcheck /\(s1)/\(s2)/\(s3)/\(s4)/\(s5)/\(s6)/\(s9)/\(s7)/\(s8)/").run()
+        try Pipe("zzzgen \(input) | sort 15-40       | zzzcheck /\(s1)/\(s9)/\(s3)/\(s2)/\(s4)/\(s6)/\(s8)/\(s5)/\(s7)/").run()
+        try Pipe("zzzgen \(input) | sort 15-40 pad e | zzzcheck /\(s3)/\(s1)/\(s9)/\(s2)/\(s4)/\(s6)/\(s8)/\(s5)/\(s7)/").run()
+        try Pipe("zzzgen \(input) | sort 15-40 pad b | zzzcheck /\(s1)/\(s3)/\(s9)/\(s2)/\(s4)/\(s6)/\(s8)/\(s5)/\(s7)/").run()
+
+        // Multi-key sorting
+        try Pipe("zzzgen \(input) | sort 15-40 asc  w1 asc         | zzzcheck /\(s9)/\(s1)/\(s3)/\(s2)/\(s4)/\(s6)/\(s8)/\(s5)/\(s7)/").run()
+        try Pipe("zzzgen \(input) | sort 15-40 asc  w1 desc        | zzzcheck /\(s1)/\(s9)/\(s3)/\(s2)/\(s6)/\(s8)/\(s4)/\(s7)/\(s5)/").run()
+        try Pipe("zzzgen \(input) | sort 15-40 desc w1 asc         | zzzcheck /\(s5)/\(s7)/\(s4)/\(s6)/\(s8)/\(s2)/\(s3)/\(s9)/\(s1)/").run()
+        try Pipe("zzzgen \(input) | sort 15-40 desc w1 desc        | zzzcheck /\(s7)/\(s5)/\(s6)/\(s8)/\(s4)/\(s2)/\(s3)/\(s1)/\(s9)/").run()
+        try Pipe("zzzgen \(input) | sort 15-40 asc  w1 asc w2 asc  | zzzcheck /\(s9)/\(s1)/\(s3)/\(s2)/\(s4)/\(s6)/\(s8)/\(s5)/\(s7)/").run()
+        try Pipe("zzzgen \(input) | sort 15-40 asc  w1 asc w2 desc | zzzcheck /\(s9)/\(s1)/\(s3)/\(s2)/\(s4)/\(s8)/\(s6)/\(s5)/\(s7)/").run()
+        try Pipe("zzzgen \(input) | sort 15-40 asc pad e w1 asc w2 desc | zzzcheck /\(s3)/\(s9)/\(s1)/\(s2)/\(s4)/\(s8)/\(s6)/\(s5)/\(s7)/").run()
+        try Pipe("zzzgen \(input) | sort 15-40 asc pad b w1 asc w2 desc | zzzcheck /\(s9)/\(s1)/\(s3)/\(s2)/\(s4)/\(s8)/\(s6)/\(s5)/\(s7)/").run()
     }
 
     func testSpec() throws {

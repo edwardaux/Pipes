@@ -41,7 +41,7 @@ public final class Sort: Stage {
         self.mode = mode
         self.anyCase = anyCase
         self.defaultPad = pad
-        self.keys = keys
+        self.keys = keys.isEmpty ? [Key.default] : keys
     }
 
     public override func commit() throws {
@@ -61,9 +61,11 @@ public final class Sort: Stage {
         switch mode {
         case .normal:
             let sorted = try records.stableSorted { (lhs, rhs) in
-                return try keys.reduce(true) { (acc, key) in
-                    return try acc && key.inIncreasingOrder(lhs: lhs, rhs: rhs, anyCase: anyCase, pad: key.pad ?? defaultPad)
+                for key in keys {
+                    if try key.inIncreasingOrder(lhs: lhs, rhs: rhs, anyCase: anyCase, pad: key.pad ?? defaultPad) { return true }
+                    if try key.inIncreasingOrder(lhs: rhs, rhs: lhs, anyCase: anyCase, pad: key.pad ?? defaultPad) { return false }
                 }
+                return false
             }
             for record in sorted {
                 try output(record)
@@ -116,7 +118,31 @@ extension Sort: RegisteredStage {
             _ = try args.scanWord()
             keys.append(Key(range: .full, ascending: false, pad: pad))
         } else {
-            keys.append(Key(range: .full, ascending: true, pad: pad))
+            while true {
+                if let range = args.peekRange() {
+                    _ = try args.scanRange()
+
+                    var ascending = true
+                    if args.nextKeywordMatches("Ascending") {
+                        _ = try args.scanWord()
+                    } else if args.nextKeywordMatches("Descending") {
+                        _ = try args.scanWord()
+                        ascending = false
+                    }
+
+                    var pad: Character?
+                    if args.nextKeywordMatches("PAD") {
+                        _ = try args.scanWord()
+                        pad = try args.scanWord().asXorC()
+                    } else if args.nextKeywordMatches("NOPAD") {
+                        _ = try args.scanWord()
+                    }
+
+                    keys.append(Key(range: range, ascending: ascending, pad: pad))
+                } else {
+                    break
+                }
+            }
         }
 
         try args.ensureNoRemainder()
@@ -170,10 +196,9 @@ extension Sort: RegisteredStage {
         ►──┼───────────────────────────────────────────────┼──►◄
            ├─Descending────────────────────────────────────┤
            │ ┌───────────────────────────────────────────┐ │
-           │ │             ┌─Ascending──┐                │ │
-           └─▼─inputRange──┼────────────┼──┬───────────┬─┴─┘
-                           └─Descending─┘  ├─NOPAD─────┤
-                                           └─PAD──xorc─┘
+           │ │             ┌─Ascending──┐  ┌─NOPAD─────┐ │ │
+           └─▼─inputRange──┼────────────┼──┼───────────┼─┴─┘
+                           └─Descending─┘  └─PAD──xorc─┘
         """
     }
 }
