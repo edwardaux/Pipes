@@ -47,6 +47,10 @@ public final class Sort: Stage {
     public override func commit() throws {
         try ensurePrimaryInputStreamConnected()
         try ensureOnlyPrimaryInputStreamConnected()
+
+        if mode == .normal {
+            try ensureOnlyPrimaryOutputStreamConnected()
+        }
     }
 
     override public func run() throws {
@@ -72,8 +76,43 @@ public final class Sort: Stage {
                 try output(record)
             }
         case .count:
-            // TODO implement count
-            break
+            struct FirstRecord {
+                let keyValues: [String]
+                let record: String
+                var count: Int
+            }
+
+            var firstRecords: [[String]: FirstRecord] = [:]
+            for record in sortedRecords {
+                let keyValues: [String] = try keys.map {
+                    var keyValue = try record.extract(fromRange: $0.range)
+                    if anyCase {
+                        keyValue = keyValue.uppercased()
+                    }
+                    return keyValue
+                }
+
+                var firstRecord = firstRecords[keyValues] ?? FirstRecord(keyValues: keyValues, record: record, count: 0)
+                firstRecord.count += 1
+                firstRecords[keyValues] = firstRecord
+            }
+            for record in sortedRecords {
+                let keyValues: [String] = try keys.map {
+                    var keyValue = try record.extract(fromRange: $0.range)
+                    if anyCase {
+                        keyValue = keyValue.uppercased()
+                    }
+                    return keyValue
+                }
+                if let firstRecord = firstRecords[keyValues] {
+                    firstRecords.removeValue(forKey: keyValues)
+                    let alignedCount = "\(firstRecord.count)".aligned(alignment: .right, length: 10, pad: " ", truncate: true)
+                    try output("\(alignedCount)\(firstRecord.record)")
+                } else if isPrimaryOutputStreamConnected {
+                    try? output(record, streamNo: 1)
+                }
+            }
+
         case .unique:
             var keyValuesCounts: [[String]: Int] = [:]
             for record in sortedRecords {
@@ -185,10 +224,11 @@ extension Sort: RegisteredStage {
 
         Options:
             COUNT      - A 10-character count of the number of occurrences of the key is prefixed to the
-                         output record. Keys are sorted per specification with additional keys beyond the
-                         first matching record being discarded.
+                         output record. The first record with a given keys is retained. Subsequent records
+                         with duplicate keys are written to the secondary stream if connected (discarded
+                         otherwise).
             UNIQUE     - The first record with a given keys is retained. Subsequent records with duplicate
-                         keys are discarded
+                         keys are written to the secondary stream if connected (discarded otherwise).
             PAD/NOPAD  - The keyword NOPAD specifies that key fields that are partially present must have
                          the same length to be considered equal; this is the default. The keyword PAD
                          specifies a pad character that is used to extend the shorter of two key fields.

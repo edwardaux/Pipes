@@ -387,6 +387,15 @@ final class StageTests: XCTestCase {
         try Pipe("(end ?) zzzgen \(input2) | s: sort unique | zzzcheck /\(u1)/\(u7)/\(u3)/\(u5)/ ? s: | zzzcheck /\(u2)/\(u6)/\(u8)/\(u9)/\(u4)/").run()
         try Pipe("        zzzgen \(input2) |    sort unique w1 | zzzcheck /\(u1)/\(u3)/").run()
         try Pipe("(end ?) zzzgen \(input2) | s: sort unique w5 | zzzcheck /\(u1)/ ? s: | zzzcheck /\(u2)/\(u3)/\(u4)/\(u5)/\(u6)/\(u7)/\(u8)/\(u9)/").run()
+
+        // Count
+        try Pipe("        zzzgen \(input2) |    sort count | zzzcheck /         4\(u1)/         2\(u7)/         2\(u3)/         1\(u5)/").run()
+        try Pipe("(end ?) zzzgen \(input2) | s: sort count | zzzcheck /         4\(u1)/         2\(u7)/         2\(u3)/         1\(u5)/ ? s: | zzzcheck /\(u2)/\(u6)/\(u8)/\(u9)/\(u4)/").run()
+        try Pipe("        zzzgen \(input2) |    sort count w1 | zzzcheck /         6\(u1)/         3\(u3)/").run()
+        try Pipe("(end ?) zzzgen \(input2) | s: sort count w5 | zzzcheck /         9\(u1)/ ? s: | zzzcheck /\(u2)/\(u3)/\(u4)/\(u5)/\(u6)/\(u7)/\(u8)/\(u9)/").run()
+
+        // Can't have secondary output for normal sort
+        XCTAssertThrows(try Pipe("(end ?) literal x | s: sort ? s: | hole").run(), PipeError.unusedStreamConnected(direction: .output, streamNo: 1))
     }
 
     func testSpec() throws {
