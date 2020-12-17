@@ -198,9 +198,8 @@ final class StageTests: XCTestCase {
     func testFaninany() throws {
         try Pipe("fanin").run()
         try Pipe("(end ?) zzzgen /a/b/c/ | f: faninany | zzzcheck /a/b/c/").run()
-        // TODO these are non-deterministic. should probably test with a sort stage
-        // try Pipe("(end ?) zzzgen /a/b/c/ | f: faninany | zzzcheck /a/b/c/d/e/f/ ? zzzgen /d/e/f/ | f:").run()
-        // try Pipe("(end ?) zzzgen /a/b/c/ | f: faninany | zzzcheck /a/b/c/d/e/f/g/h/i/ ? zzzgen /d/e/f/ | f: ? zzzgen /g/h/i/ | f:").run()
+        try Pipe("(end ?) zzzgen /a/b/c/ | f: faninany | sort | zzzcheck /a/b/c/d/e/f/ ? zzzgen /d/e/f/ | f:").run()
+        try Pipe("(end ?) zzzgen /a/b/c/ | f: faninany | sort | zzzcheck /a/b/c/d/e/f/g/h/i/ ? zzzgen /d/e/f/ | f: ? zzzgen /g/h/i/ | f:").run()
 
         XCTAssertThrows(try Pipe("(end ?) literal a | a: faninany | console ? a: | console").run(), PipeError.unusedStreamConnected(direction: .output, streamNo: 1))
 
@@ -421,7 +420,10 @@ final class StageTests: XCTestCase {
         try Pipe("zzzgen /a/b/c/d/ | spec number from 10 by 1 strip 1 | zzzcheck /10/11/12/13/").run()
         try Pipe("zzzgen /a/b/c/d/ | spec number from 2 by 0 strip 1 | zzzcheck /2/2/2/2/").run()
 
-//        try Pipe("zzzgen /a/b/c/d/ | spec time yyyy-MM-dd 1 | zzzcheck /?/?/?/?/").run() // TODO how to check this
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        let d = formatter.string(from: Date())
+        try Pipe("zzzgen /a/b/c/d/ | spec time pattern /yyyy-MM-dd/ 1 | zzzcheck /\(d)/\(d)/\(d)/\(d)/").run()
 
         try Pipe("literal | spec /abc/ 1 | zzzcheck /abc/").run()
         try Pipe("literal | spec /abc/ 1 l /a/ n | zzzcheck /abca/").run()

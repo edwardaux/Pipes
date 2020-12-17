@@ -23,7 +23,7 @@ A description of this package.
 [X] Command line
 [ ] Homebrew
 
-[ ] Sort
+[X] Sort
 [ ] CSV
 [ ] json
 [ ] URLEncode / URLDecode
