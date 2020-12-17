@@ -50,24 +50,25 @@ public final class Sort: Stage {
     }
 
     override public func run() throws {
-        var records = [String]()
+        var originalRecords = [String]()
         do {
             while true {
-                records.append(try readto())
+                originalRecords.append(try readto())
             }
         } catch _ as EndOfFile {
         }
 
+        let sortedRecords = try originalRecords.stableSorted { (lhs, rhs) in
+            for key in keys {
+                if try key.inIncreasingOrder(lhs: lhs, rhs: rhs, anyCase: anyCase, pad: key.pad ?? defaultPad) { return true }
+                if try key.inIncreasingOrder(lhs: rhs, rhs: lhs, anyCase: anyCase, pad: key.pad ?? defaultPad) { return false }
+            }
+            return false
+        }
+
         switch mode {
         case .normal:
-            let sorted = try records.stableSorted { (lhs, rhs) in
-                for key in keys {
-                    if try key.inIncreasingOrder(lhs: lhs, rhs: rhs, anyCase: anyCase, pad: key.pad ?? defaultPad) { return true }
-                    if try key.inIncreasingOrder(lhs: rhs, rhs: lhs, anyCase: anyCase, pad: key.pad ?? defaultPad) { return false }
-                }
-                return false
-            }
-            for record in sorted {
+            for record in sortedRecords {
                 try output(record)
             }
         case .count:
