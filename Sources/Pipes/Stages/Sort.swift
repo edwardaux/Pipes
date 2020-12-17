@@ -75,8 +75,24 @@ public final class Sort: Stage {
             // TODO implement count
             break
         case .unique:
-            // TODO implement unique
-            break
+            var keyValuesCounts: [[String]: Int] = [:]
+            for record in sortedRecords {
+                let keyValues: [String] = try keys.map {
+                    var keyValue = try record.extract(fromRange: $0.range)
+                    if anyCase {
+                        keyValue = keyValue.uppercased()
+                    }
+                    return keyValue
+                }
+
+                let existingCount = keyValuesCounts[keyValues] ?? 0
+                if existingCount == 0 {
+                    try output(record)
+                } else if isPrimaryOutputStreamConnected {
+                    try? output(record, streamNo: 1)
+                }
+                keyValuesCounts[keyValues] = existingCount + 1
+            }
         }
     }
 }

@@ -361,7 +361,7 @@ final class StageTests: XCTestCase {
         try Pipe("zzzgen \(input) | sort 15-40 pad e | zzzcheck /\(s3)/\(s1)/\(s9)/\(s2)/\(s4)/\(s6)/\(s8)/\(s5)/\(s7)/").run()
         try Pipe("zzzgen \(input) | sort 15-40 pad b | zzzcheck /\(s1)/\(s3)/\(s9)/\(s2)/\(s4)/\(s6)/\(s8)/\(s5)/\(s7)/").run()
 
-        // Multi-key sorting
+        // Multi-key
         try Pipe("zzzgen \(input) | sort 15-40 asc  w1 asc         | zzzcheck /\(s9)/\(s1)/\(s3)/\(s2)/\(s4)/\(s6)/\(s8)/\(s5)/\(s7)/").run()
         try Pipe("zzzgen \(input) | sort 15-40 asc  w1 desc        | zzzcheck /\(s1)/\(s9)/\(s3)/\(s2)/\(s6)/\(s8)/\(s4)/\(s7)/\(s5)/").run()
         try Pipe("zzzgen \(input) | sort 15-40 desc w1 asc         | zzzcheck /\(s5)/\(s7)/\(s4)/\(s6)/\(s8)/\(s2)/\(s3)/\(s9)/\(s1)/").run()
@@ -370,6 +370,23 @@ final class StageTests: XCTestCase {
         try Pipe("zzzgen \(input) | sort 15-40 asc  w1 asc w2 desc | zzzcheck /\(s9)/\(s1)/\(s3)/\(s2)/\(s4)/\(s8)/\(s6)/\(s5)/\(s7)/").run()
         try Pipe("zzzgen \(input) | sort 15-40 asc pad e w1 asc w2 desc | zzzcheck /\(s3)/\(s9)/\(s1)/\(s2)/\(s4)/\(s8)/\(s6)/\(s5)/\(s7)/").run()
         try Pipe("zzzgen \(input) | sort 15-40 asc pad b w1 asc w2 desc | zzzcheck /\(s9)/\(s1)/\(s3)/\(s2)/\(s4)/\(s8)/\(s6)/\(s5)/\(s7)/").run()
+
+        let u1 = "aa bb cc dd ee"
+        let u2 = "aa bb cc dd ee"
+        let u3 = "zz bb cc dd ee"
+        let u4 = "zz bb cc dd ee"
+        let u5 = "zz bb zz dd ee"
+        let u6 = "aa bb cc dd ee"
+        let u7 = "aa bb zz dd ee"
+        let u8 = "aa bb cc dd ee"
+        let u9 = "aa bb zz dd ee"
+        let input2 = "/\(u1)/\(u2)/\(u3)/\(u4)/\(u5)/\(u6)/\(u7)/\(u8)/\(u9)/"
+
+        // Unique
+        try Pipe("        zzzgen \(input2) |    sort unique | zzzcheck /\(u1)/\(u7)/\(u3)/\(u5)/").run()
+        try Pipe("(end ?) zzzgen \(input2) | s: sort unique | zzzcheck /\(u1)/\(u7)/\(u3)/\(u5)/ ? s: | zzzcheck /\(u2)/\(u6)/\(u8)/\(u9)/\(u4)/").run()
+        try Pipe("        zzzgen \(input2) |    sort unique w1 | zzzcheck /\(u1)/\(u3)/").run()
+        try Pipe("(end ?) zzzgen \(input2) | s: sort unique w5 | zzzcheck /\(u1)/ ? s: | zzzcheck /\(u2)/\(u3)/\(u4)/\(u5)/\(u6)/\(u7)/\(u8)/\(u9)/").run()
     }
 
     func testSpec() throws {
