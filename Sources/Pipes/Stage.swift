@@ -47,10 +47,10 @@ extension Stage {
     internal func dispatch() throws {
         defer {
             // debug("About to sever all streams")
-            for (streamNo, stream) in inputStreams.enumerated() {
+            for (streamNo, _) in inputStreams.enumerated() {
                 try? sever(.input, streamNo: streamNo)
             }
-            for (streamNo, stream) in outputStreams.enumerated() {
+            for (streamNo, _) in outputStreams.enumerated() {
                 try? sever(.output, streamNo: streamNo)
             }
             // debug("Finished severing all streams")
