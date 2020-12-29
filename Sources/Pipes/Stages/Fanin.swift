@@ -61,9 +61,9 @@ extension Fanin: RegisteredStage {
 
     public static var helpSyntax: String? {
         """
-        ►►──FANIN──┬────────────┬──►◄
-                   │ ┌────────┐ │
-                   └─▼─stream─┴─┘
+        ►►──FANIN─┬────────────┬──►◄
+                  │ ┌────────┐ │
+                  └─▼─stream─┴─┘
         """
     }
 }

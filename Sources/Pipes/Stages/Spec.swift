@@ -420,23 +420,23 @@ extension Spec: RegisteredStage {
     public static var helpSyntax: String? {
         """
                    ┌──────────────┐
-        ►►──SPECs──▼─┬─┤ field ├┬─┴──►◄
+        ►►──SPECs──▼─┬─field────┬─┴──►◄
                      └─PAD xorc─┘
 
         field:
 
-        ├──┬─inputRange─────────────────────────────────────┬──┬───────┬──►
-           ├─┬─NUMBER─┬──┬───────────────┬──┬─────────────┬─┤  └─STRIP─┘
-           │ └─RECNO──┘  └─FROM──snumber─┘  └─BY──snumber─┘ │
-           ├─TIMEstamp───┬──────────────────────────┬───────┤
-           │             └─PATTERN──delimitedString─┘       │
-           └─delimitedString────────────────────────────────┘
+        ├──┬─inputRange───────────────────────────────────┬─┬───────┬──►
+           ├─┬─NUMBER─┬─┬───────────────┬─┬─────────────┬─┤ └─STRIP─┘
+           │ └─RECNO──┘ └─FROM──snumber─┘ └─BY──snumber─┘ │
+           ├─TIMEstamp──┬──────────────────────────┬──────┤
+           │            └─PATTERN──delimitedString─┘      │
+           └─delimitedString──────────────────────────────┘
 
-        ►──┬────────────────┬──┬─┬─Next──────┬──┬───────────┬─┬──┬────────┬──┤
-           └─┤ conversion ├─┘  │ ├─NEXTWord──┤  └─.──number─┘ │  ├─Left───┤
-                               │ └─NEXTField─┘                │  ├─Center─┤
-                               ├─number───────────────────────┤  └─Right──┘
-                               └─range────────────────────────┘
+        ►──┬────────────┬─┬─┬─Next──────┬─┬───────────┬─┬─┬────────┬──┤
+           └─conversion─┘ │ ├─NEXTWord──┤ └─.──number─┘ │ ├─Left───┤
+                          │ └─NEXTField─┘               │ ├─Center─┤
+                          ├─number──────────────────────┤ └─Right──┘
+                          └─range───────────────────────┘
         """
     }
 }

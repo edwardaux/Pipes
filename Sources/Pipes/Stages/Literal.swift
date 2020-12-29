@@ -40,8 +40,8 @@ extension Literal: RegisteredStage {
 
     public static var helpSyntax: String? {
         """
-        ►►──LITERAL──┬────────┬──►◄
-                     └─string─┘
+        ►►──LITERAL─┬────────┬──►◄
+                    └─string─┘
         """
     }
 }

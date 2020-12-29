@@ -84,8 +84,8 @@ extension Locate: RegisteredStage {
 
     public static var helpSyntax: String? {
         """
-        ►►──LOCATE──┬─────────┬──┬─────────────┬──┬───────┬──┬─────────────────┬──►◄
-                    └─ANYcase─┘  └─inputRanges─┘  └─ANYof─┘  └─delimitedString─┘
+        ►►──LOCATE─┬─────────┬─┬─────────────┬─┬───────┬─┬─────────────────┬──►◄
+                   └─ANYcase─┘ └─inputRanges─┘ └─ANYof─┘ └─delimitedString─┘
         """
     }
 }

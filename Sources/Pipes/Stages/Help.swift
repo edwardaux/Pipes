@@ -53,7 +53,32 @@ extension Help: RegisteredStage {
 
     public static var helpSyntax: String? {
         """
-        ►►──HELP──stageName──►◄
+        ►►──HELP─stageName──►◄
+        """
+    }
+}
+
+extension Help {
+    public static var inputRangeHelpSyntax: String {
+        """
+        inputRange:
+
+        ├──┬──────────────────────────────────────────────┬─┬────────┬─┬─range───────────┬──┤
+           │ ┌──────────────────────────────────────────┐ │ ├─wrdSep─┤ ├─snumber─────────┤
+           └─􏰁▼─┬─WORDSEParator──xorc──────────────────┬─┴─┘ └─fldSep─┘ └─snumber;snumber─┘
+               └─FIELDSEParator──xorc─┬─────────────┬─┘
+                                      └─Quote──xorc─┘
+
+        wrdSep:
+
+        ├──┬─────────────────────┬─Words──┤
+           └─WORDSEParator──xorc─┘
+
+        fldSep:
+
+        ├──┬──────────────────────────────────────┬─Fields──┤
+           └─FIELDSEParator──xorc─┬─────────────┬─┘
+                                  └─Quote──xorc─┘
         """
     }
 }

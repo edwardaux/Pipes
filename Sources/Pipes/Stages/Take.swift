@@ -197,11 +197,11 @@ extension Take: RegisteredStage {
 
     public static var helpSyntax: String? {
         """
-                  ┌─FIRST──┐  ┌─1──────┐  ┌─LINES──────┐
-        ►►──TAKE──┼────────┼──┼────────┼──┼────────────┼──►◄
-                  └─LAST───┘  ├─number─┤  ├─CHARACTERS─┤
-                              └─*──────┘  ├─CHARS──────┤
-                                          └─BYTES──────┘
+                 ┌─FIRST─┐ ┌─1──────┐ ┌─LINES──────┐
+        ►►──TAKE─┼───────┼─┼────────┼─┼────────────┼──►◄
+                 └─LAST──┘ ├─number─┤ ├─CHARACTERS─┤
+                           └─*──────┘ ├─CHARS──────┤
+                                      └─BYTES──────┘
         """
     }
 }

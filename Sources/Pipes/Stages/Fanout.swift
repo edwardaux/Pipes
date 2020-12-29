@@ -92,10 +92,10 @@ extension Fanout: RegisteredStage {
 
     public static var helpSyntax: String? {
         """
-                    ┌─STOP──ALLEOF───┐
-        ►►──FANOUT──┼────────────────┼──►◄
-                    └─STOP─┬─ANYEOF──┤
-                           └─number──┘
+                   ┌─STOP──ALLEOF──┐
+        ►►──FANOUT─┼───────────────┼──►◄
+                   └─STOP─┬─ANYEOF─┤
+                          └─number─┘
         """
     }
 }

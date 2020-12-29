@@ -56,7 +56,7 @@ extension Diskw: RegisteredStage {
 
     public static var helpSyntax: String? {
         """
-        ►►──┬───>───┬──filename──►◄
+        ►►──┬───>───┬─filename──►◄
             └─DISKW─┘
         """
     }

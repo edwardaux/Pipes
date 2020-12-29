@@ -84,8 +84,8 @@ extension NLocate: RegisteredStage {
 
     public static var helpSyntax: String? {
         """
-        ►►──NLOCATE──┬─────────┬──┬─────────────┬──┬───────┬──┬─────────────────┬──►◄
-                     └─ANYcase─┘  └─inputRanges─┘  └─ANYof─┘  └─delimitedString─┘
+        ►►──NLOCATE─┬─────────┬─┬─────────────┬─┬───────┬─┬─────────────────┬──►◄
+                    └─ANYcase─┘ └─inputRanges─┘ └─ANYof─┘ └─delimitedString─┘
         """
     }
 }
