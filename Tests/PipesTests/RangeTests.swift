@@ -25,14 +25,14 @@ final class RangeTests: XCTestCase {
         XCTAssertEqual(try "abcdefgh".extract(fromRange: PipeRange.column(start: 2, end: -5)), "bcd")
 
         // TODO range substrings
-        // String s = "abcdefghijklmnopqrstuvwxyz";
-        // assertEquals("abcdefghijklm", scanRange(new PipeArgs("1-13 "), true).extractRange(s));
-        // assertEquals("cdefghij", scanRange(new PipeArgs("SUBSTR 3.8 OF 1-13 "), true).extractRange(s));
-        // assertEquals("defg", scanRange(new PipeArgs("SUBSTR 2-5 OF SUBSTR 3.8 OF 1-13 "), true).extractRange(s));
+        // String s = "abcdefghijklmnopqrstuvwxyz"
+        // assertEquals("abcdefghijklm", scanRange(new PipeArgs("1-13 "), true).extractRange(s))
+        // assertEquals("cdefghij", scanRange(new PipeArgs("SUBSTR 3.8 OF 1-13 "), true).extractRange(s))
+        // assertEquals("defg", scanRange(new PipeArgs("SUBSTR 2-5 OF SUBSTR 3.8 OF 1-13 "), true).extractRange(s))
     }
 
     func testRangeExtractWords() throws {
-        let s = "  hello there   how   are   you today? I am well thanks  ";
+        let s = "  hello there   how   are   you today? I am well thanks  "
         XCTAssertEqual(try s.extract(fromRange: PipeRange.word(start: 1, end: 1)), "hello")
         XCTAssertEqual(try s.extract(fromRange: PipeRange.word(start: 3, end: 3)), "how")
         XCTAssertEqual(try s.extract(fromRange: PipeRange.word(start: 1, end: 3)), "hello there   how")
@@ -45,7 +45,7 @@ final class RangeTests: XCTestCase {
         XCTAssertEqual(try s.extract(fromRange: PipeRange.word(start: 9, end: -1)), "well thanks")
         XCTAssertEqual(try s.extract(fromRange: PipeRange.word(start: 7, end: 7)), "I")
 
-        let t = "xxhelloxtherexxxhowxxxarexxxyouxtoday?xIxamxwellxthanksxx";
+        let t = "xxhelloxtherexxxhowxxxarexxxyouxtoday?xIxamxwellxthanksxx"
         XCTAssertEqual(try t.extract(fromRange: PipeRange.word(start: 1, end: 1, separator: "x")), "hello")
         XCTAssertEqual(try t.extract(fromRange: PipeRange.word(start: 3, end: 3, separator: "x")), "how")
         XCTAssertEqual(try t.extract(fromRange: PipeRange.word(start: 1, end: 3, separator: "x")), "helloxtherexxxhow")
@@ -65,7 +65,7 @@ final class RangeTests: XCTestCase {
     }
 
     func testRangeExtractFields() {
-        let s = ",b,,d,eeee,fff,ggg,";
+        let s = ",b,,d,eeee,fff,ggg,"
         XCTAssertEqual(try s.extract(fromRange: PipeRange.field(start: 1, end: 1, separator: ",")), "")
         XCTAssertEqual(try s.extract(fromRange: PipeRange.field(start: 2, end: 2, separator: ",")), "b")
         XCTAssertEqual(try s.extract(fromRange: PipeRange.field(start: 4, end: 6, separator: ",")), "d,eeee,fff")
@@ -207,31 +207,31 @@ final class RangeTests: XCTestCase {
         XCTAssertThrows(try Args("dummy (xxx").scanRanges(), PipeError.missingEndingParenthesis)
 
 //        let ranges = try Args("dummy (1.1 3-5 9.4 -2;-1)").scanRanges()
-//        XCTAssertEqual("".extract(fromRanges: ranges), "acdeijklyz");
+//        XCTAssertEqual("".extract(fromRanges: ranges), "acdeijklyz")
     }
 
     func testSubstrRangeParsing() throws {
-        //        assertEquals("SUBSTR 2-5 OF 1-10", scanRange(new PipeArgs("SUBSTR 2-5 OF 1-10"), true).toString());
-        //        assertEquals("SUBSTR 2-5 OF SUBSTR 3-4 OF 1-10", scanRange(new PipeArgs("SUBSTR 2-5 OF SUBSTR 3.2 OF 1-10 "), true).toString());
-        //        args = new PipeArgs("SUBSTR 2-5 OF 1-10");
-        //        assertEquals("SUBSTR 2-5 OF 1-10", scanRange(args, false).toString());
-        //        args = new PipeArgs("SUBSTR 2-5 OF SUBSTR 3.2 OF 1-10 ");
-        //        assertEquals("SUBSTR 2-5 OF SUBSTR 3-4 OF 1-10", scanRange(args, false).toString());
-        //        args = new PipeArgs("1-5 hello there");
-        //        assertEquals("1-5", scanRange(args, false).toString());
-        //        assertEquals("hello there", args.getRemainder());
-        //        args = new PipeArgs("1-5 hello there");
-        //        assertEquals("1-5", scanRange(args, true).toString());
-        //        assertEquals("hello there", args.getRemainder());
-        //        args = new PipeArgs("words 1-2 words 3-4");
-        //        assertEquals("W 1-2", scanRange(args, true).toString());
-        //        assertEquals("words 3-4", args.getRemainder());
-        //        args = new PipeArgs("SUBSTR 2-5 OF SUBSTR 3.2 OF 1-10 words 3-4");
-        //        assertEquals("SUBSTR 2-5 OF SUBSTR 3-4 OF 1-10", scanRange(args, true).toString());
-        //        assertEquals("words 3-4", args.getRemainder());
-        //        args = new PipeArgs("SUBSTR 2-5 OF SUBSTR 3.2 OF 1-10 SUBSTR 2-5 OF SUBSTR 3.2 OF 1-10");
-        //        assertEquals("SUBSTR 2-5 OF SUBSTR 3-4 OF 1-10", scanRange(args, true).toString());
-        //        assertEquals("SUBSTR 2-5 OF SUBSTR 3.2 OF 1-10", args.getRemainder());
+        //        assertEquals("SUBSTR 2-5 OF 1-10", scanRange(new PipeArgs("SUBSTR 2-5 OF 1-10"), true).toString())
+        //        assertEquals("SUBSTR 2-5 OF SUBSTR 3-4 OF 1-10", scanRange(new PipeArgs("SUBSTR 2-5 OF SUBSTR 3.2 OF 1-10 "), true).toString())
+        //        args = new PipeArgs("SUBSTR 2-5 OF 1-10")
+        //        assertEquals("SUBSTR 2-5 OF 1-10", scanRange(args, false).toString())
+        //        args = new PipeArgs("SUBSTR 2-5 OF SUBSTR 3.2 OF 1-10 ")
+        //        assertEquals("SUBSTR 2-5 OF SUBSTR 3-4 OF 1-10", scanRange(args, false).toString())
+        //        args = new PipeArgs("1-5 hello there")
+        //        assertEquals("1-5", scanRange(args, false).toString())
+        //        assertEquals("hello there", args.getRemainder())
+        //        args = new PipeArgs("1-5 hello there")
+        //        assertEquals("1-5", scanRange(args, true).toString())
+        //        assertEquals("hello there", args.getRemainder())
+        //        args = new PipeArgs("words 1-2 words 3-4")
+        //        assertEquals("W 1-2", scanRange(args, true).toString())
+        //        assertEquals("words 3-4", args.getRemainder())
+        //        args = new PipeArgs("SUBSTR 2-5 OF SUBSTR 3.2 OF 1-10 words 3-4")
+        //        assertEquals("SUBSTR 2-5 OF SUBSTR 3-4 OF 1-10", scanRange(args, true).toString())
+        //        assertEquals("words 3-4", args.getRemainder())
+        //        args = new PipeArgs("SUBSTR 2-5 OF SUBSTR 3.2 OF 1-10 SUBSTR 2-5 OF SUBSTR 3.2 OF 1-10")
+        //        assertEquals("SUBSTR 2-5 OF SUBSTR 3-4 OF 1-10", scanRange(args, true).toString())
+        //        assertEquals("SUBSTR 2-5 OF SUBSTR 3.2 OF 1-10", args.getRemainder())
         //
     }
 }

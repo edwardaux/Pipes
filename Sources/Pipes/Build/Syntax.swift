@@ -104,8 +104,8 @@ extension String {
         }
 
         // All we've got left here is an overlay
-        let r1 = index(startIndex, offsetBy: start - 1);
-        let r2 = index(startIndex, offsetBy: start - 1 + length);
+        let r1 = index(startIndex, offsetBy: start - 1)
+        let r2 = index(startIndex, offsetBy: start - 1 + length)
         return replacingCharacters(in: r1..<r2, with: string)
     }
 
@@ -119,8 +119,8 @@ extension String {
             if count >= length {
                 if truncate {
                     let start = Int((count - length) / 2)
-                    let r1 = index(startIndex, offsetBy: start);
-                    let r2 = index(startIndex, offsetBy: start + length);
+                    let r1 = index(startIndex, offsetBy: start)
+                    let r2 = index(startIndex, offsetBy: start + length)
                     return String(self[r1..<r2])
                 } else {
                     return self
