@@ -25,15 +25,15 @@ A description of this package.
 
 [X] Sort
 [X] CSV
-[ ] json
 [ ] URLEncode / URLDecode
-[ ] 64Encode / 63Decode
+[ ] 64Encode / 64Decode
 [ ] Regex.java
 [ ] Lookup
 [ ] Drop
 [ ] Documentation and examples in readme (incl. help for "inputRange", "snumber", etc)
 
 2.0
+[ ] json
 [ ] Pad
 [ ] Split.java
 [ ] Change.java

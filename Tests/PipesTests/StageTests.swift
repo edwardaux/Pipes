@@ -285,6 +285,8 @@ final class StageTests: XCTestCase {
 
         try Pipe("(end ?) zzzgen /aaa/bbb/ccc/ddd/a/aa/c/dd/ee/ | l: locate /a/ | zzzcheck /aaa/a/aa/ ? l: | zzzcheck /bbb/ccc/ddd/c/dd/ee/").run()
         try Pipe("(end ?) zzzgen /aaa/bbb/ccc/ddd/a/aa/c/dd/ee/ | l: locate /a/ | zzzcheck /aaa/a/aa/ ? l: | take 1 | zzzcheck /bbb/").run()
+
+        try Pipe("literal a,b,'c',d| literal c,c,c| literal g,h,i| locate fs , q ' f3 /c/ | zzzcheck /c,c,c/a,b,'c',d/").run()
     }
 
 
