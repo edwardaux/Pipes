@@ -77,7 +77,19 @@ final class RangeTests: XCTestCase {
         XCTAssertEqual(try s.extract(fromRange: PipeRange.field(start: 7, end: 8, separator: ",")), "ggg,")
         XCTAssertEqual(try s.extract(fromRange: PipeRange.field(start: 7, end: -1, separator: ",")), "ggg,")
 
-        let t = "xbxxdxeeeexfffxgggx";
+        // Same set of tests as above, but passing in an essentially unused quoteCharacter
+        XCTAssertEqual(try s.extract(fromRange: PipeRange.field(start: 1, end: 1, separator: ",", quoteCharacter: "'")), "")
+        XCTAssertEqual(try s.extract(fromRange: PipeRange.field(start: 2, end: 2, separator: ",", quoteCharacter: "'")), "b")
+        XCTAssertEqual(try s.extract(fromRange: PipeRange.field(start: 4, end: 6, separator: ",", quoteCharacter: "'")), "d,eeee,fff")
+        XCTAssertEqual(try s.extract(fromRange: PipeRange.field(start: 1, end: 7, separator: ",", quoteCharacter: "'")), ",b,,d,eeee,fff,ggg")
+        XCTAssertEqual(try s.extract(fromRange: PipeRange.field(start: 1, end: .end, separator: ",", quoteCharacter: "'")), ",b,,d,eeee,fff,ggg,")
+        XCTAssertEqual(try s.extract(fromRange: PipeRange.field(start: 1, end: 8, separator: ",", quoteCharacter: "'")), ",b,,d,eeee,fff,ggg,")
+        XCTAssertEqual(try s.extract(fromRange: PipeRange.field(start: -1, end: -1, separator: ",", quoteCharacter: "'")), "")
+        XCTAssertEqual(try s.extract(fromRange: PipeRange.field(start: -2, end: -1, separator: ",", quoteCharacter: "'")), "ggg,")
+        XCTAssertEqual(try s.extract(fromRange: PipeRange.field(start: 7, end: 8, separator: ",", quoteCharacter: "'")), "ggg,")
+        XCTAssertEqual(try s.extract(fromRange: PipeRange.field(start: 7, end: -1, separator: ",", quoteCharacter: "'")), "ggg,")
+
+        let t = "xbxxdxeeeexfffxgggx"
         XCTAssertEqual(try t.extract(fromRange: PipeRange.field(start: 1, end: 1, separator: "x")), "")
         XCTAssertEqual(try t.extract(fromRange: PipeRange.field(start: 2, end: 2, separator: "x")), "b")
         XCTAssertEqual(try t.extract(fromRange: PipeRange.field(start: 4, end: 6, separator: "x")), "dxeeeexfff")
@@ -88,6 +100,42 @@ final class RangeTests: XCTestCase {
         XCTAssertEqual(try t.extract(fromRange: PipeRange.field(start: -2, end: -1, separator: "x")), "gggx")
         XCTAssertEqual(try t.extract(fromRange: PipeRange.field(start: 7, end: 8, separator: "x")), "gggx")
         XCTAssertEqual(try t.extract(fromRange: PipeRange.field(start: 7, end: -1, separator: "x")), "gggx")
+
+        let u = "'','b',,d,'eeee',fff,ggg,''"
+        XCTAssertEqual(try u.extract(fromRange: PipeRange.field(start: 1, end: 1, separator: ",", quoteCharacter: "'")), "''")
+        XCTAssertEqual(try u.extract(fromRange: PipeRange.field(start: 2, end: 2, separator: ",", quoteCharacter: "'")), "'b'")
+        XCTAssertEqual(try u.extract(fromRange: PipeRange.field(start: 4, end: 6, separator: ",", quoteCharacter: "'")), "d,'eeee',fff")
+        XCTAssertEqual(try u.extract(fromRange: PipeRange.field(start: 1, end: 7, separator: ",", quoteCharacter: "'")), "'','b',,d,'eeee',fff,ggg")
+        XCTAssertEqual(try u.extract(fromRange: PipeRange.field(start: 1, end: .end, separator: ",", quoteCharacter: "'")), "'','b',,d,'eeee',fff,ggg,''")
+        XCTAssertEqual(try u.extract(fromRange: PipeRange.field(start: 1, end: 8, separator: ",", quoteCharacter: "'")), "'','b',,d,'eeee',fff,ggg,''")
+        XCTAssertEqual(try u.extract(fromRange: PipeRange.field(start: -1, end: -1, separator: ",", quoteCharacter: "'")), "''")
+        XCTAssertEqual(try u.extract(fromRange: PipeRange.field(start: -2, end: -1, separator: ",", quoteCharacter: "'")), "ggg,''")
+        XCTAssertEqual(try u.extract(fromRange: PipeRange.field(start: 7, end: 8, separator: ",", quoteCharacter: "'")), "ggg,''")
+        XCTAssertEqual(try u.extract(fromRange: PipeRange.field(start: 7, end: -1, separator: ",", quoteCharacter: "'")), "ggg,''")
+
+        let v = "'hi, how are you', 'leading space',',,,',,,"
+        XCTAssertEqual(try v.extract(fromRange: PipeRange.field(start: 1, end: 1, separator: ",", quoteCharacter: "'")), "'hi, how are you'")
+        XCTAssertEqual(try v.extract(fromRange: PipeRange.field(start: 2, end: 2, separator: ",", quoteCharacter: "'")), " 'leading space'")
+        XCTAssertEqual(try v.extract(fromRange: PipeRange.field(start: 3, end: 3, separator: ",", quoteCharacter: "'")), "',,,'")
+        XCTAssertEqual(try v.extract(fromRange: PipeRange.field(start: 4, end: 4, separator: ",", quoteCharacter: "'")), "")
+        XCTAssertEqual(try v.extract(fromRange: PipeRange.field(start: 5, end: 5, separator: ",", quoteCharacter: "'")), "")
+        XCTAssertEqual(try v.extract(fromRange: PipeRange.field(start: 1, end: 1, separator: ",", quoteCharacter: nil)), "'hi")
+        XCTAssertEqual(try v.extract(fromRange: PipeRange.field(start: 2, end: 2, separator: ",", quoteCharacter: nil)), " how are you'")
+
+        let w = "aaa, 'bbb,'ccc, '"
+        XCTAssertEqual(try w.extract(fromRange: PipeRange.field(start: 1, end: 1, separator: ",", quoteCharacter: nil)), "aaa")
+        XCTAssertEqual(try w.extract(fromRange: PipeRange.field(start: 2, end: 2, separator: ",", quoteCharacter: nil)), " 'bbb")
+        XCTAssertEqual(try w.extract(fromRange: PipeRange.field(start: 3, end: 3, separator: ",", quoteCharacter: nil)), "'ccc")
+        XCTAssertEqual(try w.extract(fromRange: PipeRange.field(start: 4, end: 4, separator: ",", quoteCharacter: nil)), " '")
+        XCTAssertEqual(try w.extract(fromRange: PipeRange.field(start: 1, end: 1, separator: ",", quoteCharacter: "'")), "aaa")
+        XCTAssertEqual(try w.extract(fromRange: PipeRange.field(start: 2, end: 2, separator: ",", quoteCharacter: "'")), " 'bbb")
+        XCTAssertEqual(try w.extract(fromRange: PipeRange.field(start: 3, end: 3, separator: ",", quoteCharacter: "'")), "'ccc, '")
+        XCTAssertEqual(try w.extract(fromRange: PipeRange.field(start: 4, end: 4, separator: ",", quoteCharacter: "'")), "")
+
+        XCTAssertEqual (try "'aa' 'cc',bb".extract(fromRange: PipeRange.field(start: 1, end: 1, separator: ",", quoteCharacter: nil)), "'aa' 'cc'")
+        XCTAssertThrows(try "'aa'xx,bb".extract(fromRange: PipeRange.field(start: 1, end: 1, separator: ",", quoteCharacter: "'")), PipeError.unexpectedCharacters(expected: ",", found: "x"))
+        XCTAssertThrows(try "'aa' 'cc',bb".extract(fromRange: PipeRange.field(start: 1, end: 1, separator: ",", quoteCharacter: "'")), PipeError.unexpectedCharacters(expected: ",", found: " "))
+        XCTAssertThrows(try "a,'b".extract(fromRange: PipeRange.field(start: 2, end: 2, separator: ",", quoteCharacter: "'")), PipeError.delimiterMissing(delimiter: "'"))
     }
 
     func testSimpleMatches() throws {
@@ -190,6 +238,9 @@ final class RangeTests: XCTestCase {
         XCTAssertEqual(try Args("dummy FS b 1-1").scanRange(), PipeRange.column(start: 1, end: 1))
         XCTAssertEqual(try Args("dummy WS a FS b 1-1").scanRange(), PipeRange.column(start: 1, end: 1))
 
+        XCTAssertEqual(try Args("dummy FS , Q ' F 1-1").scanRange(), PipeRange.field(start: 1, end: 1, separator: ",", quoteCharacter: "'"))
+        XCTAssertEqual(try Args("dummy FS , Q ' FS - QUOTE X F 1-1").scanRange(), PipeRange.field(start: 1, end: 1, separator: "-", quoteCharacter: "X"))
+
         XCTAssertThrows(try Args("dummy ").scanRange(), PipeError.invalidRange(range: ""))
         XCTAssertThrows(try Args("dummy -5--4").scanRange(), PipeError.invalidRange(range: "-5--4"))
         XCTAssertThrows(try Args("dummy xxx").scanRange(), PipeError.invalidRange(range: "xxx"))
@@ -199,6 +250,15 @@ final class RangeTests: XCTestCase {
     func testMultiRangeParsing() throws {
         XCTAssertEqual(try Args("dummy (1.3)").scanRanges(), [ PipeRange.column(start: 1, end: 3) ])
         XCTAssertEqual(try Args("dummy (1.3 2.4)").scanRanges(), [ PipeRange.column(start: 1, end: 3), PipeRange.column(start: 2, end: 5) ])
+        XCTAssertEqual(
+            try Args("dummy (f8-9 fs , q ' 1.3 f 2.4 fs + q = f5.2)").scanRanges(),
+            [
+                PipeRange.field(start: 8, end: 9, separator: "\t", quoteCharacter: nil),
+                PipeRange.column(start: 1, end: 3),
+                PipeRange.field(start: 2, end: 5, separator: ",", quoteCharacter: "'"),
+                PipeRange.field(start: 5, end: 6, separator: "+", quoteCharacter: "=")
+            ]
+        )
 
         XCTAssertThrows(try Args("dummy ()").scanRanges(), PipeError.noInputRanges)
         XCTAssertThrows(try Args("dummy (xxx)").scanRanges(), PipeError.invalidRange(range: "xxx"))

@@ -24,13 +24,14 @@ A description of this package.
 [ ] Homebrew
 
 [X] Sort
-[ ] CSV
+[X] CSV
 [ ] json
 [ ] URLEncode / URLDecode
 [ ] 64Encode / 63Decode
 [ ] Regex.java
 [ ] Lookup
 [ ] Drop
+[ ] Documentation and examples in readme (incl. help for "inputRange", "snumber", etc)
 
 2.0
 [ ] Pad

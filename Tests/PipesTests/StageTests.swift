@@ -480,6 +480,12 @@ final class StageTests: XCTestCase {
         try Pipe("literal blah| spec 1-* c2b 1 | spec 1-* b2c 1 | zzzcheck /blah/").run()
 
         try Pipe("zzzgen /First record/Second record/Short/ | spec 1.4 c2x 1 5.4 c2x nextword /*/ 19 1.8 next.8 /*/ next | zzzcheck /46697273 74207265 *First re*/5365636F 6E642072 *Second r*/53686F72 74       *Short   */").run()
+
+        let csv = """
+        /10,11,12/"20","21",22/"30",31,"32"/
+        """
+        try Pipe("zzzgen \(csv) | spec fs , q \" f2 1 f3 3 f1 5     | zzzcheck /111210/212220/313230/").run()
+        try Pipe("zzzgen \(csv) | spec /_/ 1 fs , q \" f2-3 n /_/ n | zzzcheck /_11,12_/_\"21\",22_/_31,\"32\"_/").run()
     }
 
     func testTakeFirst() throws {

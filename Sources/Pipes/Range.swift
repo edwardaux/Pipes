@@ -3,18 +3,19 @@ import Foundation
 extension Int {
     static public var end = Int.max
 }
-public indirect enum PipeRange {
+
+public indirect enum PipeRange: Equatable {
     case full
     case column(start: Int, end: Int)
     case word(start: Int, end: Int, separator: Character = " ")
-    case field(start: Int, end: Int, separator: Character = "\t")
+    case field(start: Int, end: Int, separator: Character = "\t", quoteCharacter: Character? = nil)
 
     var start: Int {
         switch self {
         case .full: return .end
         case .column(let start, _): return start
         case .word(let start, _, _): return start
-        case .field(let start, _, _): return start
+        case .field(let start, _, _, _): return start
         }
     }
 
@@ -23,7 +24,7 @@ public indirect enum PipeRange {
         case .full: return .end
         case .column(_, let end): return end
         case .word(_, let end, _): return end
-        case .field(_, let end, _): return end
+        case .field(_, let end, _, _): return end
         }
     }
 
@@ -57,9 +58,6 @@ public indirect enum PipeRange {
             return (start: max(1, min(length, resolvedStart)) - 1, end: max(1, min(length, resolvedEnd)) - 1)
         }
     }
-}
-
-extension PipeRange: Equatable {
 }
 
 extension String {
@@ -113,16 +111,94 @@ extension String {
             let endIndex = self.index(self.startIndex, offsetBy: wordBoundaries[end].1)
 
             return String(self[startIndex..<endIndex])
-        case .field(let originalStart, let originalEnd, let separator):
-            var fieldBoundaries = [(Int, Int)]()
+        case .field(let originalStart, let originalEnd, let separator, let quoteCharacter):
+            var fieldBoundaries = [(Int, Int, Bool)]()
             var fieldStart = 0
+
+            // When we have a quoteCharacter, the quote needs to be the very first character after
+            // the separator. That is, it needs to be:
+            //   ,"hello",
+            // and not:
+            //   , "hello",
+            // In the latter case, we treat this field as if it were an unquoted field and any quotes
+            // are effectively ignored.  The hasStartedField keeps track of whether we've processed
+            // any non-quote characters.
+            var hasStartedField = false
+
+            // Keeps track of whether we're currently inside a quoted string.
+            var inQuotedString = false
+
+            // Keeps track of whether the current field was a quoted string, because quoted strings
+            // get added to the list of boundaries when the quote ends, whereas unquoted strings get
+            // added when the separator is encountered.
+            var wasQuotedString = false
+
             for (index, char) in self.enumerated() {
-                if char == separator {
-                    fieldBoundaries.append((fieldStart, index))
+                if char == quoteCharacter {
+                    if inQuotedString {
+                        // The current quote is ending the string that we're in, so we can
+                        // add the latest boundaries to our list.
+                        fieldBoundaries.append((fieldStart, index+1, true))
+
+                        // Consume the quote character.
+                        fieldStart = index + 1
+
+                        // We are no longer in a quoted string, but we mark that the current
+                        // field was indeed a quoted string.
+                        inQuotedString = false
+                        wasQuotedString = true
+                    } else if hasStartedField {
+                        // We've encountered the first quote character (because inQuotedString=false)
+                        // but because hasStartedField=true it means that we are treating this field
+                        // as an unquoted field.
+                        wasQuotedString = false
+                    } else {
+                        // We've encountered the first quote character, so we're opening a quoted string.
+                        inQuotedString = true
+                    }
+
+                    // Consuming this quote means we've started processing this field.
+                    hasStartedField = true
+                } else if char == separator && !inQuotedString {
+                    // We've encountered a separator character (that is outside a quoted string). If it
+                    // was a quoted string, then the boundary is added when the end quote is hit, so we
+                    // don't need to do it here. Otherwise, if it wasn't a quoted string, we'll add the
+                    // boundary info now.
+                    if !wasQuotedString {
+                        fieldBoundaries.append((fieldStart, index, false))
+                        hasStartedField = false
+                    }
+
+                    // Consume the separator charater.
                     fieldStart = index + 1
+
+                    // Reset these for the next field.
+                    hasStartedField = false
+                    inQuotedString = false
+                    wasQuotedString = false
+                } else {
+                    // We're encountered a character that isn't a quote or a separator. If wasQuotedString
+                    // is true, then it means there's characters after the ending quote (which is invalid).
+                    if wasQuotedString {
+                        throw PipeError.unexpectedCharacters(expected: "\(separator)", found: "\(char)")
+                    }
+
+                    // Consuming this character means we've started processing this field.
+                    hasStartedField = true
                 }
             }
-            fieldBoundaries.append((fieldStart, count))
+
+            if let quoteCharacter = quoteCharacter, inQuotedString {
+                // If we're still in a quoted string by the time we have processed all the input, then it
+                // means there's a missing trailing quote.
+                throw PipeError.delimiterMissing(delimiter: "\(quoteCharacter)")
+            }
+
+            if !wasQuotedString {
+                // Quoted string boundaries are added when the closing quote is encountered. However, we
+                // need to add the last field for non-quoted strings.
+                fieldBoundaries.append((fieldStart, count, false))
+            }
 
             guard let (start, end) = try PipeRange.resolve(start: originalStart, end: originalEnd, length: fieldBoundaries.count) else {
                 // When resolve() returns a nil, it means the start value
@@ -131,10 +207,19 @@ extension String {
                 return ""
             }
 
-            let startIndex = self.index(self.startIndex, offsetBy: fieldBoundaries[start].0)
-            let endIndex = self.index(self.startIndex, offsetBy: fieldBoundaries[end].1)
+            let fieldBoundaryStart = fieldBoundaries[start]
+            let fieldBoundaryEnd = fieldBoundaries[end]
+            if start == end && fieldBoundaryStart.2 && fieldBoundaryEnd.2 {
+                let startIndex = self.index(self.startIndex, offsetBy: fieldBoundaryStart.0 + 1)
+                let endIndex = self.index(self.startIndex, offsetBy: fieldBoundaryEnd.1 - 1)
 
-            return String(self[startIndex..<endIndex])
+                return String(self[startIndex..<endIndex])
+            } else {
+                let startIndex = self.index(self.startIndex, offsetBy: fieldBoundaryStart.0)
+                let endIndex = self.index(self.startIndex, offsetBy: fieldBoundaryEnd.1)
+
+                return String(self[startIndex..<endIndex])
+            }
         }
     }
 

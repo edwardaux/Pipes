@@ -48,6 +48,7 @@ public enum PipeError: Error, Equatable {
     case outputRangeEndInvalid
     case unableToWriteToFile(path: String, error: String)
     case unusedStreamConnected(direction: StreamDirection, streamNo: Int)
+    case unexpectedCharacters(expected: String, found: String)
     case commandNotPermitted(command: String)
     case invalidString
 
@@ -82,7 +83,7 @@ public enum PipeError: Error, Equatable {
         case .invalidNumber(let word):
             return Detail(code: -58, title: "Number expected, but \(word) was found", explanation: "\(word) contains a character that is not a digit.")
         case .delimiterMissing(let delimiter):
-            return Detail(code: -60, title: "Delimiter missing after string \(delimiter)", explanation: "No closing delimiter found for a delimited string.")
+            return Detail(code: -60, title: "Delimiter \(delimiter) missing after string", explanation: "No closing delimiter found for a delimited string.")
         case .outputSpecificationMissing:
             return Detail(code: -61, title: "Output specification missing", explanation: "The output column is not specified for the last item.")
         case .outputSpecificationInvalid(let word):
@@ -129,6 +130,8 @@ public enum PipeError: Error, Equatable {
             return Detail(code: -780, title: "You are not allowed to write to \(path). Reason: \(error)", explanation: "The directory record for an existing file indicates that you cannot write to it.")
         case .unusedStreamConnected(let direction, let streamNo):
             return Detail(code: -1196, title: "\(direction) stream \(streamNo) is unexpectedly connected.", explanation: "A stream is connected that the stage does not use. This is often a symptom of an incorrect placement of a label reference.")
+        case .unexpectedCharacters(let expected, let found):
+            return Detail(code: -1458, title: "Expected \(expected) but found \(found)", explanation: "Unexpected input because \(expected) was expected but \(found) was encountered instead.")
         case .commandNotPermitted(let command):
             return Detail(code: -2000, title: "Command \(command) not permitted during commit() phase.", explanation: "Stream operations are only permitted in the run() function.")
         case .invalidString:

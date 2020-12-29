@@ -8,6 +8,10 @@ public class Args {
     let tokenizer: StringTokenizer
     let type: ArgsType
 
+    private var fieldSep: Character?
+    private var wordSep: Character?
+    private var quoteCharacter: Character?
+
     init(_ stageSpec: String, escape: Character? = nil) throws {
         tokenizer = StringTokenizer(stageSpec, escape: escape)
         guard let word = tokenizer.scanWord() else {
@@ -112,8 +116,6 @@ public class Args {
 
         var start: Int = .end
         var end: Int = .end
-        var fieldSep: Character?
-        var wordSep: Character?
         var type: ParsedRangeType = .column
 
         guard var word = try? scanWord() else {
@@ -124,6 +126,10 @@ public class Args {
             if word.matchesKeyword("FIELDSEParator", "FS") {
                 fieldSep = try scanWord().asXorC()
                 word = try scanWord()
+                if word.matchesKeyword("Quote") {
+                    quoteCharacter = try scanWord().asXorC()
+                    word = try scanWord()
+                }
             }
             if word.matchesKeyword("WORDSEParator", "WS") {
                 wordSep = try scanWord().asXorC()
@@ -189,7 +195,7 @@ public class Args {
         case .word:
             return .word(start: start, end: end, separator: wordSep ?? " ")
         case .field:
-            return .field(start: start, end: end, separator: fieldSep ?? "\t")
+            return .field(start: start, end: end, separator: fieldSep ?? "\t", quoteCharacter: quoteCharacter)
         }
     }
 
