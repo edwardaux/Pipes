@@ -12,7 +12,7 @@ public final class Count: Stage {
 
     private let metrics: [Metric]
 
-    init(metrics: [Metric]) {
+    public init(metrics: [Metric]) {
         self.metrics = metrics
     }
 

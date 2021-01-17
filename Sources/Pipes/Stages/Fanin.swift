@@ -3,7 +3,7 @@ import Foundation
 public final class Fanin: Stage {
     private let inputStreamNos: [Int]
 
-    init(inputStreamNos: [Int]) {
+    public init(inputStreamNos: [Int]) {
         self.inputStreamNos = inputStreamNos
     }
 

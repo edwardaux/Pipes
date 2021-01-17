@@ -37,7 +37,7 @@ public final class Sort: Stage {
     private let defaultPad: Character?
     private let keys: [Key]
 
-    init(mode: Mode = .normal, anyCase: Bool = false, pad: Character? = nil, keys: [Key] = [Key.default]) {
+    public init(mode: Mode = .normal, anyCase: Bool = false, pad: Character? = nil, keys: [Key] = [Key.default]) {
         self.mode = mode
         self.anyCase = anyCase
         self.defaultPad = pad

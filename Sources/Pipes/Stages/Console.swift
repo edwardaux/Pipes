@@ -8,7 +8,7 @@ public final class Console: Stage {
 
     private let eof: EOF
 
-    init(eof: EOF = .none) {
+    public init(eof: EOF = .none) {
         self.eof = eof
     }
 

@@ -3,7 +3,7 @@ import Foundation
 public final class Help: Stage {
     private let stageName: String
 
-    init(stageName: String) {
+    public init(stageName: String) {
         self.stageName = stageName
     }
 

@@ -5,6 +5,9 @@ public class Pipe {
 
     private let builder = Builder()
 
+    public init() {
+    }
+
     public func add(_ stage: Stage, label: String? = nil) throws -> Pipe {
         try builder.add(stage, label: label)
         return self

@@ -6,7 +6,7 @@ public final class Locate: Stage {
     private let anyCase: Bool
     private let anyOf: Bool
 
-    init(_ searchString: String? = nil, inputRanges: [PipeRange]? = nil, anyCase: Bool = false, anyOf: Bool = false) {
+    public init(_ searchString: String? = nil, inputRanges: [PipeRange]? = nil, anyCase: Bool = false, anyOf: Bool = false) {
         self.searchString = searchString
         self.inputRanges = inputRanges
         self.anyCase = anyCase

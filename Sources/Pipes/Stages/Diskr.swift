@@ -3,7 +3,7 @@ import Foundation
 public final class Diskr: Stage {
     private let filename: String
 
-    init(filename: String) {
+    public init(filename: String) {
         self.filename = filename
     }
 

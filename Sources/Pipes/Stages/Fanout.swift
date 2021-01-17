@@ -17,7 +17,7 @@ public final class Fanout: Stage {
 
     private let stop: Stop
 
-    init(stop: Stop = .allEOF) {
+    public init(stop: Stop = .allEOF) {
         self.stop = stop
     }
 

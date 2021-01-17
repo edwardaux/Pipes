@@ -4,7 +4,7 @@ public final class Command: Stage {
     private let program: String
     private let args: String?
 
-    init(program: String, args: String? = nil) {
+    public init(program: String, args: String? = nil) {
         self.program = program
         self.args = args
     }

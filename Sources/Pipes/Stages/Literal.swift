@@ -3,7 +3,7 @@ import Foundation
 public final class Literal: Stage {
     private let record: String
 
-    init(_ record: String) {
+    public init(_ record: String) {
         self.record = record
     }
 

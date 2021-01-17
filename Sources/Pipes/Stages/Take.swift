@@ -14,7 +14,7 @@ public final class Take: Stage {
     private let count: Count
     private let unit: Unit
 
-    init(count: Count = .first(1), unit: Unit = .lines) {
+    public init(count: Count = .first(1), unit: Unit = .lines) {
         self.count = count
         self.unit = unit
     }

@@ -7,11 +7,11 @@ public final class Spec: Stage {
     private var recno: Int = 0
     private var timestamp: Date = Date()
 
-    convenience init(_ items: Item...) {
+    convenience public init(_ items: Item...) {
         self.init(items)
     }
 
-    init(_ items: [Item]) {
+    public init(_ items: [Item]) {
         self.items = items
     }
 
