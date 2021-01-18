@@ -202,7 +202,7 @@ Sally Brown
 Sorting by a particular word (using descending/ascending):
 
 ```
-~> ~> pipe "< input.txt | sort w2 desc w1 asc | cons"
+~> pipe "< input.txt | sort w2 desc w1 asc | cons"
 Peter White
 John Smith
 John Smith
