@@ -6,6 +6,7 @@ build:
 	swift build -c release --disable-sandbox
 
 install: build
+	install -d "$(bindir)"
 	install ".build/release/CLI" "$(bindir)/pipe"
 
 uninstall:
