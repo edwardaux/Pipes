@@ -274,6 +274,18 @@ Manager,Al Brown,1000
 
 ## Installation
 ### Executable
+The easiest way to install is to use Homebrew. If you already have homebrew installed, you can just run:
+
+```
+brew install edwardaux/formulae/pipes
+```
+
+Alternatively, if you prefer to install from source, you can download from Github and run the following command which will install into `/usr/local/bin`:
+
+```
+make install
+```
+
 ### Library
 While this project is mostly designed to be used as a standalone executable, it is possible to embed as an SPM module by pointing to:
 
