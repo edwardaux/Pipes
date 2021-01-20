@@ -331,7 +331,6 @@ While the 1.0 release is very stable and has a respectable number of included st
 ### Release 1.1
 * Lookup
 * Drop
-* Additional documentation (incl. help for "inputRange", "snumber", etc)
 
 ### Release 2.0
 * Regex

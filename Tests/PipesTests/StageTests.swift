@@ -173,9 +173,16 @@ final class StageTests: XCTestCase {
     }
 
     func testHelp() throws {
-        let syntax = Help.helpSyntax!
-        let summary = Help.helpSummary!
-        try Pipe("help help | zzzcheck /\(syntax)/\(summary)/").run()
+        // Need to make sure the built-in stages are pre-registered before we query the help
+        // as they are listed in the help text.
+        Pipe.registerBuiltInStages()
+
+        // Note that we have to use a different stage sep because the general help contains
+        // some | chars which when embedded in the string itself causes parser problems
+        try Pipe("(sep ^) help ^ zzzcheck /\(Help.generalHelp)/").run()
+        try Pipe("help help | zzzcheck /\(Help.helpSyntax!)/\(Help.helpSummary!)/").run()
+        try Pipe("help inputRange | zzzcheck /\(Help.inputRangeHelp)/").run()
+        try Pipe("help nonsense | zzzcheck /\(PipeError.stageNotFound(stageName: "nonsense").localizedDescription)/").run()
 
         XCTAssertThrows(try Pipe("help help broken"), PipeError.excessiveOptions(string: "broken"))
     }

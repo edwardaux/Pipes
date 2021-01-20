@@ -120,4 +120,8 @@ extension Pipe {
         register(Spec.self)
         register(Take.self)
     }
+
+    static func registeredStageNames() -> [String] {
+        return registeredStages.compactMap { $0.allowedStageNames.first }
+    }
 }

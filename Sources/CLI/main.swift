@@ -4,7 +4,7 @@ import Pipes
 let argv = CommandLine.arguments
 
 let spec: String
-if argv.count == 0 {
+if argv.count <= 1 {
     spec = "help"
 } else {
     spec = argv.dropFirst().joined(separator: " ")

@@ -35,6 +35,11 @@ extension Literal: RegisteredStage {
         """
         Writes its argument string into the pipeline and then passes records on the input to the
         output stream. Invoking without a string parameter will pass an empty string.
+
+        Important: the string includes all characters (including whitespace) up to the next
+        stage separator. eg. "pipe literal hello | cons" will write "hello " to the next stage.
+        If you don't wish to include the trailing space, ensure that the stage separator is
+        immediately after the text. eg. "pipe literal hello| cons"
         """
     }
 
