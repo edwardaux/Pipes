@@ -1,20 +1,14 @@
 import Foundation
 
 public final class Command: Stage {
-    private let program: String
-    private let args: String?
+    private let commandLine: String
 
-    public init(program: String, args: String? = nil) {
-        self.program = program
-        self.args = args
+    public init(commandLine: String) {
+        self.commandLine = commandLine
     }
 
     public override func commit() throws {
         try ensureOnlyPrimaryInputStreamConnected()
-
-        guard FileManager.default.fileExists(atPath: program) else {
-            throw PipeError.programUnableToExecute(program: program, reason: "Not found")
-        }
     }
 
 
@@ -30,10 +24,8 @@ public final class Command: Stage {
         }
 
         let task = Process()
-        task.launchPath = program
-        if let args = args, args.count > 0 {
-            task.arguments = [ args ]
-        }
+        task.launchPath = "/usr/bin/env"
+        task.arguments = [ "-S", commandLine ]
 
         let inputPipe = Foundation.Pipe()
         let outputPipe = Foundation.Pipe()
@@ -46,11 +38,7 @@ public final class Command: Stage {
         do {
             try task.run()
         } catch let error {
-            if FileManager.default.isExecutableFile(atPath: program) {
-                throw PipeError.programUnableToExecute(program: program, reason: error.localizedDescription)
-            } else {
-                throw PipeError.programUnableToExecute(program: program, reason: "Not executable")
-            }
+            throw PipeError.programUnableToExecute(program: commandLine, reason: error.localizedDescription)
         }
 
         if !records.isEmpty {
@@ -64,6 +52,13 @@ public final class Command: Stage {
 
         let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
         let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+
+        task.waitUntilExit()
+        if task.terminationStatus == 126 {
+            throw PipeError.programUnableToExecute(program: commandLine, reason: "Not executable")
+        } else if task.terminationStatus == 127 {
+            throw PipeError.programUnableToExecute(program: commandLine, reason: "Not found")
+        }
 
         if !outputData.isEmpty && isPrimaryOutputStreamConnected {
             if let string = String(data: outputData, encoding: .utf8) {
@@ -91,10 +86,12 @@ extension Command: RegisteredStage {
     }
 
     public static func createStage(args: Args) throws -> Stage {
-        let program = try args.scanWord()
-        let args = args.scanRemainder()
+        let commandLine = args.scanRemainder().trimmingCharacters(in: .whitespaces)
+        guard !commandLine.isEmpty else {
+            throw PipeError.requiredOperandMissing
+        }
 
-        return Command(program: program, args: args)
+        return Command(commandLine: commandLine)
     }
 
     public static var helpSummary: String? {

@@ -64,9 +64,9 @@ everyone
 
 ### Running other programs
 ```
-~> pipe "sh /bin/echo hi there | cons"
+~> pipe "sh echo hi there | cons"
 hi there
-~> pipe "sh /bin/ls /Applications | cons"
+~> pipe "sh ls /Applications | cons"
 1Password 7.app
 BBEdit.app
 Charles.app

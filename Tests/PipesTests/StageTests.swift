@@ -24,6 +24,8 @@ final class StageTests: XCTestCase {
     }
 
     func testCommand() throws {
+        XCTAssertThrows(try Pipe("command | cons").run(), PipeError.requiredOperandMissing)
+
         try Pipe("command /bin/echo hello there how are you | zzzcheck /hello there how are you/").run()
         try Pipe("zzzgen /aaa/bbb/ccc/ | command /bin/cat | zzzcheck /aaa/bbb/ccc/").run()
 
@@ -48,7 +50,8 @@ final class StageTests: XCTestCase {
         var attributes = [FileAttributeKey : Any]()
         attributes[.posixPermissions] = 0o777
         try FileManager.default.setAttributes(attributes, ofItemAtPath: file)
-        try Pipe("(esc ?) command \(tmpDirectory)/file? with? spaces.sh | zzzcheck /hello/there/").run()
+        try Pipe("command '\(tmpDirectory)/file with spaces.sh' | zzzcheck /hello/there/").run()
+        try Pipe("command \"\(tmpDirectory)/file with spaces.sh\" | zzzcheck /hello/there/").run()
 
         let script = """
         #!/bin/bash
