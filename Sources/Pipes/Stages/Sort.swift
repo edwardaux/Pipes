@@ -54,13 +54,7 @@ public final class Sort: Stage {
     }
 
     override public func run() throws {
-        var originalRecords = [String]()
-        do {
-            while true {
-                originalRecords.append(try readto())
-            }
-        } catch _ as EndOfFile {
-        }
+        let originalRecords = try readtoAll()
 
         let sortedRecords = try originalRecords.stableSorted { (lhs, rhs) in
             for key in keys {

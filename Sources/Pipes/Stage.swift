@@ -134,6 +134,17 @@ extension Stage {
         }
     }
 
+    public func readtoAll(streamNo: Int = 0) throws -> [String] {
+        var records = [String]()
+        do {
+            while true {
+                records.append(try readto(streamNo: streamNo))
+            }
+        } catch _ as EndOfFile {
+        }
+        return records
+    }
+
     public func peekto(streamNo: Int = 0) throws -> String {
         guard committed else { throw PipeError.commandNotPermitted(command: "PEEKTO") }
 
@@ -213,6 +224,14 @@ extension Stage {
 
     func ensurePrimaryOutputStreamConnected() throws {
         if !isPrimaryOutputStreamConnected { throw PipeError.streamNotConnected(direction: .output, streamNo: 0) }
+    }
+
+    func ensureSecondaryInputStreamConnected() throws {
+        if !isSecondaryInputStreamConnected { throw PipeError.streamNotConnected(direction: .input, streamNo: 1) }
+    }
+
+    func ensureSecondaryOutputStreamConnected() throws {
+        if !isSecondaryOutputStreamConnected { throw PipeError.streamNotConnected(direction: .output, streamNo: 1) }
     }
 
     func ensureOnlyPrimaryInputStreamConnected() throws {
