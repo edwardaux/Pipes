@@ -338,6 +338,35 @@ final class StageTests: XCTestCase {
         try Pipe("literal one|literal two|literal three|literal four|literal five| locate 4 | nlocate 5| zzzcheck /five/four/").run()
     }
 
+    func testLookup() throws {
+        let m1 = "100 111"
+        let m2 = "200 222"
+        let m3 = "300 333"
+        let m4 = "400 444"
+        let m5 = "400 445"
+        let master = "/\(m1)/\(m2)/\(m3)/\(m4)/\(m5)/"
+
+        let d1 = "100 aaa"
+        let d2 = "200 bbb"
+        let d4 = "400 ddd"
+        let d5 = "500 eee"
+        let detail = "/\(d1)/\(d2)/\(d4)/\(d5)/"
+
+        try Pipe("(end ?) zzzgen /\(detail)/ | l: lookup w1 | zzzcheck /\(d1)/\(m1)/\(d2)/\(m2)/\(d4)/\(m4)/ ? zzzgen \(master) | l:").run()
+        try Pipe("(end ?) zzzgen /\(detail)/ | l: lookup 1.3 | zzzcheck /\(d1)/\(m1)/\(d2)/\(m2)/\(d4)/\(m4)/ ? zzzgen \(master) | l:").run()
+
+        try Pipe("(end ?) zzzgen /\(detail)/ | l: lookup 1.3 1.3 | zzzcheck /\(d1)/\(m1)/\(d2)/\(m2)/\(d4)/\(m4)/ ? zzzgen \(master) | l:").run()
+        try Pipe("(end ?) zzzgen /\(detail)/ | l: lookup 1.3 1.3 detail | zzzcheck /\(d1)/\(d2)/\(d4)/ ? zzzgen \(master) | l:").run()
+        try Pipe("(end ?) zzzgen /\(detail)/ | l: lookup 1.3 1.3 master | zzzcheck /\(m1)/\(m2)/\(m4)/ ? zzzgen \(master) | l:").run()
+        try Pipe("(end ?) zzzgen /\(detail)/ | l: lookup 1.3 1.3 detail master | zzzcheck /\(d1)/\(m1)/\(d2)/\(m2)/\(d4)/\(m4)/ ? zzzgen \(master) | l:").run()
+        try Pipe("(end ?) zzzgen /\(detail)/ | l: lookup 1.3 1.3 master detail | zzzcheck /\(m1)/\(d1)/\(m2)/\(d2)/\(m4)/\(d4)/ ? zzzgen \(master) | l:").run()
+        try Pipe("(end ?) zzzgen /\(detail)/ | l: lookup 1.3 1.3 detail allmaster | zzzcheck /\(d1)/\(m1)/\(d2)/\(m2)/\(d4)/\(m4)/\(m5)/ ? zzzgen \(master) | l:").run()
+        try Pipe("(end ?) zzzgen /\(detail)/ | l: lookup 1.3 1.3 detail allmaster pairwise | zzzcheck /\(d1)/\(m1)/\(d2)/\(m2)/\(d4)/\(m4)/\(d4)/\(m5)/ ? zzzgen \(master) | l:").run()
+        try Pipe("(end ?) zzzgen /\(detail)/ | l: lookup 1.3 1.3 allmaster | zzzcheck /\(m1)/\(m2)/\(m4)/\(m5)/ ? zzzgen \(master) | l:").run()
+        try Pipe("(end ?) zzzgen /\(detail)/ | l: lookup 1.3 1.3 allmaster detail | zzzcheck /\(m1)/\(d1)/\(m2)/\(d2)/\(m4)/\(m5)/\(d4)/ ? zzzgen \(master) | l:").run()
+        try Pipe("(end ?) zzzgen /\(detail)/ | l: lookup 1.3 1.3 allmaster detail pairwise | zzzcheck /\(m1)/\(d1)/\(m2)/\(d2)/\(m4)/\(d4)/\(m5)/\(d4)/ ? zzzgen \(master) | l:").run()
+    }
+
     func testSort() throws {
         try Pipe("zzzgen /b/c/a/d/ | sort | zzzcheck /a/b/c/d/").run()
         try Pipe("zzzgen /b/c/a/d/ | sort asc | zzzcheck /a/b/c/d/").run()

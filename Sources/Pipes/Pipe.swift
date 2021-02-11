@@ -114,6 +114,7 @@ extension Pipe {
         register(Help.self)
         register(Hole.self)
         register(Literal.self)
+        register(Lookup.self)
         register(Locate.self)
         register(NLocate.self)
         register(Sort.self)
