@@ -372,6 +372,9 @@ final class StageTests: XCTestCase {
 
         try Pipe("(end ?) zzzgen /a a/A A/ | l: lookup 1.1 | zzzcheck /a a/a X/ ? zzzgen /a X/ | l:").run()
         try Pipe("(end ?) zzzgen /a a/A A/ | l: lookup anycase 1.1 | zzzcheck /a a/a X/A A/a X/ ? zzzgen /a X/ | l:").run()
+
+        try Pipe("(end ?) zzzgen \(detail) | l: lookup 1.3 | hole ? zzzgen \(master) | l: | zzzcheck /\(d5)/ ? l: | zzzcheck /\(m3)/").run()
+
     }
 
     func testSort() throws {

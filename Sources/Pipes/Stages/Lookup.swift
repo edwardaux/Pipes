@@ -33,17 +33,27 @@ public final class Lookup: Stage {
     }
 
     override public func run() throws {
-        // TODO
-//        self.count = count
-        let masterRecords = try readtoAll(streamNo: 1)
+
+        // Keeps track of how many times a master record has been referenced
+        class CountedRecord {
+            var count: Int = 0
+            let record: String
+
+            init(_ record: String) {
+                self.record = record
+            }
+        }
+
+        let rawMasterRecords = try readtoAll(streamNo: 1)
+        let countedMasterRecords = rawMasterRecords.map { CountedRecord($0) }
 
         do {
             while true {
                 let detail = try peekto()
 
-                let masters = try masterRecords.filter { (master) in
+                let matchedCountedMasters = try countedMasterRecords.filter { (countedMasterRecord) in
                     var detailKey = try detail.extract(fromRange: detailRange)
-                    var masterKey = try master.extract(fromRange: masterRange)
+                    var masterKey = try countedMasterRecord.record.extract(fromRange: masterRange)
 
                     if let pad = pad {
                         detailKey = detailKey.aligned(alignment: .left, length: masterKey.count, pad: pad, truncate: false)
@@ -54,51 +64,61 @@ public final class Lookup: Stage {
                         masterKey = masterKey.uppercased()
                     }
 
-                    return detailKey == masterKey
+                    let matched = detailKey == masterKey
+                    if matched {
+                        countedMasterRecord.count += 1
+                    }
+                    return matched
                 }
 
-                if masters.count > 0 {
+                if matchedCountedMasters.count > 0 {
+                    // The current detail record matched at least one master, so we'll write
+                    // the appropriate detail/master records into primary output stream
+                    let matchedMasters = matchedCountedMasters.map { $0.record }
+
                     switch outputOrder {
                     case .detail:
                         try output(detail)
                     case .detailMaster:
                         try output(detail)
-                        try output(masters.first!)
+                        try output(matchedMasters.first!)
                     case .detailAllMaster(let pairwise):
                         if pairwise {
-                            try masters.forEach {
+                            try matchedMasters.forEach {
                                 try output(detail)
                                 try output($0)
                             }
                         } else {
                             try output(detail)
-                            try masters.forEach {
+                            try matchedMasters.forEach {
                                 try output($0)
                             }
                         }
                     case .master:
-                        try output(masters.first!)
+                        try output(matchedMasters.first!)
                     case .masterDetail:
-                        try output(masters.first!)
+                        try output(matchedMasters.first!)
                         try output(detail)
                     case .allMaster:
-                        try masters.forEach {
+                        try matchedMasters.forEach {
                             try output($0)
                         }
                     case .allMasterDetail(let pairwise):
                         if pairwise {
-                            try masters.forEach {
+                            try matchedMasters.forEach {
                                 try output($0)
                                 try output(detail)
                             }
                         } else {
-                            try masters.forEach {
+                            try matchedMasters.forEach {
                                 try output($0)
                             }
                             try output(detail)
                         }
                     }
                 } else {
+                    // No match for this detail record, so writing to secondary output
+                    // stream if connected
                     if isSecondaryOutputStreamConnected {
                         try output(detail, streamNo: 1)
                     }
@@ -109,7 +129,13 @@ public final class Lookup: Stage {
         }
 
         if isTertiaryOutputStreamConnected {
-            //TODO unmatched masters
+            // If the tertiary output stream is connected, we write all the master records
+            // that are unmatched
+            for countedMasterRecord in countedMasterRecords {
+                if countedMasterRecord.count == 0 {
+                    try output(countedMasterRecord.record, streamNo: 2)
+                }
+            }
 
         }
     }
