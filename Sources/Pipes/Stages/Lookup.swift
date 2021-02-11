@@ -12,16 +12,14 @@ public final class Lookup: Stage {
     }
 
     private let count: Bool
-    private let maxCount: Int?
     private let pad: Character?
     private let anyCase: Bool
     private let detailRange: PipeRange
     private let masterRange: PipeRange
     private let outputOrder: OutputOrder
 
-    public init(count: Bool = false, maxCount: Int? = nil, pad: Character? = nil, anyCase: Bool = false, detailRange: PipeRange = .full, masterRange: PipeRange = .full, outputOrder: OutputOrder = .detailMaster) {
+    public init(count: Bool = false, pad: Character? = nil, anyCase: Bool = false, detailRange: PipeRange = .full, masterRange: PipeRange = .full, outputOrder: OutputOrder = .detailMaster) {
         self.count = count
-        self.maxCount = maxCount
         self.pad = pad
         self.anyCase = anyCase
         self.detailRange = detailRange
@@ -37,7 +35,6 @@ public final class Lookup: Stage {
     override public func run() throws {
         // TODO
 //        self.count = count
-//        self.maxCount = maxCount
         let masterRecords = try readtoAll(streamNo: 1)
 
         do {
@@ -207,7 +204,7 @@ extension Lookup: RegisteredStage {
 
         try args.ensureNoRemainder()
 
-        return Lookup(count: count, maxCount: maxCount, pad: pad, anyCase: anyCase, detailRange: detailRange, masterRange: masterRange, outputOrder: outputOrder)
+        return Lookup(count: count, pad: pad, anyCase: anyCase, detailRange: detailRange, masterRange: masterRange, outputOrder: outputOrder)
     }
 
     public static var helpSummary: String? {
@@ -218,9 +215,9 @@ extension Lookup: RegisteredStage {
 
     public static var helpSyntax: String? {
         """
-                                                     ┌─NOPAD─────┐
-        ►►──LOOKUP──┬───────┬──┬──────────────────┬──┼───────────┼──►
-                    └─COUNT─┘  └─MAXcount──number─┘  └─PAD──xorc─┘
+                               ┌─NOPAD─────┐
+        ►►──LOOKUP──┬───────┬──┼───────────┼──►
+                    └─COUNT─┘  └─PAD──xorc─┘
 
         ►──┬─────────┬──┬────────────────────────────┬──►
            └─ANYcase─┘  └─inputRange──┬────────────┬─┘

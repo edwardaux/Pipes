@@ -352,19 +352,26 @@ final class StageTests: XCTestCase {
         let d5 = "500 eee"
         let detail = "/\(d1)/\(d2)/\(d4)/\(d5)/"
 
-        try Pipe("(end ?) zzzgen /\(detail)/ | l: lookup w1 | zzzcheck /\(d1)/\(m1)/\(d2)/\(m2)/\(d4)/\(m4)/ ? zzzgen \(master) | l:").run()
-        try Pipe("(end ?) zzzgen /\(detail)/ | l: lookup 1.3 | zzzcheck /\(d1)/\(m1)/\(d2)/\(m2)/\(d4)/\(m4)/ ? zzzgen \(master) | l:").run()
+        try Pipe("(end ?) zzzgen \(detail) | l: lookup w1 | zzzcheck /\(d1)/\(m1)/\(d2)/\(m2)/\(d4)/\(m4)/ ? zzzgen \(master) | l:").run()
+        try Pipe("(end ?) zzzgen \(detail) | l: lookup 1.3 | zzzcheck /\(d1)/\(m1)/\(d2)/\(m2)/\(d4)/\(m4)/ ? zzzgen \(master) | l:").run()
 
-        try Pipe("(end ?) zzzgen /\(detail)/ | l: lookup 1.3 1.3 | zzzcheck /\(d1)/\(m1)/\(d2)/\(m2)/\(d4)/\(m4)/ ? zzzgen \(master) | l:").run()
-        try Pipe("(end ?) zzzgen /\(detail)/ | l: lookup 1.3 1.3 detail | zzzcheck /\(d1)/\(d2)/\(d4)/ ? zzzgen \(master) | l:").run()
-        try Pipe("(end ?) zzzgen /\(detail)/ | l: lookup 1.3 1.3 master | zzzcheck /\(m1)/\(m2)/\(m4)/ ? zzzgen \(master) | l:").run()
-        try Pipe("(end ?) zzzgen /\(detail)/ | l: lookup 1.3 1.3 detail master | zzzcheck /\(d1)/\(m1)/\(d2)/\(m2)/\(d4)/\(m4)/ ? zzzgen \(master) | l:").run()
-        try Pipe("(end ?) zzzgen /\(detail)/ | l: lookup 1.3 1.3 master detail | zzzcheck /\(m1)/\(d1)/\(m2)/\(d2)/\(m4)/\(d4)/ ? zzzgen \(master) | l:").run()
-        try Pipe("(end ?) zzzgen /\(detail)/ | l: lookup 1.3 1.3 detail allmaster | zzzcheck /\(d1)/\(m1)/\(d2)/\(m2)/\(d4)/\(m4)/\(m5)/ ? zzzgen \(master) | l:").run()
-        try Pipe("(end ?) zzzgen /\(detail)/ | l: lookup 1.3 1.3 detail allmaster pairwise | zzzcheck /\(d1)/\(m1)/\(d2)/\(m2)/\(d4)/\(m4)/\(d4)/\(m5)/ ? zzzgen \(master) | l:").run()
-        try Pipe("(end ?) zzzgen /\(detail)/ | l: lookup 1.3 1.3 allmaster | zzzcheck /\(m1)/\(m2)/\(m4)/\(m5)/ ? zzzgen \(master) | l:").run()
-        try Pipe("(end ?) zzzgen /\(detail)/ | l: lookup 1.3 1.3 allmaster detail | zzzcheck /\(m1)/\(d1)/\(m2)/\(d2)/\(m4)/\(m5)/\(d4)/ ? zzzgen \(master) | l:").run()
-        try Pipe("(end ?) zzzgen /\(detail)/ | l: lookup 1.3 1.3 allmaster detail pairwise | zzzcheck /\(m1)/\(d1)/\(m2)/\(d2)/\(m4)/\(d4)/\(m5)/\(d4)/ ? zzzgen \(master) | l:").run()
+        try Pipe("(end ?) zzzgen \(detail) | l: lookup 1.3 1.3 | zzzcheck /\(d1)/\(m1)/\(d2)/\(m2)/\(d4)/\(m4)/ ? zzzgen \(master) | l:").run()
+        try Pipe("(end ?) zzzgen \(detail) | l: lookup 1.3 1.3 detail | zzzcheck /\(d1)/\(d2)/\(d4)/ ? zzzgen \(master) | l:").run()
+        try Pipe("(end ?) zzzgen \(detail) | l: lookup 1.3 1.3 master | zzzcheck /\(m1)/\(m2)/\(m4)/ ? zzzgen \(master) | l:").run()
+        try Pipe("(end ?) zzzgen \(detail) | l: lookup 1.3 1.3 detail master | zzzcheck /\(d1)/\(m1)/\(d2)/\(m2)/\(d4)/\(m4)/ ? zzzgen \(master) | l:").run()
+        try Pipe("(end ?) zzzgen \(detail) | l: lookup 1.3 1.3 master detail | zzzcheck /\(m1)/\(d1)/\(m2)/\(d2)/\(m4)/\(d4)/ ? zzzgen \(master) | l:").run()
+        try Pipe("(end ?) zzzgen \(detail) | l: lookup 1.3 1.3 detail allmaster | zzzcheck /\(d1)/\(m1)/\(d2)/\(m2)/\(d4)/\(m4)/\(m5)/ ? zzzgen \(master) | l:").run()
+        try Pipe("(end ?) zzzgen \(detail) | l: lookup 1.3 1.3 detail allmaster pairwise | zzzcheck /\(d1)/\(m1)/\(d2)/\(m2)/\(d4)/\(m4)/\(d4)/\(m5)/ ? zzzgen \(master) | l:").run()
+        try Pipe("(end ?) zzzgen \(detail) | l: lookup 1.3 1.3 allmaster | zzzcheck /\(m1)/\(m2)/\(m4)/\(m5)/ ? zzzgen \(master) | l:").run()
+        try Pipe("(end ?) zzzgen \(detail) | l: lookup 1.3 1.3 allmaster detail | zzzcheck /\(m1)/\(d1)/\(m2)/\(d2)/\(m4)/\(m5)/\(d4)/ ? zzzgen \(master) | l:").run()
+        try Pipe("(end ?) zzzgen \(detail) | l: lookup 1.3 1.3 allmaster detail pairwise | zzzcheck /\(m1)/\(d1)/\(m2)/\(d2)/\(m4)/\(d4)/\(m5)/\(d4)/ ? zzzgen \(master) | l:").run()
+
+        try Pipe("(end ?) zzzgen /1 a/ | l: lookup 1.1 | zzzcheck /1 a/1x A/ ? zzzgen /1x A/ | l:").run()
+        try Pipe("(end ?) zzzgen /1 a/ | l: lookup 1.2 | literal a| zzzcheck /a/ ? zzzgen /1x a/ | l:").run()
+        try Pipe("(end ?) zzzgen /1 a/ | l: lookup pad x w1 | zzzcheck /1 a/1x A/ ? zzzgen /1x A/ | l:").run()
+
+        try Pipe("(end ?) zzzgen /a a/A A/ | l: lookup 1.1 | zzzcheck /a a/a X/ ? zzzgen /a X/ | l:").run()
+        try Pipe("(end ?) zzzgen /a a/A A/ | l: lookup anycase 1.1 | zzzcheck /a a/a X/A A/a X/ ? zzzgen /a X/ | l:").run()
     }
 
     func testSort() throws {
