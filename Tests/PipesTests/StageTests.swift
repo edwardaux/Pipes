@@ -375,6 +375,8 @@ final class StageTests: XCTestCase {
 
         try Pipe("(end ?) zzzgen \(detail) | l: lookup 1.3 | hole ? zzzgen \(master) | l: | zzzcheck /\(d5)/ ? l: | zzzcheck /\(m3)/").run()
 
+        let counted = "/         2100 111/         1200 222/         0300 333/         1400 444/         1400 445/"
+        try Pipe("(end ?) zzzgen \(detail)100 xxx/ | l: lookup count 1.3 | hole ? zzzgen \(master) | l: | zzzcheck /\(d5)/ ? l: | zzzcheck \(counted)").run()
     }
 
     func testSort() throws {
