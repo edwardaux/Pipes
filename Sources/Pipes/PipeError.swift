@@ -51,6 +51,7 @@ public enum PipeError: Error, Equatable {
     case unexpectedCharacters(expected: String, found: String)
     case commandNotPermitted(command: String)
     case invalidString
+    case invalidRegex(regex: String, error: String)
 
     private var detail: Detail {
         switch self {
@@ -136,6 +137,8 @@ public enum PipeError: Error, Equatable {
             return Detail(code: -2000, title: "Command \(command) not permitted during commit() phase.", explanation: "Stream operations are only permitted in the run() function.")
         case .invalidString:
             return Detail(code: -2001, title: "Splitting on byte boundary results in invalid UTF-8 string", explanation: "Choose a different length that does not split in the middle of a Unicode character.")
+        case .invalidRegex(let regex, let error):
+            return Detail(code: -2002, title: "Regular expression \(regex) is not valid: \(error)", explanation: "Enter a valid regular repression.")
         }
     }
 

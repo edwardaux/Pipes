@@ -258,4 +258,23 @@ extension String {
             }
         }
     }
+
+    public func matches(_ regex: NSRegularExpression, inRanges ranges: [PipeRange]? = nil) throws -> Bool {
+        if let ranges = ranges {
+            for range in ranges {
+                if try matches(regex, inRange: range) {
+                    return true
+                }
+            }
+            return false
+        } else {
+            return try matches(regex, inRange: nil)
+        }
+    }
+
+    private func matches(_ regex: NSRegularExpression, inRange range: PipeRange? = nil) throws -> Bool {
+        let range = range ?? PipeRange.full
+        let extractedSource = try extract(fromRange: range)
+        return regex.firstMatch(in: extractedSource, options: [], range: NSRange(location: 0, length: extractedSource.utf16.count)) != nil
+    }
 }

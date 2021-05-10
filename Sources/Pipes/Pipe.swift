@@ -118,6 +118,7 @@ extension Pipe {
         register(Lookup.self)
         register(Locate.self)
         register(NLocate.self)
+        register(Regex.self)
         register(Sort.self)
         register(Spec.self)
         register(Take.self)

@@ -325,15 +325,40 @@ try Pipe()
     .run()
 ```
 
-## Prioritization
-While the 1.0 release is very stable and has a respectable number of included stages, there are a number of additional features that I plan to add over time.
+## Change Log
+### 1.0
+* Initial release
+* Supported stages:
+    * command
+    * cons
+    * count
+    * diskr
+    * diskw
+    * diskwa
+    * fanin
+    * faninany
+    * fanout
+    * help
+    * hole
+    * literal
+    * lookup
+    * locate
+    * nlocate
+    * sort
+    * spec
+    * take
 
-### Release 1.1
-* Lookup
-* Drop
+### 1.1
+* Added  `lookup` stage
+
+### 1.2
+* Added `drop` stage
+* Added `regex` stage
+
+## Prioritization
+While the current release is very stable and has a respectable number of included stages, there are a number of additional features that I plan to add over time. A rough roadmap is as follows:
 
 ### Release 2.0
-* Regex
 * URLEncode / URLDecode
 * 64Encode / 64Decode
 * JSON

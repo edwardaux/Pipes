@@ -468,6 +468,14 @@ final class StageTests: XCTestCase {
         try Pipe("(end ?) zzzgen \(detail)100 xxx/ | l: lookup count 1.3 | hole ? zzzgen \(master) | l: | zzzcheck /\(d5)/ ? l: | zzzcheck \(counted)").run()
     }
 
+    func testRegex() throws {
+        XCTAssertThrows(try Pipe("literal x | regex").run(), PipeError.requiredOperandMissing)
+        XCTAssertThrows(try Pipe("literal x | regex /").run(), PipeError.delimiterMissing(delimiter: "/"))
+        XCTAssertThrows(try Pipe("literal x | regex /[/").run(), PipeError.invalidRegex(regex: "[", error: "The value “[” is invalid."))
+
+        try Pipe("(end ?) zzzgen /john/joan/june/jenny/ | j: regex /^j..n/ | zzzcheck /john/joan/jenny/ ? j: | zzzcheck /june/").run()
+    }
+
     func testSort() throws {
         try Pipe("zzzgen /b/c/a/d/ | sort | zzzcheck /a/b/c/d/").run()
         try Pipe("zzzgen /b/c/a/d/ | sort asc | zzzcheck /a/b/c/d/").run()
