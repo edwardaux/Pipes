@@ -1,6 +1,6 @@
 import Foundation
 
-public final class Take: Stage {
+public final class Drop: Stage {
     public enum Count {
         case first(Int)
         case last(Int)
@@ -22,40 +22,48 @@ public final class Take: Stage {
     override public func run() throws {
         switch count {
         case .first(let limit):
-            try takeFirst(limit: limit)
+            try dropFirst(limit: limit)
         case .last(let limit):
-            try takeLast(limit: limit)
+            try dropLast(limit: limit)
         }
 
     }
 
-    private func takeFirst(limit: Int) throws {
+    private func dropFirst(limit: Int) throws {
         var spare: String?
-        var taken = 0
-        while taken < limit {
+        var dropped = 0
+        while dropped < limit {
             let record = try peekto()
 
             switch unit {
             case .lines:
-                try output(record)
-                taken += 1
+                if isSecondaryOutputStreamConnected {
+                    try? output(record, streamNo: 1)
+                }
+                dropped += 1
             case .characters:
-                if taken + record.count > limit {
+                if dropped + record.count > limit {
                     // This will take us over the limit, so we need to split.
-                    let splitIndex = limit - taken
-                    try output(String(record.prefix(splitIndex)))
+                    let splitIndex = limit - dropped
+                    if isSecondaryOutputStreamConnected {
+                        try? output(String(record.prefix(splitIndex)), streamNo: 1)
+                    }
                     spare = String(record.dropFirst(splitIndex))
                 } else {
-                    try output(record)
+                    if isSecondaryOutputStreamConnected {
+                        try? output(record, streamNo: 1)
+                    }
                 }
-                taken += record.count
+                dropped += record.count
             case .bytes:
                 let bytes = record.utf8
-                if taken + bytes.count > limit {
+                if dropped + bytes.count > limit {
                     // This will take us over the limit, so we need to split.
-                    let splitIndex = limit - taken
+                    let splitIndex = limit - dropped
                     if let outputString = String(bytes.prefix(splitIndex)) {
-                        try output(outputString)
+                        if isSecondaryOutputStreamConnected {
+                            try? output(outputString, streamNo: 1)
+                        }
                     } else {
                         throw PipeError.invalidString
                     }
@@ -65,23 +73,26 @@ public final class Take: Stage {
                         throw PipeError.invalidString
                     }
                 } else {
-                    try output(record)
+                    if isSecondaryOutputStreamConnected {
+                        try? output(record, streamNo: 1)
+                    }
                 }
-                taken += bytes.count
+                dropped += bytes.count
             }
 
             _ = try readto()
         }
         if isSecondaryOutputStreamConnected {
-            try sever(.output)
-            if let spare = spare {
-                try output(spare, streamNo: 1)
-            }
-            try short(inputStreamNo: 0, outputStreamNo: 1)
+            try sever(.output, streamNo: 1)
         }
+
+        if let spare = spare {
+            try output(spare)
+        }
+        try short(inputStreamNo: 0, outputStreamNo: 0)
     }
 
-    private func takeLast(limit: Int) throws {
+    private func dropLast(limit: Int) throws {
         let queue = FixedSizeQueue(size: limit, unit: unit)
 
         do {
@@ -89,10 +100,8 @@ public final class Take: Stage {
                 let record = try peekto()
 
                 let oldest = queue.append(record)
-                if isSecondaryOutputStreamConnected {
-                    for record in oldest {
-                        try output(record, streamNo: 1)
-                    }
+                for record in oldest {
+                    try output(record)
                 }
 
                 _ = try readto()
@@ -100,21 +109,21 @@ public final class Take: Stage {
         } catch _ as EndOfFile {
             let (headRecords, tailRecords) = try queue.finalRecords()
             if isSecondaryOutputStreamConnected {
-                for record in headRecords {
+                for record in tailRecords {
                     try output(record, streamNo: 1)
                 }
                 try sever(.output, streamNo: 1)
             }
-            for record in tailRecords {
+            for record in headRecords {
                 try output(record)
             }
         }
     }
 }
 
-extension Take: RegisteredStage {
+extension Drop: RegisteredStage {
     public static var allowedStageNames: [String] {
-        [ "take" ]
+        [ "drop" ]
     }
 
     public static func createStage(args: Args) throws -> Stage {
@@ -151,38 +160,37 @@ extension Take: RegisteredStage {
 
         try args.ensureNoRemainder()
 
-        return Take(count: first ? .first(limit) : .last(limit), unit: unit)
+        return Drop(count: first ? .first(limit) : .last(limit), unit: unit)
     }
 
     public static var helpSummary: String? {
         """
-        Selects the first n records and discards the remainder. take LAST discards records up to
-        the last n and selects the last n records.
+        Discards the first n records and selects the remainder. drop LAST discards the last n records
+        up to the last n and selects the last n records.
 
-        When BYTES is omitted, take FIRST copies the specified number of records to the primary
-        output stream, or discards them if the primary output stream is not connected. If the secondary
-        output stream is defined, take FIRST then passes the remaining input records to the secondary
-        output stream.
+        When BYTES is omitted, drop FIRST copies the specified number of records to the secondary output
+        stream, or discards them if the secondary output stream is not connected. It then passes the
+        remaining input records to the primary output stream.
 
-        take LAST stores the specified number of records in a buffer. For each subsequent input record
-        (if any), take LAST writes the record that has been longest in the buffer to the secondary
-        output stream (or discards it if the secondary output stream is not connected). The input record
-        is then stored in the buffer. At end-of-file take LAST flushes the records from the buffer into
-        the primary output stream (or discards them if the primary output stream is not connected).
+        drop LAST stores the specified number of records in a buffer. For each subsequent input record (if
+        any), drop LAST writes the record that has been longest in the buffer to the primary output stream
+        and then stores the input record in the buffer. At end-of-file, drop LAST flushes the records from
+        the buffer into the secondary output stream (or discards them if the secondary output stream is not
+        connected).
 
-        When CHARACTERS, CHARS, or BYTES are specified, operation proceeds as described above, but rather
-        than counting records, chars or bytes are counted. Record boundaries are considered to be zero
-        width. In general, the specified number of chars/bytes will have been taken in the middle of a
-        record, which is then split after the last char/byte. When FIRST is specified the first part of
-        the split record is selected and the remainder is discarded. When LAST is specified, the first part
-        of the split record is discarded and the second part is selected. Care must be taken when using
-        BYTES because the input string may contain multi-byte unicode glyphs and splitting on a byte
-        boundary may result in an invalid string. This will result in a runtime error.
+        When CHARACTERS, CHARS, or BYTES is specified, operation proceeds as described above, but rather
+        than counting records, bytes are counted. Record boundaries are considered to be zero bytes wide.
+        In general, the specified number of bytes will have been dropped in the middle of a record, which
+        is then split after the last byte. When FIRST is specified the first part of the split record is
+        discarded and the remainder is selected. When LAST is specified, the first part of the split record
+        is selected and the second part is discarded. Care must be taken when using BYTES because the input
+        string may contain multi-byte unicode glyphs and splitting on a byte boundary may result in an
+        invalid string. This will result in a runtime error.
 
         Options:
-            FIRST      - Takes the first 'n' records (or characters or bytes)
-            LAST       - Takes the last 'n' records (or characters or bytes)
-            number     - The number of records to take. Defaults to 1. An asterisk signifies all records.
+            FIRST      - Drops the first 'n' records (or characters or bytes)
+            LAST       - Drops the last 'n' records (or characters or bytes)
+            number     - The number of records to drop. Defaults to 1. An asterisk signifies all records.
             LINES      - Count is based on records
             CHARACTERS - Count is based on unicode graphemes
             CHARS      - Synonym for CHARACTERS
@@ -193,7 +201,7 @@ extension Take: RegisteredStage {
     public static var helpSyntax: String? {
         """
                  ┌─FIRST─┐ ┌─1──────┐ ┌─LINES──────┐
-        ►►──TAKE─┼───────┼─┼────────┼─┼────────────┼──►◄
+        ►►──DROP─┼───────┼─┼────────┼─┼────────────┼──►◄
                  └─LAST──┘ ├─number─┤ ├─CHARACTERS─┤
                            └─*──────┘ ├─CHARS──────┤
                                       └─BYTES──────┘

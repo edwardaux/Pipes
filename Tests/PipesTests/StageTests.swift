@@ -175,6 +175,95 @@ final class StageTests: XCTestCase {
         }
     }
 
+    func testDropFirst() throws {
+        XCTAssertThrows(try Pipe("drop 2").run(), PipeError.streamNotConnected(direction: .input, streamNo: 0))
+        XCTAssertThrows(try Pipe("literal a|drop -50").run(), PipeError.numberCannotBeNegative(number: -50))
+        XCTAssertThrows(try Pipe("literal a|drop blah").run(), PipeError.invalidNumber(word: "blah"))
+        XCTAssertThrows(try Pipe("literal a|drop blah 3 bytes").run(), PipeError.invalidNumber(word: "blah"))
+        XCTAssertThrows(try Pipe("literal a|drop 3 foo").run(), PipeError.excessiveOptions(string: "foo"))
+        XCTAssertThrows(try Pipe("literal a|drop foo").run(), PipeError.invalidNumber(word: "foo"))
+        XCTAssertThrows(try Pipe("literal a|drop first 3 bytes foo").run(), PipeError.excessiveOptions(string: "foo"))
+
+        try Pipe("zzzgen /a/b/c/d/e/ | drop 0 | literal x| zzzcheck /x/a/b/c/d/e/").run()
+        try Pipe("zzzgen /a/b/c/d/e/ | drop 3 | literal x| zzzcheck /x/d/e/").run()
+        try Pipe("zzzgen /a/b/c/d/e/ | drop 3 lines | literal x| zzzcheck /x/d/e/").run()
+        try Pipe("zzzgen /a/b/c/d/e/ | drop 5 | literal x| zzzcheck /x/").run()
+        try Pipe("zzzgen /a/b/c/d/e/ | drop 8 | literal x| zzzcheck /x/").run()
+        try Pipe("zzzgen /a/b/c/d/e/ | drop * | literal x| zzzcheck /x/").run()
+
+        try Pipe("zzzgen /a/b/c/d/e/ | drop 3 bytes | zzzcheck /d/e/").run()
+        try Pipe("literal abcdefgh| drop 3 bytes | zzzcheck /defgh/").run()
+        try Pipe("zzzgen /a/b/c/d/e/abcdefgh/ | drop 10 bytes | zzzcheck /fgh/").run()
+        try Pipe("zzzgen /a/b/c/d/e/ | literal abcdefgh| drop 10 bytes | zzzcheck /c/d/e/").run()
+        try Pipe("literal abcdefgh| drop 20 bytes | literal x| zzzcheck /x/").run()
+        try Pipe("zzzgen /a/b/c/d/e/ | literal abcdefgh| drop 20 bytes | literal x| zzzcheck /x/").run()
+
+        try Pipe("zzzgen /a/b/c/d/e/ | drop 3 chars | zzzcheck /d/e/").run()
+        try Pipe("literal abcdefgh| drop 3 chars | zzzcheck /defgh/").run()
+        try Pipe("zzzgen /a/b/c/d/e/ | literal abcdefgh| drop 10 chars | zzzcheck /c/d/e/").run()
+        try Pipe("literal abcdefgh| drop 20 chars | literal x| zzzcheck /x/").run()
+        try Pipe("zzzgen /a/b/c/d/e/ | literal abcdefgh| drop 20 chars | literal x| zzzcheck /x/").run()
+
+        // Char   Unicode                                      UTF8 Encoding
+        // ------------------------------------------------------------------------------------------------------
+        //  🦜    \u{1F99C}                                    F0 9F A6 9C
+        //  🤦    \u{1F926}                                    F0 9F A4 A6
+        //  🤦🏼‍♂️    \u{1F926}\u{1F3FC}\u{200D}\u{2642}\u{FE0F}   F0 9F A4 A6 F0 9F 8F BC E2 80 8D E2 99 82 EF B8 08
+        //  👪    \u{1F46A}                                    F0 9F 91 AA
+        //  🌍    \u{1F30D}                                    F0 9F 8C 8D
+
+        try Pipe("zzzgen /ab \u{1F99C} c 🤦🏼‍♂️ d \u{1F46A} 🌍/ | drop 1 byte | zzzcheck /b \u{1F99C} c 🤦🏼‍♂️ d \u{1F46A} 🌍/").run()
+        try Pipe("zzzgen /ab \u{1F99C} c 🤦🏼‍♂️ d \u{1F46A} 🌍/ | drop 7 bytes | zzzcheck / c 🤦🏼‍♂️ d \u{1F46A} 🌍/").run()
+        try Pipe("zzzgen /ab \u{1F99C} c 🤦🏼‍♂️ d \u{1F46A} 🌍/ | drop 27 bytes | zzzcheck / d \u{1F46A} 🌍/").run()
+        try Pipe("zzzgen /ab \u{1F99C} c 🤦🏼‍♂️ d \u{1F46A} 🌍/ | drop 1 char | zzzcheck /b \u{1F99C} c 🤦🏼‍♂️ d \u{1F46A} 🌍/").run()
+        try Pipe("zzzgen /ab \u{1F99C} c 🤦🏼‍♂️ d \u{1F46A} 🌍/ | drop 7 chars | zzzcheck /🤦🏼‍♂️ d \u{1F46A} 🌍/").run()
+        try Pipe("zzzgen /ab \u{1F99C} c 🤦🏼‍♂️ d \u{1F46A} 🌍/ | drop 27 chars | literal x| zzzcheck /x/").run()
+
+        XCTAssertThrows(try Pipe("zzzgen /🌍/ | drop 1 byte | zzzcheck //").run(), PipeError.invalidString)
+        try Pipe("zzzgen /🌍/ | drop 1 char | literal x| zzzcheck /x/").run()
+
+        try Pipe("(end ?) zzzgen /a/b/c/d/e/ | d: drop 2 | zzzcheck /c/d/e/").run()
+        try Pipe("(end ?) zzzgen /a/b/c/d/e/ | d: drop 2 | zzzcheck /c/d/e/ ? d: | zzzcheck /a/b/").run()
+        try Pipe("(end ?) literal abcdefgh| d: drop 2 bytes | zzzcheck /cdefgh/ ? d: | zzzcheck /ab/").run()
+        try Pipe("(end ?) zzzgen /aaa/bbb/ccc/ddd/ | d: drop 8 bytes | zzzcheck /c/ddd/ ? d: | zzzcheck /aaa/bbb/cc/").run()
+    }
+
+    func testDropLast() throws {
+        try Pipe("zzzgen /a/b/c/d/e/ | drop last 0 | literal x| zzzcheck /x/a/b/c/d/e/").run()
+        try Pipe("zzzgen /a/b/c/d/e/ | drop last 3 | literal x| zzzcheck /x/a/b/").run()
+        try Pipe("zzzgen /a/b/c/d/e/ | drop last 3 lines | literal x| zzzcheck /x/a/b/").run()
+        try Pipe("zzzgen /a/b/c/d/e/ | drop last 5 | literal x| zzzcheck /x/").run()
+        try Pipe("zzzgen /a/b/c/d/e/ | drop last 8 | literal x| zzzcheck /x/").run()
+
+        try Pipe("zzzgen /a/b/c/d/e/ | drop last 3 bytes | zzzcheck /a/b/").run()
+        try Pipe("literal abcdefgh| drop last 3 bytes | zzzcheck /abcde/").run()
+        try Pipe("zzzgen /abcdefgh/a/b/c/d/e/ | drop last 10 bytes | zzzcheck /abc/").run()
+        try Pipe("zzzgen /a/b/c/d/e/ | literal abcdefgh| drop last 10 bytes | zzzcheck /abc/").run()
+        try Pipe("literal abcdefgh| drop last 20 bytes | literal x| zzzcheck /x/").run()
+        try Pipe("zzzgen /a/b/c/d/e/ | literal abcdefgh| drop last 20 bytes | literal x| zzzcheck /x/").run()
+
+        try Pipe("zzzgen /a/b/c/d/e/ | drop last 3 chars | zzzcheck /a/b/").run()
+        try Pipe("literal abcdefgh| drop last 3 chars | zzzcheck /abcde/").run()
+        try Pipe("zzzgen /a/b/c/d/e/ | literal abcdefgh| drop last 10 chars | zzzcheck /abc/").run()
+        try Pipe("literal abcdefgh| drop last 20 chars | literal x| zzzcheck /x/").run()
+        try Pipe("zzzgen /a/b/c/d/e/ | literal abcdefgh| drop last 20 chars | literal x| zzzcheck /x/").run()
+
+        try Pipe("zzzgen /ab \u{1F99C} c 🤦🏼‍♂️ d \u{1F46A} 🌍 z/ | drop last 1 byte | zzzcheck /ab \u{1F99C} c 🤦🏼‍♂️ d \u{1F46A} 🌍 /").run()
+        try Pipe("zzzgen /ab \u{1F99C} c 🤦🏼‍♂️ d \u{1F46A} 🌍 z/ | drop last 7 bytes | zzzcheck /ab \u{1F99C} c 🤦🏼‍♂️ d \u{1F46A}/").run()
+        try Pipe("zzzgen /ab \u{1F99C} c 🤦🏼‍♂️ d \u{1F46A} 🌍 z/ | drop last 31 bytes | zzzcheck /ab \u{1F99C} c /").run()
+        try Pipe("zzzgen /ab \u{1F99C} c 🤦🏼‍♂️ d \u{1F46A} 🌍 z/ | drop last 1 char | zzzcheck /ab \u{1F99C} c 🤦🏼‍♂️ d \u{1F46A} 🌍 /").run()
+        try Pipe("zzzgen /ab \u{1F99C} c 🤦🏼‍♂️ d \u{1F46A} 🌍 z/ | drop last 7 chars | zzzcheck /ab \u{1F99C} c 🤦🏼‍♂️ /").run()
+        try Pipe("zzzgen /ab \u{1F99C} c 🤦🏼‍♂️ d \u{1F46A} 🌍 z/ | drop last 27 chars | literal x| zzzcheck /x/").run()
+
+        XCTAssertThrows(try Pipe("zzzgen /🌍/ | drop last 1 byte | zzzcheck //").run(), PipeError.invalidString)
+        try Pipe("zzzgen /🌍/ | drop last 1 char | literal x| zzzcheck /x/").run()
+
+        try Pipe("(end ?) zzzgen /a/b/c/d/e/ | d: drop last 2 | zzzcheck /a/b/c/").run()
+        try Pipe("(end ?) zzzgen /a/b/c/d/e/ | d: drop last 2 | zzzcheck /a/b/c/ ? d: | zzzcheck /d/e/").run()
+        try Pipe("(end ?) literal abcdefgh| d: drop last 2 bytes | zzzcheck /abcdef/ ? d: | zzzcheck /gh/").run()
+        try Pipe("(end ?) zzzgen /aaa/bbb/ccc/ddd/ | d: drop last 8 bytes | zzzcheck /aaa/b/ ? d: | zzzcheck /bb/ccc/ddd/").run()
+    }
+
     func testHelp() throws {
         // Need to make sure the built-in stages are pre-registered before we query the help
         // as they are listed in the help text.
@@ -555,6 +644,7 @@ final class StageTests: XCTestCase {
         try Pipe("zzzgen /a/b/c/d/e/ | take 3 lines | literal x| zzzcheck /x/a/b/c/").run()
         try Pipe("zzzgen /a/b/c/d/e/ | take 5 | zzzcheck /a/b/c/d/e/").run()
         try Pipe("zzzgen /a/b/c/d/e/ | take 8 | zzzcheck /a/b/c/d/e/").run()
+        try Pipe("zzzgen /a/b/c/d/e/ | take * | literal x| zzzcheck /x/a/b/c/d/e/").run()
 
         try Pipe("zzzgen /a/b/c/d/e/ | take 3 bytes | zzzcheck /a/b/c/").run()
         try Pipe("literal abcdefgh| take 3 bytes | zzzcheck /abc/").run()

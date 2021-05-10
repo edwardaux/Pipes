@@ -108,6 +108,7 @@ extension Pipe {
         register(Diskr.self)
         register(Diskw.self)
         register(Diskwa.self)
+        register(Drop.self)
         register(Fanin.self)
         register(Faninany.self)
         register(Fanout.self)
